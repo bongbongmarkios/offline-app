@@ -1,3 +1,4 @@
+
 'use client';
 import type { Reading } from '@/types';
 import Link from 'next/link';
@@ -16,24 +17,22 @@ export default function ReadingList({ readings }: ReadingListProps) {
   return (
     <div className="space-y-4">
       {readings.map((reading) => (
-        <Link key={reading.id} href={`/readings/${reading.id}`} passHref legacyBehavior>
-          <a className="block hover:no-underline">
-            <Card className="hover:shadow-md transition-shadow duration-200 cursor-pointer hover:border-primary/50">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                   <BookText className="h-6 w-6 text-primary flex-shrink-0" />
-                   <div className="flex-grow">
-                    <CardTitle className="font-headline text-xl group-hover:text-primary">{reading.title}</CardTitle>
-                    {reading.source && (
-                        <CardDescription className="text-sm text-muted-foreground pt-1">
-                        Source: {reading.source}
-                        </CardDescription>
-                    )}
-                   </div>
-                </div>
-              </CardHeader>
-            </Card>
-          </a>
+        <Link key={reading.id} href={`/readings/${reading.id}`} className="block hover:no-underline">
+          <Card className="hover:shadow-md transition-shadow duration-200 cursor-pointer hover:border-primary/50">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                 <BookText className="h-6 w-6 text-primary flex-shrink-0" />
+                 <div className="flex-grow">
+                  <CardTitle className="font-headline text-xl group-hover:text-primary">{reading.title}</CardTitle>
+                  {reading.source && (
+                      <CardDescription className="text-sm text-muted-foreground pt-1">
+                      Source: {reading.source}
+                      </CardDescription>
+                  )}
+                 </div>
+              </div>
+            </CardHeader>
+          </Card>
         </Link>
       ))}
     </div>
