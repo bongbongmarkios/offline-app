@@ -20,12 +20,16 @@ export default function HymnList({ hymns }: HymnListProps) {
         <Link key={hymn.id} href={`/hymnal/${hymn.id}`} className="block hover:no-underline">
           <Card className="hover:shadow-md transition-shadow duration-200 cursor-pointer hover:border-primary/50">
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3"> {/* Adjusted for number first */}
+                {hymn.number && (
+                  <span className="text-sm font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full flex-shrink-0">
+                    {hymn.number}
+                  </span>
+                )}
                 <CardTitle className="font-headline text-xl group-hover:text-primary">{hymn.title}</CardTitle>
-                {hymn.number && <span className="text-sm font-semibold text-primary bg-primary/10 px-2 py-1 rounded-full">{hymn.number}</span>}
               </div>
               {hymn.author && (
-                <CardDescription className="text-sm text-muted-foreground pt-1">
+                <CardDescription className="text-sm text-muted-foreground pt-1 mt-1">
                   Author: {hymn.author}
                 </CardDescription>
               )}
