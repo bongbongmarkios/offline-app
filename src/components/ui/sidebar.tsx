@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -10,7 +11,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetHeader as UiSheetHeader, SheetTitle as UiSheetTitle } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
@@ -198,7 +199,7 @@ const Sidebar = React.forwardRef<
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            className="w-[--sidebar-width] bg-sidebar text-sidebar-foreground [&>button]:hidden flex flex-col"
             style={
               {
                 "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -206,7 +207,14 @@ const Sidebar = React.forwardRef<
             }
             side={side}
           >
-            <div className="flex h-full w-full flex-col">{children}</div>
+            <UiSheetHeader className="p-4 border-b border-sidebar-border flex-shrink-0">
+              <UiSheetTitle className="text-lg font-headline text-primary">GraceNotes</UiSheetTitle>
+            </UiSheetHeader>
+            <div className="flex-grow overflow-y-auto">
+              {React.Children.toArray(children).find(child =>
+                React.isValidElement(child) && (child.type as any).displayName === 'SidebarContent'
+              )}
+            </div>
           </SheetContent>
         </Sheet>
       )
@@ -761,3 +769,5 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+
+    
