@@ -13,7 +13,7 @@ import {
 
 const navItems = [
   { href: '/hymnal', label: 'Hymnal', icon: Music },
-  { href: '/hymnal/add', label: 'Add Hymn', icon: PlusCircle }, // Added "Add Hymn"
+  { href: '/hymnal/add', label: 'Add Hymn', icon: PlusCircle }, // Ensures "Add Hymn" is present
   { href: '/program', label: 'Program', icon: ListOrdered },
   { href: '/readings', label: 'Readings', icon: BookOpenText },
   { href: '/suggestions', label: 'Suggestions', icon: Wand2 },
