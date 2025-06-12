@@ -20,9 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 
-export const metadata = {
-  title: 'Delete Data | SBC APP',
-};
+// Removed metadata export as it's not allowed in client components
 
 export default function DeleteDataPage() {
   const { clearActivity } = useActivity();
