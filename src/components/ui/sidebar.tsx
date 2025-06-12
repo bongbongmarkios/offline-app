@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link"; 
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PlusCircle } from "lucide-react" 
+import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2 } from "lucide-react" 
 import Image from "next/image"; 
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -209,7 +209,7 @@ const Sidebar = React.forwardRef<
             }
             side={side}
           >
-            <UiSheetHeader className="p-4 border-b border-sidebar-border flex-shrink-0 flex flex-row items-center justify-between">
+            <UiSheetHeader className="p-4 border-b border-sidebar-border flex-shrink-0 flex flex-row items-center justify-between gap-2">
               <div className="flex flex-row items-center gap-2">
                 <Image src="https://i.imgur.com/BJ43v7S.png" alt="SBC APP Logo" width={36} height={36} data-ai-hint="logo" className="shrink-0" />
                 <UiSheetTitle className="text-lg font-headline text-primary">SBC APP</UiSheetTitle>
@@ -230,6 +230,29 @@ const Sidebar = React.forwardRef<
                 }
                 return null;
               })}
+            </div>
+            {/* New Footer Section for Mobile Sidebar */}
+            <div className="mt-auto p-4 border-t border-sidebar-border space-y-2">
+              <Button asChild variant="ghost" className="w-full justify-start text-sm">
+                <Link href="/settings">
+                  <Settings className="mr-2 h-5 w-5" /> Settings
+                </Link>
+              </Button>
+              <Button asChild variant="ghost" className="w-full justify-start text-sm">
+                <Link href="/help">
+                  <HelpCircle className="mr-2 h-5 w-5" /> Help
+                </Link>
+              </Button>
+              <Button asChild variant="ghost" className="w-full justify-start text-sm">
+                <Link href="/about">
+                  <Info className="mr-2 h-5 w-5" /> About
+                </Link>
+              </Button>
+              <Button asChild variant="destructive" className="w-full justify-start text-sm">
+                <Link href="/delete-data">
+                  <Trash2 className="mr-2 h-5 w-5" /> Delete Data
+                </Link>
+              </Button>
             </div>
           </SheetContent>
         </Sheet>
@@ -785,3 +808,4 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+
