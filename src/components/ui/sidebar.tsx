@@ -278,30 +278,30 @@ const Sidebar = React.forwardRef<
                     <div className="space-y-4 py-4">
                       <div className="space-y-1">
                         <Label htmlFor="dialog-hymn-title">Title</Label>
-                        <Input id="dialog-hymn-title" value={hymnTitle} onChange={(e) => setHymnTitle(e.target.value)} placeholder="e.g., Amazing Grace" required />
+                        <Input id="dialog-hymn-title" value={hymnTitle} onChange={(e) => setHymnTitle(e.target.value)} placeholder="e.g., Amazing Grace" required className="border-muted-foreground"/>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1">
                           <Label htmlFor="dialog-hymn-number">Number (Optional)</Label>
-                          <Input id="dialog-hymn-number" value={hymnNumber} onChange={(e) => setHymnNumber(e.target.value)} placeholder="e.g., 202" />
+                          <Input id="dialog-hymn-number" value={hymnNumber} onChange={(e) => setHymnNumber(e.target.value)} placeholder="e.g., 202" className="border-muted-foreground"/>
                         </div>
                         <div className="space-y-1">
                           <Label htmlFor="dialog-hymn-category">Category (Optional)</Label>
-                          <Input id="dialog-hymn-category" value={hymnCategory} onChange={(e) => setHymnCategory(e.target.value)} placeholder="e.g., Worship" />
+                          <Input id="dialog-hymn-category" value={hymnCategory} onChange={(e) => setHymnCategory(e.target.value)} placeholder="e.g., Worship" className="border-muted-foreground"/>
                         </div>
                       </div>
                       <div className="space-y-1">
                         <Label htmlFor="dialog-hymn-lyrics">Lyrics</Label>
-                        <Textarea id="dialog-hymn-lyrics" value={hymnLyrics} onChange={(e) => setHymnLyrics(e.target.value)} placeholder="Enter hymn lyrics here..." rows={8} required />
+                        <Textarea id="dialog-hymn-lyrics" value={hymnLyrics} onChange={(e) => setHymnLyrics(e.target.value)} placeholder="Enter hymn lyrics here..." rows={8} required className="border-muted-foreground"/>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1">
                           <Label htmlFor="dialog-hymn-author">Author (Optional)</Label>
-                          <Input id="dialog-hymn-author" value={hymnAuthor} onChange={(e) => setHymnAuthor(e.target.value)} placeholder="e.g., John Newton" />
+                          <Input id="dialog-hymn-author" value={hymnAuthor} onChange={(e) => setHymnAuthor(e.target.value)} placeholder="e.g., John Newton" className="border-muted-foreground"/>
                         </div>
                         <div className="space-y-1">
                           <Label htmlFor="dialog-hymn-composer">Composer (Optional)</Label>
-                          <Input id="dialog-hymn-composer" value={hymnComposer} onChange={(e) => setHymnComposer(e.target.value)} placeholder="e.g., Traditional" />
+                          <Input id="dialog-hymn-composer" value={hymnComposer} onChange={(e) => setHymnComposer(e.target.value)} placeholder="e.g., Traditional" className="border-muted-foreground"/>
                         </div>
                       </div>
                     </div>
