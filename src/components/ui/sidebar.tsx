@@ -214,12 +214,15 @@ const Sidebar = React.forwardRef<
                 <Image src="https://i.imgur.com/BJ43v7S.png" alt="SBC APP Logo" width={36} height={36} data-ai-hint="logo" className="shrink-0" />
                 <UiSheetTitle className="text-lg font-headline text-primary">SBC APP</UiSheetTitle>
               </div>
-              <Button asChild variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
-                <Link href="/hymnal/add">
-                  <PlusCircle className="h-6 w-6" aria-label="Add Hymn" />
+            </UiSheetHeader>
+            <div className="p-4 border-b border-sidebar-border">
+              <Button asChild variant="default" size="lg" className="w-full">
+                <Link href="/hymnal/add" className="flex items-center justify-center gap-2">
+                  <PlusCircle className="h-5 w-5" />
+                  Add New Hymn
                 </Link>
               </Button>
-            </UiSheetHeader>
+            </div>
             <div className="flex-grow overflow-y-auto">
               {React.Children.map(children, child => {
                 if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarContent') {
