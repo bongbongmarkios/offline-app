@@ -2,14 +2,14 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Music, ListOrdered, BookOpenText, Sparkles } from 'lucide-react'; // Changed BookOpen to BookOpenText for clarity
+import { Music, ListOrdered, BookOpenText } from 'lucide-react'; // Removed Sparkles
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/hymnal', label: 'Hymnal', icon: Music },
   { href: '/program', label: 'Program', icon: ListOrdered },
   { href: '/readings', label: 'Readings', icon: BookOpenText },
-  { href: '/suggestions', label: "Why this button doesn't work?", icon: Sparkles },
+  // { href: '/suggestions', label: "Why this button doesn't work?", icon: Sparkles }, // Removed this item
 ];
 
 export default function BottomNavigationBar() {
@@ -30,7 +30,7 @@ export default function BottomNavigationBar() {
             key={item.href} 
             href={item.href} 
             className={cn(
-              "flex flex-col items-center justify-center text-xs sm:text-sm transition-colors w-1/4 h-full pt-1",
+              "flex flex-col items-center justify-center text-xs sm:text-sm transition-colors w-1/3 h-full pt-1", // Adjusted w-1/4 to w-1/3 as there are 3 items now
               isActive ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"
             )}
             aria-current={isActive ? "page" : undefined}
