@@ -52,6 +52,18 @@ const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
+const PROCESSED_FILES_INDEX_KEY = "processedFilesIndex_v1";
+const FILE_CONTENT_PREFIX_KEY = "fileContent_v1_";
+
+interface StoredFileMetadata {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  lastModified: number;
+  isTextContentStored: boolean;
+}
+
 type SidebarContext = {
   state: "expanded" | "collapsed"
   open: boolean
@@ -212,16 +224,36 @@ const Sidebar = React.forwardRef<
     const [isDataDialogOpen, setIsDataDialogOpen] = React.useState(false);
     
     const [isUploadDialogOpen, setIsUploadDialogOpen] = React.useState(false);
-    const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+    const [selectedFilesList, setSelectedFilesList] = React.useState<File[]>([]);
     const [uploadStatus, setUploadStatus] = React.useState<string | null>(null);
     const [isProcessing, setIsProcessing] = React.useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     
-    const [processedFiles, setProcessedFiles] = React.useState<{ name: string; type: string; contentPreview?: string; fullContent?: string }[]>([]);
+    const [processedFiles, setProcessedFiles] = React.useState<StoredFileMetadata[]>([]);
 
     const [isViewFileDialogOpen, setIsViewFileDialogOpen] = React.useState(false);
     const [viewFileContent, setViewFileContent] = React.useState<string | undefined>('');
     const [viewFileName, setViewFileName] = React.useState('');
+
+    React.useEffect(() => {
+      if (typeof window !== "undefined") {
+        const storedIndex = localStorage.getItem(PROCESSED_FILES_INDEX_KEY);
+        if (storedIndex) {
+          try {
+            setProcessedFiles(JSON.parse(storedIndex));
+          } catch (e) {
+            console.error("Error parsing processed files index from localStorage", e);
+            localStorage.removeItem(PROCESSED_FILES_INDEX_KEY); // Clear corrupted data
+          }
+        }
+      }
+    }, []);
+
+    const saveProcessedFilesIndex = (updatedFiles: StoredFileMetadata[]) => {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(PROCESSED_FILES_INDEX_KEY, JSON.stringify(updatedFiles));
+      }
+    };
 
 
     const handleAddHymnSubmit = (e: React.FormEvent) => {
@@ -288,17 +320,26 @@ const Sidebar = React.forwardRef<
     };
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (event.target.files && event.target.files[0]) {
-        setSelectedFile(event.target.files[0]);
-        setUploadStatus(`File selected: ${event.target.files[0].name}`);
+      if (event.target.files) {
+        let filesArray = Array.from(event.target.files);
+        if (filesArray.length > 10) {
+          toast({
+            title: "File Limit Exceeded",
+            description: "You can select up to 10 files at a time.",
+            variant: "destructive",
+          });
+          filesArray = filesArray.slice(0, 10);
+        }
+        setSelectedFilesList(filesArray);
+        setUploadStatus(`${filesArray.length} file(s) selected.`);
       } else {
-        setSelectedFile(null);
+        setSelectedFilesList([]);
         setUploadStatus(null);
       }
     };
 
     const handleClearFile = () => {
-      setSelectedFile(null);
+      setSelectedFilesList([]);
       setUploadStatus(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -306,65 +347,73 @@ const Sidebar = React.forwardRef<
     };
 
     const handleProcessFile = async () => {
-      if (!selectedFile) {
-        setUploadStatus("No file selected.");
-        toast({ title: "Error", description: "No file selected.", variant: "destructive" });
+      if (selectedFilesList.length === 0) {
+        setUploadStatus("No files selected.");
+        toast({ title: "Error", description: "No files selected.", variant: "destructive" });
         return;
       }
 
       setIsProcessing(true);
-      setUploadStatus(`Processing ${selectedFile.name}...`);
+      setUploadStatus(`Processing ${selectedFilesList.length} file(s)...`);
       
-      const fileInfoBase = { name: selectedFile.name, type: selectedFile.type };
+      let newProcessedFiles: StoredFileMetadata[] = [...processedFiles];
+      let filesProcessedCount = 0;
 
-      if (selectedFile.type === "text/plain") {
-        const reader = new FileReader();
-        reader.onload = (e) => {
+      for (const file of selectedFilesList) {
+        const fileId = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`; // Basic unique ID
+        let isTextContentStored = false;
+
+        if (file.type === "text/plain") {
           try {
-            const text = e.target?.result as string;
-            const fileInfo = {
-              ...fileInfoBase,
-              contentPreview: text.substring(0,100) + (text.length > 100 ? '...' : ''),
-              fullContent: text,
-            };
-            setProcessedFiles(prevFiles => [...prevFiles, fileInfo]);
-            setUploadStatus(`Text file "${selectedFile.name}" read successfully. Preview: ${fileInfo.contentPreview}`);
-            toast({ title: "Text File Processed", description: `Successfully read "${selectedFile.name}".` });
+            const text = await file.text();
+            if (typeof window !== "undefined") {
+              localStorage.setItem(`${FILE_CONTENT_PREFIX_KEY}${fileId}`, text);
+            }
+            isTextContentStored = true;
+            toast({ title: "Text File Processed", description: `Successfully stored "${file.name}".` });
           } catch (error) {
-            console.error("Error reading text file:", error);
-            setUploadStatus(`Error reading text file "${selectedFile.name}".`);
-            toast({ title: "Error", description: `Could not read text file.`, variant: "destructive" });
-          } finally {
-            setIsProcessing(false);
+            console.error(`Error reading text file "${file.name}":`, error);
+            toast({ title: "Error", description: `Could not read text file "${file.name}".`, variant: "destructive" });
+            continue; 
           }
+        } else if (file.type === "audio/mpeg") {
+          toast({ title: "MP3 File Metadata Stored", description: `Metadata for "${file.name}" stored. Audio content not stored.` });
+        } else {
+          toast({ title: "Unsupported File", description: `File "${file.name}" has an unsupported type: ${file.type || 'unknown'}. Skipped.`, variant: "destructive" });
+          continue;
+        }
+
+        const newFileMetadata: StoredFileMetadata = {
+          id: fileId,
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          lastModified: file.lastModified,
+          isTextContentStored: isTextContentStored,
         };
-        reader.onerror = () => {
-          setUploadStatus(`Error reading file "${selectedFile.name}".`);
-          toast({ title: "Error", description: `Could not read file.`, variant: "destructive" });
-          setIsProcessing(false);
-        };
-        reader.readAsText(selectedFile);
-      } else if (selectedFile.type === "audio/mpeg") {
-         const fileInfo = {
-            ...fileInfoBase,
-            contentPreview: "Audio file - content not previewable."
-          };
-        setProcessedFiles(prevFiles => [...prevFiles, fileInfo]);
-        setUploadStatus(`MP3 file "${selectedFile.name}" selected. Audio processing not yet implemented.`);
-        toast({ title: "MP3 File Selected", description: `"${selectedFile.name}" is ready for future audio processing.` });
-        setIsProcessing(false);
-      } else {
-        setUploadStatus(`Unsupported file type: ${selectedFile.type || 'unknown'}. Please select a .txt or .mp3 file.`);
-        toast({ title: "Unsupported File", description: "Please select a .txt or .mp3 file.", variant: "destructive" });
-        setIsProcessing(false);
+        newProcessedFiles = newProcessedFiles.filter(f => f.id !== fileId); // Remove old version if any
+        newProcessedFiles.push(newFileMetadata);
+        filesProcessedCount++;
       }
+      
+      setProcessedFiles(newProcessedFiles);
+      saveProcessedFilesIndex(newProcessedFiles);
+      
+      setUploadStatus(`${filesProcessedCount} of ${selectedFilesList.length} file(s) processed and stored.`);
+      setIsProcessing(false);
+      handleClearFile(); // Clear selection after processing
     };
 
-    const handleViewTextFile = (file: { name: string; type: string; fullContent?: string }) => {
-      if (file.type === "text/plain" && file.fullContent) {
-        setViewFileName(file.name);
-        setViewFileContent(file.fullContent);
-        setIsViewFileDialogOpen(true);
+    const handleViewTextFile = (file: StoredFileMetadata) => {
+      if (file.isTextContentStored && typeof window !== "undefined") {
+        const content = localStorage.getItem(`${FILE_CONTENT_PREFIX_KEY}${file.id}`);
+        if (content !== null) {
+          setViewFileName(file.name);
+          setViewFileContent(content);
+          setIsViewFileDialogOpen(true);
+        } else {
+          toast({ title: "Error", description: "Could not retrieve file content.", variant: "destructive"});
+        }
       }
     };
 
@@ -527,7 +576,7 @@ const Sidebar = React.forwardRef<
                   <DialogHeader>
                     <DialogTitle className="font-headline text-2xl">Processed Files</DialogTitle>
                     <DialogDescription>
-                      List of files processed during this session. Click on a text file to view its content.
+                      List of files processed during this session. Click on a text file to view its content. MP3 content is not viewable.
                     </DialogDescription>
                   </DialogHeader>
                   <ScrollArea className="h-[60vh] my-4 pr-3">
@@ -535,19 +584,19 @@ const Sidebar = React.forwardRef<
                       <p className="text-muted-foreground text-center py-4">No files processed yet.</p>
                     ) : (
                       <div className="space-y-2">
-                        {processedFiles.map((file, index) => (
+                        {processedFiles.map((file) => (
                           <Button
-                            key={index}
-                            variant={file.type === "text/plain" ? "ghost" : "outline"}
+                            key={file.id}
+                            variant={file.isTextContentStored ? "ghost" : "outline"}
                             className="w-full justify-start h-auto p-3 border rounded-md bg-background hover:bg-muted/50"
-                            onClick={() => file.type === "text/plain" && handleViewTextFile(file)}
-                            disabled={file.type !== "text/plain"}
+                            onClick={() => file.isTextContentStored && handleViewTextFile(file)}
+                            disabled={!file.isTextContentStored}
                           >
                             <div className="flex items-center gap-3 w-full">
                               {file.type.startsWith('text/') ? <FileText className="h-5 w-5 text-primary flex-shrink-0" /> : <FileAudio className="h-5 w-5 text-primary flex-shrink-0" />}
                               <div className="flex-grow text-left">
                                 <p className="font-medium">{file.name}</p>
-                                <Badge variant="secondary" className="text-xs mt-1">{file.type}</Badge>
+                                <Badge variant="secondary" className="text-xs mt-1">{file.type} - {(file.size / 1024).toFixed(2)} KB</Badge>
                               </div>
                             </div>
                           </Button>
@@ -563,7 +612,7 @@ const Sidebar = React.forwardRef<
                 </DialogContent>
               </Dialog>
 
-              <Dialog open={isUploadDialogOpen} onOpenChange={(isOpen) => { setIsUploadDialogOpen(isOpen); if (!isOpen) { setSelectedFile(null); setUploadStatus(null); setIsProcessing(false); if (fileInputRef.current) fileInputRef.current.value = ''; }}}>
+              <Dialog open={isUploadDialogOpen} onOpenChange={(isOpen) => { setIsUploadDialogOpen(isOpen); if (!isOpen) { setSelectedFilesList([]); setUploadStatus(null); setIsProcessing(false); if (fileInputRef.current) fileInputRef.current.value = ''; }}}>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="lg" className="w-full flex items-center justify-center gap-2">
                     <Upload className="mr-2 h-5 w-5" /> Upload Data
@@ -575,33 +624,43 @@ const Sidebar = React.forwardRef<
                       <FileUp className="h-6 w-6 text-primary" /> Upload Files
                     </DialogTitle>
                     <DialogDescription>
-                      Select a .txt (text) or .mp3 (audio) file to upload.
+                      Select up to 10 .txt (text) or .mp3 (audio) files to upload. Text file content will be stored; MP3 metadata only.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="py-4 space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="file-upload">Choose .txt or .mp3 File</Label>
+                      <Label htmlFor="file-upload">Choose .txt or .mp3 File(s)</Label>
                       <div className="flex items-center gap-2">
                         <Input 
                           ref={fileInputRef}
                           id="file-upload" 
                           type="file" 
                           accept=".txt,.mp3,text/plain,audio/mpeg"
+                          multiple // Allow multiple file selection
                           onChange={handleFileChange}
                           className="border-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 flex-grow"
                         />
-                        {selectedFile && (
+                        {selectedFilesList.length > 0 && (
                           <Button 
                             variant="ghost" 
                             size="icon" 
                             onClick={handleClearFile}
-                            aria-label="Remove selected file"
+                            aria-label="Remove selected files"
                             className="text-destructive hover:bg-destructive/10"
                           >
                             <X className="h-4 w-4" />
                           </Button>
                         )}
                       </div>
+                      {selectedFilesList.length > 0 && (
+                        <ScrollArea className="max-h-32 mt-2 border rounded-md p-2">
+                          <ul className="text-sm space-y-1">
+                            {selectedFilesList.map(file => (
+                              <li key={file.name + file.lastModified} className="truncate">{file.name} ({(file.size/1024).toFixed(2)} KB)</li>
+                            ))}
+                          </ul>
+                        </ScrollArea>
+                      )}
                     </div>
                     {uploadStatus && (
                       <p className={cn("text-sm", uploadStatus.startsWith("Error") || uploadStatus.startsWith("Invalid") || uploadStatus.startsWith("Unsupported") ? "text-destructive" : "text-muted-foreground")}>
@@ -616,14 +675,14 @@ const Sidebar = React.forwardRef<
                     <Button 
                       type="button" 
                       onClick={handleProcessFile} 
-                      disabled={!selectedFile || isProcessing}
+                      disabled={selectedFilesList.length === 0 || isProcessing}
                     >
                       {isProcessing ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       ) : (
                         <Upload className="mr-2 h-4 w-4" />
                       )}
-                      {isProcessing ? "Processing..." : "Process File"}
+                      {isProcessing ? "Processing..." : `Process ${selectedFilesList.length} File(s)`}
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -995,7 +1054,7 @@ const SidebarMenuItem = React.forwardRef<
         if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarMenuButton' && setOpenMobile) {
           return React.cloneElement(child as React.ReactElement<any>, { onClick: () => {
             if (child.props.onClick) child.props.onClick();
-            setOpenMobile(false);
+            if (setOpenMobile) setOpenMobile(false); // Ensure setOpenMobile exists before calling
           }});
         }
         return child;
@@ -1032,7 +1091,7 @@ const SidebarMenuButton = React.forwardRef<
     asChild?: boolean
     isActive?: boolean
     tooltip?: string | React.ComponentProps<typeof TooltipContent>
-    onClick?: () => void;
+    onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   } & VariantProps<typeof sidebarMenuButtonVariants>
 >(
   (
@@ -1043,22 +1102,13 @@ const SidebarMenuButton = React.forwardRef<
       size = "default",
       tooltip,
       className,
-      onClick,
+      onClick, 
       ...props
     },
     ref
   ) => {
     const Comp = asChild ? Slot : "button"
     const { isMobile, state } = useSidebar()
-
-    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-      if (props.onClick) {
-        props.onClick(event); 
-      }
-      if (onClick) {
-        onClick(); 
-      }
-    };
 
     const button = (
       <Comp
@@ -1067,7 +1117,7 @@ const SidebarMenuButton = React.forwardRef<
         data-size={size}
         data-active={isActive}
         className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
-        onClick={handleClick} 
+        onClick={onClick} 
         {...props}
       />
     )
