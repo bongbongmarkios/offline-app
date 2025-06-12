@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileJson, Loader2 } from "lucide-react"
+import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2 } from "lucide-react" // Changed FileJson to FileUp
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -292,37 +292,43 @@ const Sidebar = React.forwardRef<
     const handleProcessFile = async () => {
       if (!selectedFile) {
         setUploadStatus("No file selected.");
+        toast({ title: "Error", description: "No file selected.", variant: "destructive" });
         return;
       }
 
       setIsProcessing(true);
-      setUploadStatus("Processing file...");
+      setUploadStatus(`Processing ${selectedFile.name}...`);
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const text = e.target?.result as string;
-          const data = JSON.parse(text);
-
-          if (Array.isArray(data) && data.length > 0 && data.every(item => typeof item.title === 'string' && typeof item.lyrics === 'string')) {
-            // Basic validation passes: it's an array of objects with title and lyrics
-            setUploadStatus(`Successfully parsed ${data.length} hymn(s). (Data not yet integrated)`);
-            toast({ title: "File Processed", description: `Found ${data.length} hymn(s) in the file.`});
-          } else {
-            setUploadStatus("Invalid file format. Expected an array of hymn objects with 'title' and 'lyrics'.");
+      if (selectedFile.type === "text/plain") {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const text = e.target?.result as string;
+            setUploadStatus(`Text file "${selectedFile.name}" read successfully. Preview: ${text.substring(0,100)}${text.length > 100 ? '...' : ''}`);
+            toast({ title: "Text File Processed", description: `Successfully read "${selectedFile.name}".` });
+          } catch (error) {
+            console.error("Error reading text file:", error);
+            setUploadStatus(`Error reading text file "${selectedFile.name}".`);
+            toast({ title: "Error", description: `Could not read text file.`, variant: "destructive" });
+          } finally {
+            setIsProcessing(false);
           }
-        } catch (error) {
-          console.error("Error parsing JSON:", error);
-          setUploadStatus("Error parsing JSON file. Make sure it's a valid JSON.");
-        } finally {
+        };
+        reader.onerror = () => {
+          setUploadStatus(`Error reading file "${selectedFile.name}".`);
+          toast({ title: "Error", description: `Could not read file.`, variant: "destructive" });
           setIsProcessing(false);
-        }
-      };
-      reader.onerror = () => {
-        setUploadStatus("Error reading file.");
+        };
+        reader.readAsText(selectedFile);
+      } else if (selectedFile.type === "audio/mpeg") {
+        setUploadStatus(`MP3 file "${selectedFile.name}" selected. Audio processing not yet implemented.`);
+        toast({ title: "MP3 File Selected", description: `"${selectedFile.name}" is ready for future audio processing.` });
         setIsProcessing(false);
-      };
-      reader.readAsText(selectedFile);
+      } else {
+        setUploadStatus(`Unsupported file type: ${selectedFile.type || 'unknown'}. Please select a .txt or .mp3 file.`);
+        toast({ title: "Unsupported File", description: "Please select a .txt or .mp3 file.", variant: "destructive" });
+        setIsProcessing(false);
+      }
     };
 
 
@@ -497,7 +503,7 @@ const Sidebar = React.forwardRef<
                 </DialogContent>
               </Dialog>
 
-              <Dialog open={isUploadDialogOpen} onOpenChange={(isOpen) => { setIsUploadDialogOpen(isOpen); if (!isOpen) { setSelectedFile(null); setUploadStatus(null); }}}>
+              <Dialog open={isUploadDialogOpen} onOpenChange={(isOpen) => { setIsUploadDialogOpen(isOpen); if (!isOpen) { setSelectedFile(null); setUploadStatus(null); setIsProcessing(false); }}}>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="lg" className="w-full flex items-center justify-center gap-2">
                     <Upload className="mr-2 h-5 w-5" /> Upload Data
@@ -506,25 +512,25 @@ const Sidebar = React.forwardRef<
                 <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
                   <DialogHeader>
                     <DialogTitle className="font-headline text-2xl flex items-center gap-2">
-                      <FileJson className="h-6 w-6 text-primary" /> Upload Hymn Data
+                      <FileUp className="h-6 w-6 text-primary" /> Upload Files
                     </DialogTitle>
                     <DialogDescription>
-                      Select a JSON file containing an array of hymn objects. Each object should have at least a 'title' and 'lyrics' property.
+                      Select a .txt (text) or .mp3 (audio) file to upload.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="py-4 space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="json-file-upload">Choose JSON File</Label>
+                      <Label htmlFor="file-upload">Choose .txt or .mp3 File</Label>
                       <Input 
-                        id="json-file-upload" 
+                        id="file-upload" 
                         type="file" 
-                        accept=".json" 
+                        accept=".txt,.mp3,text/plain,audio/mpeg"
                         onChange={handleFileChange}
                         className="border-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
                       />
                     </div>
                     {uploadStatus && (
-                      <p className={cn("text-sm", uploadStatus.startsWith("Error") || uploadStatus.startsWith("Invalid") ? "text-destructive" : "text-muted-foreground")}>
+                      <p className={cn("text-sm", uploadStatus.startsWith("Error") || uploadStatus.startsWith("Invalid") || uploadStatus.startsWith("Unsupported") ? "text-destructive" : "text-muted-foreground")}>
                         {uploadStatus}
                       </p>
                     )}
