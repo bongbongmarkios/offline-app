@@ -215,14 +215,21 @@ const Sidebar = React.forwardRef<
                 <UiSheetTitle className="text-lg font-headline text-primary">SBC APP</UiSheetTitle>
               </div>
             </UiSheetHeader>
-            <div className="p-4 border-b border-sidebar-border">
+            
+            <div className="p-4 border-b border-sidebar-border space-y-2">
               <Button asChild variant="default" size="lg" className="w-full">
                 <Link href="/hymnal/add" className="flex items-center justify-center gap-2">
                   <PlusCircle className="h-5 w-5" />
                   Add New Hymn
                 </Link>
               </Button>
+              <Button asChild variant="destructive" size="lg" className="w-full">
+                <Link href="/delete-data" className="flex items-center justify-center gap-2">
+                  <Trash2 className="mr-2 h-5 w-5" /> Delete Data
+                </Link>
+              </Button>
             </div>
+
             <div className="flex-grow overflow-y-auto">
               {React.Children.map(children, child => {
                 if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarContent') {
@@ -231,7 +238,7 @@ const Sidebar = React.forwardRef<
                 return null;
               })}
             </div>
-            {/* New Footer Section for Mobile Sidebar */}
+            
             <div className="mt-auto p-4 border-t border-sidebar-border space-y-2">
               <Button asChild variant="ghost" className="w-full justify-start text-sm">
                 <Link href="/settings">
@@ -246,11 +253,6 @@ const Sidebar = React.forwardRef<
               <Button asChild variant="ghost" className="w-full justify-start text-sm">
                 <Link href="/about">
                   <Info className="mr-2 h-5 w-5" /> About
-                </Link>
-              </Button>
-              <Button asChild variant="destructive" className="w-full justify-start text-sm">
-                <Link href="/delete-data">
-                  <Trash2 className="mr-2 h-5 w-5" /> Delete Data
                 </Link>
               </Button>
             </div>
