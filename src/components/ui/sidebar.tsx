@@ -217,7 +217,11 @@ const Sidebar = React.forwardRef<
     const [isProcessing, setIsProcessing] = React.useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     
-    const [processedFiles, setProcessedFiles] = React.useState<{ name: string; type: string; contentPreview?: string }[]>([]);
+    const [processedFiles, setProcessedFiles] = React.useState<{ name: string; type: string; contentPreview?: string; fullContent?: string }[]>([]);
+
+    const [isViewFileDialogOpen, setIsViewFileDialogOpen] = React.useState(false);
+    const [viewFileContent, setViewFileContent] = React.useState<string | undefined>('');
+    const [viewFileName, setViewFileName] = React.useState('');
 
 
     const handleAddHymnSubmit = (e: React.FormEvent) => {
@@ -311,14 +315,18 @@ const Sidebar = React.forwardRef<
       setIsProcessing(true);
       setUploadStatus(`Processing ${selectedFile.name}...`);
       
-      const fileInfo = { name: selectedFile.name, type: selectedFile.type, contentPreview: "" };
+      const fileInfoBase = { name: selectedFile.name, type: selectedFile.type };
 
       if (selectedFile.type === "text/plain") {
         const reader = new FileReader();
         reader.onload = (e) => {
           try {
             const text = e.target?.result as string;
-            fileInfo.contentPreview = text.substring(0,100) + (text.length > 100 ? '...' : '');
+            const fileInfo = {
+              ...fileInfoBase,
+              contentPreview: text.substring(0,100) + (text.length > 100 ? '...' : ''),
+              fullContent: text,
+            };
             setProcessedFiles(prevFiles => [...prevFiles, fileInfo]);
             setUploadStatus(`Text file "${selectedFile.name}" read successfully. Preview: ${fileInfo.contentPreview}`);
             toast({ title: "Text File Processed", description: `Successfully read "${selectedFile.name}".` });
@@ -337,6 +345,10 @@ const Sidebar = React.forwardRef<
         };
         reader.readAsText(selectedFile);
       } else if (selectedFile.type === "audio/mpeg") {
+         const fileInfo = {
+            ...fileInfoBase,
+            contentPreview: "Audio file - content not previewable."
+          };
         setProcessedFiles(prevFiles => [...prevFiles, fileInfo]);
         setUploadStatus(`MP3 file "${selectedFile.name}" selected. Audio processing not yet implemented.`);
         toast({ title: "MP3 File Selected", description: `"${selectedFile.name}" is ready for future audio processing.` });
@@ -345,6 +357,14 @@ const Sidebar = React.forwardRef<
         setUploadStatus(`Unsupported file type: ${selectedFile.type || 'unknown'}. Please select a .txt or .mp3 file.`);
         toast({ title: "Unsupported File", description: "Please select a .txt or .mp3 file.", variant: "destructive" });
         setIsProcessing(false);
+      }
+    };
+
+    const handleViewTextFile = (file: { name: string; type: string; fullContent?: string }) => {
+      if (file.type === "text/plain" && file.fullContent) {
+        setViewFileName(file.name);
+        setViewFileContent(file.fullContent);
+        setIsViewFileDialogOpen(true);
       }
     };
 
@@ -366,6 +386,7 @@ const Sidebar = React.forwardRef<
 
     if (isMobile) {
       return (
+        <>
         <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
           <SheetContent
             data-sidebar="sidebar"
@@ -506,7 +527,7 @@ const Sidebar = React.forwardRef<
                   <DialogHeader>
                     <DialogTitle className="font-headline text-2xl">Processed Files</DialogTitle>
                     <DialogDescription>
-                      List of files processed during this session.
+                      List of files processed during this session. Click on a text file to view its content.
                     </DialogDescription>
                   </DialogHeader>
                   <ScrollArea className="h-[60vh] my-4 pr-3">
@@ -515,13 +536,21 @@ const Sidebar = React.forwardRef<
                     ) : (
                       <div className="space-y-2">
                         {processedFiles.map((file, index) => (
-                          <div key={index} className="flex items-center gap-3 p-3 border rounded-md bg-background hover:bg-muted/50">
-                            {file.type.startsWith('text/') ? <FileText className="h-5 w-5 text-primary" /> : <FileAudio className="h-5 w-5 text-primary" />}
-                            <div className="flex-grow">
-                              <p className="font-medium">{file.name}</p>
-                              <Badge variant="secondary" className="text-xs">{file.type}</Badge>
+                          <Button
+                            key={index}
+                            variant={file.type === "text/plain" ? "ghost" : "outline"}
+                            className="w-full justify-start h-auto p-3 border rounded-md bg-background hover:bg-muted/50"
+                            onClick={() => file.type === "text/plain" && handleViewTextFile(file)}
+                            disabled={file.type !== "text/plain"}
+                          >
+                            <div className="flex items-center gap-3 w-full">
+                              {file.type.startsWith('text/') ? <FileText className="h-5 w-5 text-primary flex-shrink-0" /> : <FileAudio className="h-5 w-5 text-primary flex-shrink-0" />}
+                              <div className="flex-grow text-left">
+                                <p className="font-medium">{file.name}</p>
+                                <Badge variant="secondary" className="text-xs mt-1">{file.type}</Badge>
+                              </div>
                             </div>
-                          </div>
+                          </Button>
                         ))}
                       </div>
                     )}
@@ -630,6 +659,27 @@ const Sidebar = React.forwardRef<
             </div>
           </SheetContent>
         </Sheet>
+        
+        <Dialog open={isViewFileDialogOpen} onOpenChange={setIsViewFileDialogOpen}>
+            <DialogContent className="p-4 max-w-lg sm:max-w-xl md:max-w-2xl max-h-[90vh] overflow-y-auto rounded-[25px]">
+                <DialogHeader>
+                    <DialogTitle className="font-headline text-2xl flex items-center gap-2">
+                        <FileText className="h-6 w-6 text-primary" /> Viewing: {viewFileName}
+                    </DialogTitle>
+                </DialogHeader>
+                <ScrollArea className="h-[65vh] my-4 pr-3 border rounded-md">
+                    <pre className="p-4 text-sm whitespace-pre-wrap break-words">
+                        {viewFileContent || "No content to display."}
+                    </pre>
+                </ScrollArea>
+                <DialogFooter className="pt-4 border-t">
+                    <DialogClose asChild>
+                        <Button type="button" variant="outline">Close</Button>
+                    </DialogClose>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+        </>
       )
     }
 
