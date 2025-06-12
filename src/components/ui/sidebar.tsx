@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2, X, FileText, Palette, Moon, Sun, FileAudio } from "lucide-react"
+import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2, X, FileText, Palette, Moon, Sun } from "lucide-react"
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -213,7 +213,9 @@ const Sidebar = React.forwardRef<
     ref
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
-    const { theme, setTheme, primaryColor, setPrimaryColor: setAppPrimaryColor, isThemeReady } = useTheme();
+    const themeContext = useTheme();
+    const { theme, setTheme, primaryColor, setPrimaryColor: setAppPrimaryColor, isThemeReady } = themeContext;
+
 
     const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = React.useState(false);
     const [hymnTitleHiligaynon, setHymnTitleHiligaynon] = React.useState('');
@@ -244,6 +246,7 @@ const Sidebar = React.forwardRef<
     const [viewFileName, setViewFileName] = React.useState('');
     
     const [isSettingsDialogOpen, setIsSettingsDialogOpen] = React.useState(false);
+    const [isHelpDialogOpen, setIsHelpDialogOpen] = React.useState(false);
 
 
     React.useEffect(() => {
@@ -252,7 +255,6 @@ const Sidebar = React.forwardRef<
         if (storedIndex) {
           try {
             const parsedIndex: StoredFileMetadata[] = JSON.parse(storedIndex);
-            // Optionally, load fullContent for text files if not already included or needed immediately
             const filesWithPotentialContent = parsedIndex.map(fileMeta => {
               if (fileMeta.isTextContentStored && !fileMeta.fullContent) {
                 const content = localStorage.getItem(`${FILE_CONTENT_PREFIX_KEY}${fileMeta.id}`);
@@ -271,7 +273,6 @@ const Sidebar = React.forwardRef<
 
     const saveProcessedFilesIndex = (updatedFiles: StoredFileMetadata[]) => {
       if (typeof window !== "undefined") {
-         // Store only metadata in the index; full content is stored separately
         const metadataOnly = updatedFiles.map(({ fullContent, ...meta }) => meta);
         localStorage.setItem(PROCESSED_FILES_INDEX_KEY, JSON.stringify(metadataOnly));
       }
@@ -383,6 +384,12 @@ const Sidebar = React.forwardRef<
       let filesSkippedCount = 0;
 
       for (const file of selectedFilesList) {
+        if (file.type !== "text/plain") {
+            toast({ title: "Unsupported File Type", description: `"${file.name}" is not a .txt file. Only .txt files are supported. Skipped.`, variant: "destructive" });
+            filesSkippedCount++;
+            continue;
+        }
+        
         const deterministicFileId = `${file.name}-${file.size}-${file.lastModified}`;
 
         const isDuplicate = processedFiles.some(pf => pf.id === deterministicFileId);
@@ -396,8 +403,7 @@ const Sidebar = React.forwardRef<
         }
 
 
-        if (file.type === "text/plain") {
-          try {
+        try {
             const text = await file.text();
             if (typeof window !== "undefined") {
               localStorage.setItem(`${FILE_CONTENT_PREFIX_KEY}${deterministicFileId}`, text);
@@ -413,17 +419,11 @@ const Sidebar = React.forwardRef<
             };
             newlyAddedMetadataList.push(newFileMetadata);
             filesProcessedCount++;
-            // Removed individual toast for each file for cleaner UX with multiple files
           } catch (error) {
             console.error(`Error reading text file "${file.name}":`, error);
             toast({ title: "Error Reading File", description: `Could not read text file "${file.name}".`, variant: "destructive" });
             continue; 
           }
-        } else {
-          toast({ title: "Unsupported File", description: `File "${file.name}" is not a .txt file. Only .txt files are supported. Skipped.`, variant: "destructive" });
-          filesSkippedCount++;
-          continue;
-        }
       }
 
       if (newlyAddedMetadataList.length > 0) {
@@ -500,7 +500,7 @@ const Sidebar = React.forwardRef<
             <UiSheetHeader className="p-4 border-b border-sidebar-border flex-shrink-0 flex flex-row items-center justify-between gap-2">
               <div className="flex flex-row items-center gap-2">
                 <Image src="https://i.imgur.com/BJ43v7S.png" alt="SBC APP Logo" width={36} height={36} data-ai-hint="logo" className="shrink-0" />
-                <UiSheetTitle className="text-lg font-headline text-primary">SBC APP</UiSheetTitle>
+                <UiSheetTitle className="text-lg font-headline text-primary">GraceNotes</UiSheetTitle>
               </div>
             </UiSheetHeader>
 
@@ -571,7 +571,7 @@ const Sidebar = React.forwardRef<
               <Dialog open={isDeleteHymnsDialogOpen} onOpenChange={setIsDeleteHymnsDialogOpen}>
                 <DialogTrigger asChild>
                    <Button variant="destructive" size="lg" className="w-full flex items-center justify-center gap-2">
-                    <Trash2 className="mr-2 h-5 w-5" /> Delete Data
+                    <Trash2 className="mr-2 h-5 w-5" /> Delete Hymns
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
@@ -618,7 +618,7 @@ const Sidebar = React.forwardRef<
               <Dialog open={isDataDialogOpen} onOpenChange={setIsDataDialogOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="lg" className="w-full flex items-center justify-center gap-2">
-                    <Database className="mr-2 h-5 w-5" /> Data
+                    <Database className="mr-2 h-5 w-5" /> Processed Text Files
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
@@ -643,7 +643,7 @@ const Sidebar = React.forwardRef<
                             disabled={!file.isTextContentStored}
                           >
                             <div className="flex items-center gap-3 w-full">
-                              {file.isTextContentStored ? <FileText className="h-5 w-5 text-primary flex-shrink-0" /> : <FileAudio className="h-5 w-5 text-muted-foreground flex-shrink-0"/>}
+                              <FileText className="h-5 w-5 text-primary flex-shrink-0" />
                               <div className="flex-grow text-left overflow-hidden">
                                 <p className="font-medium truncate">{file.name}</p>
                                 <div className="flex items-center gap-2 text-xs mt-1">
@@ -668,7 +668,7 @@ const Sidebar = React.forwardRef<
               <Dialog open={isUploadDialogOpen} onOpenChange={(isOpen) => { setIsUploadDialogOpen(isOpen); if (!isOpen) { handleClearFile(); setIsProcessing(false); }}}>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="lg" className="w-full flex items-center justify-center gap-2">
-                    <Upload className="mr-2 h-5 w-5" /> Upload Data
+                    <Upload className="mr-2 h-5 w-5" /> Upload Text Files
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
@@ -805,11 +805,96 @@ const Sidebar = React.forwardRef<
                 </Button>
               )}
 
-              <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => { setOpenMobile(false); }}>
-                <Link href="/help">
-                  <HelpCircle className="mr-2 h-5 w-5" /> Help
-                </Link>
-              </Button>
+              <Dialog open={isHelpDialogOpen} onOpenChange={setIsHelpDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-start text-sm" onClick={() => { setOpenMobile(false); setIsHelpDialogOpen(true); }}>
+                    <HelpCircle className="mr-2 h-5 w-5" /> Help
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="p-4 max-w-md sm:max-w-lg md:max-w-2xl max-h-[90vh] rounded-[25px]">
+                  <DialogHeader>
+                    <DialogTitle className="font-headline text-2xl flex items-center gap-2">
+                      <HelpCircle className="h-6 w-6 text-primary"/> Help & Support
+                    </DialogTitle>
+                    <DialogDescription>
+                      Find information on how to use the GraceNotes app features.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <ScrollArea className="h-[65vh] my-4 pr-3">
+                    <div className="space-y-6 text-sm">
+                      <section>
+                        <h3 className="font-semibold text-lg mb-2 text-primary">General Navigation</h3>
+                        <p className="text-muted-foreground">
+                          Use the bottom navigation bar (on mobile) or the sidebar (on desktop) to switch between main sections: Hymnal, Program, Readings, and AI Suggestions.
+                          The sidebar also provides access to adding new hymns, managing uploaded data, and app settings.
+                        </p>
+                      </section>
+                       <Separator />
+                      <section>
+                        <h3 className="font-semibold text-lg mb-2 text-primary">Adding a New Hymn</h3>
+                        <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                          <li>Open the mobile sidebar (menu icon on top left) or use the desktop sidebar.</li>
+                          <li>Click the "Add New Hymn" button.</li>
+                          <li>A dialog will appear. Fill in the hymn details. Hiligaynon title and lyrics are required. Other fields are optional.</li>
+                          <li>Click "Save Hymn". The hymn will be added (simulated for now).</li>
+                        </ol>
+                      </section>
+                       <Separator />
+                      <section>
+                        <h3 className="font-semibold text-lg mb-2 text-primary">Uploading & Viewing Text Files</h3>
+                        <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                          <li>Access the "Upload Text Files" dialog from the sidebar.</li>
+                          <li>Click "Choose .txt File(s)" and select up to 10 text files from your device.</li>
+                          <li>Once selected, click "Process File(s)". The app will store the metadata and content of these files in your browser.</li>
+                          <li>To view uploaded files, open the "Stored Text Files" dialog from the sidebar.</li>
+                          <li>Click on a file name in the list to open a new dialog displaying its content.</li>
+                        </ol>
+                         <p className="mt-2 text-xs text-muted-foreground">
+                            Note: File storage uses your browser's local storage. Clearing browser data for this site will remove uploaded files.
+                          </p>
+                      </section>
+                       <Separator />
+                      <section>
+                        <h3 className="font-semibold text-lg mb-2 text-primary">AI Suggestions</h3>
+                         <p className="text-muted-foreground">
+                          Navigate to the "Suggestions" page from the sidebar or bottom navigation.
+                          Based on the hymns, readings, and program items you view, the app will provide personalized suggestions for related content along with a reason for the suggestion.
+                        </p>
+                      </section>
+                       <Separator />
+                      <section>
+                        <h3 className="font-semibold text-lg mb-2 text-primary">Customizing Appearance</h3>
+                        <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                          <li>Access the "Settings" dialog from the sidebar.</li>
+                          <li>Use the switch to toggle between Light and Dark mode.</li>
+                          <li>Select a primary color theme (Deep Purple, Sky Blue, Avocado Green, Maroon) to change the app's accent colors.</li>
+                          <li>Your preferences are saved in your browser.</li>
+                        </ol>
+                      </section>
+                       <Separator />
+                       <section>
+                        <h3 className="font-semibold text-lg mb-2 text-primary">Deleting Hymns (Simulated)</h3>
+                         <p className="text-muted-foreground">
+                          The "Delete Hymns" button in the sidebar opens a dialog where you can select hymns for deletion. This feature is currently a simulation and does not permanently alter the sample hymn data.
+                        </p>
+                      </section>
+                       <Separator />
+                      <section>
+                        <h3 className="font-semibold text-lg mb-2 text-primary">Deleting Local Activity Data</h3>
+                        <p className="text-muted-foreground">
+                          The "Delete Data" page (accessible via the main sidebar navigation) allows you to clear your locally stored activity history (viewed hymns, readings, programs). This will reset AI suggestions.
+                        </p>
+                      </section>
+                    </div>
+                  </ScrollArea>
+                  <DialogFooter className="pt-4 border-t">
+                    <DialogClose asChild>
+                      <Button type="button" variant="outline">Close</Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
               <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => { setOpenMobile(false); }}>
                 <Link href="/about">
                   <Info className="mr-2 h-5 w-5" /> About
