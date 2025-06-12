@@ -2,17 +2,18 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"; 
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft } from "lucide-react"
-import Image from "next/image"; // Import Next Image
+import { PanelLeft, PlusCircle } from "lucide-react" 
+import Image from "next/image"; 
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button" 
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent, SheetHeader as UiSheetHeader, SheetTitle as UiSheetTitle } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetHeader as UiSheetHeader, SheetTitle as UiSheetTitle } from "@/components/ui/sheet" 
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
@@ -208,9 +209,16 @@ const Sidebar = React.forwardRef<
             }
             side={side}
           >
-            <UiSheetHeader className="p-4 border-b border-sidebar-border flex-shrink-0 flex flex-row items-center gap-2">
-              <Image src="https://i.imgur.com/BJ43v7S.png" alt="SBC APP Logo" width={36} height={36} data-ai-hint="logo" className="shrink-0" />
-              <UiSheetTitle className="text-lg font-headline text-primary">SBC APP</UiSheetTitle>
+            <UiSheetHeader className="p-4 border-b border-sidebar-border flex-shrink-0 flex flex-row items-center justify-between">
+              <div className="flex flex-row items-center gap-2">
+                <Image src="https://i.imgur.com/BJ43v7S.png" alt="SBC APP Logo" width={36} height={36} data-ai-hint="logo" className="shrink-0" />
+                <UiSheetTitle className="text-lg font-headline text-primary">SBC APP</UiSheetTitle>
+              </div>
+              <Link href="/hymnal/add" passHref legacyBehavior>
+                <Button asChild variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
+                  <a><PlusCircle className="h-6 w-6" aria-label="Add Hymn" /></a>
+                </Button>
+              </Link>
             </UiSheetHeader>
             <div className="flex-grow overflow-y-auto">
               {React.Children.map(children, child => {
@@ -774,5 +782,7 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+
+    
 
     
