@@ -2,14 +2,13 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Music, ListOrdered, BookOpenText } from 'lucide-react'; // Removed Sparkles
+import { Music, ListOrdered, BookOpenText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/hymnal', label: 'Hymnal', icon: Music },
   { href: '/program', label: 'Program', icon: ListOrdered },
   { href: '/readings', label: 'Readings', icon: BookOpenText },
-  // { href: '/suggestions', label: "Why this button doesn't work?", icon: Sparkles }, // Removed this item
 ];
 
 export default function BottomNavigationBar() {
@@ -17,20 +16,15 @@ export default function BottomNavigationBar() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg h-16 flex justify-around items-center z-50 print:hidden">
       {navItems.map((item) => {
-        // Check if the current path starts with the item's href.
-        // For the root items, this means an exact match or if it's the active section.
-        // Example: /hymnal/1 should still highlight Hymnal tab.
         const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href + (item.href.endsWith('/') ? '' : '/')));
         
-        // Special case for '/' if you had a home tab. For now, not needed.
-        // If item.href is just '/', then isActive should be true only if pathname is also '/'.
-
         return (
           <Link 
             key={item.href} 
-            href={item.href} 
+            href={item.href}
+            prefetch={true} // Explicitly enable prefetching
             className={cn(
-              "flex flex-col items-center justify-center text-xs sm:text-sm transition-colors w-1/3 h-full pt-1", // Adjusted w-1/4 to w-1/3 as there are 3 items now
+              "flex flex-col items-center justify-center text-xs sm:text-sm transition-colors w-1/3 h-full pt-1",
               isActive ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"
             )}
             aria-current={isActive ? "page" : undefined}
