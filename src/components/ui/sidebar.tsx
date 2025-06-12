@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2, X } from "lucide-react" // Changed FileJson to FileUp
+import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2, X, FileText, FileAudio } from "lucide-react" 
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -40,9 +40,10 @@ import {
 } from "@/components/ui/tooltip"
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
-import { sampleHymns } from "@/data/hymns"; // For listing hymns
-import type { Hymn } from "@/types"; // Hymn type
-import { ScrollArea } from "@/components/ui/scroll-area"; // For scrollable list
+import { sampleHymns } from "@/data/hymns"; 
+import type { Hymn } from "@/types"; 
+import { ScrollArea } from "@/components/ui/scroll-area"; 
+import { Badge } from "@/components/ui/badge";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -215,6 +216,8 @@ const Sidebar = React.forwardRef<
     const [uploadStatus, setUploadStatus] = React.useState<string | null>(null);
     const [isProcessing, setIsProcessing] = React.useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    
+    const [processedFiles, setProcessedFiles] = React.useState<{ name: string; type: string; contentPreview?: string }[]>([]);
 
 
     const handleAddHymnSubmit = (e: React.FormEvent) => {
@@ -307,13 +310,17 @@ const Sidebar = React.forwardRef<
 
       setIsProcessing(true);
       setUploadStatus(`Processing ${selectedFile.name}...`);
+      
+      const fileInfo = { name: selectedFile.name, type: selectedFile.type, contentPreview: "" };
 
       if (selectedFile.type === "text/plain") {
         const reader = new FileReader();
         reader.onload = (e) => {
           try {
             const text = e.target?.result as string;
-            setUploadStatus(`Text file "${selectedFile.name}" read successfully. Preview: ${text.substring(0,100)}${text.length > 100 ? '...' : ''}`);
+            fileInfo.contentPreview = text.substring(0,100) + (text.length > 100 ? '...' : '');
+            setProcessedFiles(prevFiles => [...prevFiles, fileInfo]);
+            setUploadStatus(`Text file "${selectedFile.name}" read successfully. Preview: ${fileInfo.contentPreview}`);
             toast({ title: "Text File Processed", description: `Successfully read "${selectedFile.name}".` });
           } catch (error) {
             console.error("Error reading text file:", error);
@@ -330,6 +337,7 @@ const Sidebar = React.forwardRef<
         };
         reader.readAsText(selectedFile);
       } else if (selectedFile.type === "audio/mpeg") {
+        setProcessedFiles(prevFiles => [...prevFiles, fileInfo]);
         setUploadStatus(`MP3 file "${selectedFile.name}" selected. Audio processing not yet implemented.`);
         toast({ title: "MP3 File Selected", description: `"${selectedFile.name}" is ready for future audio processing.` });
         setIsProcessing(false);
@@ -496,14 +504,28 @@ const Sidebar = React.forwardRef<
                 </DialogTrigger>
                 <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
                   <DialogHeader>
-                    <DialogTitle className="font-headline text-2xl">Data Options</DialogTitle>
+                    <DialogTitle className="font-headline text-2xl">Processed Files</DialogTitle>
                     <DialogDescription>
-                      Further data management options will be available here. (Content TBD)
+                      List of files processed during this session.
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="py-4 text-center">
-                    <p className="text-muted-foreground">Functionality for this section is under development.</p>
-                  </div>
+                  <ScrollArea className="h-[60vh] my-4 pr-3">
+                    {processedFiles.length === 0 ? (
+                      <p className="text-muted-foreground text-center py-4">No files processed yet.</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {processedFiles.map((file, index) => (
+                          <div key={index} className="flex items-center gap-3 p-3 border rounded-md bg-background hover:bg-muted/50">
+                            {file.type.startsWith('text/') ? <FileText className="h-5 w-5 text-primary" /> : <FileAudio className="h-5 w-5 text-primary" />}
+                            <div className="flex-grow">
+                              <p className="font-medium">{file.name}</p>
+                              <Badge variant="secondary" className="text-xs">{file.type}</Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </ScrollArea>
                   <DialogFooter className="pt-4 border-t">
                     <DialogClose asChild>
                       <Button type="button" variant="outline">Close</Button>
