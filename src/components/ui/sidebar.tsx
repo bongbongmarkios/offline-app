@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2, X, FileText, FileAudio } from "lucide-react" 
+import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2, X, FileText, FileAudio } from "lucide-react"
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -40,9 +40,9 @@ import {
 } from "@/components/ui/tooltip"
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
-import { sampleHymns } from "@/data/hymns"; 
-import type { Hymn } from "@/types"; 
-import { ScrollArea } from "@/components/ui/scroll-area"; 
+import { sampleHymns } from "@/data/hymns";
+import type { Hymn } from "@/types";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
@@ -52,11 +52,11 @@ const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
-const PROCESSED_FILES_INDEX_KEY = "processedFilesIndex_v1";
-const FILE_CONTENT_PREFIX_KEY = "fileContent_v1_";
+const PROCESSED_FILES_INDEX_KEY = "processedFilesIndex_v2"; // Incremented version for new ID structure
+const FILE_CONTENT_PREFIX_KEY = "fileContent_v2_"; // Incremented version
 
 interface StoredFileMetadata {
-  id: string;
+  id: string; // Deterministic: e.g., `${name}-${size}-${lastModified}`
   name: string;
   type: string;
   size: number;
@@ -222,13 +222,13 @@ const Sidebar = React.forwardRef<
     const [selectedHymnIds, setSelectedHymnIds] = React.useState<string[]>([]);
 
     const [isDataDialogOpen, setIsDataDialogOpen] = React.useState(false);
-    
+
     const [isUploadDialogOpen, setIsUploadDialogOpen] = React.useState(false);
     const [selectedFilesList, setSelectedFilesList] = React.useState<File[]>([]);
     const [uploadStatus, setUploadStatus] = React.useState<string | null>(null);
     const [isProcessing, setIsProcessing] = React.useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    
+
     const [processedFiles, setProcessedFiles] = React.useState<StoredFileMetadata[]>([]);
 
     const [isViewFileDialogOpen, setIsViewFileDialogOpen] = React.useState(false);
@@ -243,7 +243,7 @@ const Sidebar = React.forwardRef<
             setProcessedFiles(JSON.parse(storedIndex));
           } catch (e) {
             console.error("Error parsing processed files index from localStorage", e);
-            localStorage.removeItem(PROCESSED_FILES_INDEX_KEY); // Clear corrupted data
+            localStorage.removeItem(PROCESSED_FILES_INDEX_KEY);
           }
         }
       }
@@ -266,7 +266,7 @@ const Sidebar = React.forwardRef<
         });
         return;
       }
-      console.log('New Hymn (from dialog):', { 
+      console.log('New Hymn (from dialog):', {
         titleHiligaynon: hymnTitleHiligaynon,
         titleFilipino: hymnTitleFilipino,
         titleEnglish: hymnTitleEnglish,
@@ -331,7 +331,7 @@ const Sidebar = React.forwardRef<
           filesArray = filesArray.slice(0, 10);
         }
         setSelectedFilesList(filesArray);
-        setUploadStatus(`${filesArray.length} file(s) selected.`);
+        setUploadStatus(filesArray.length > 0 ? `${filesArray.length} file(s) selected.` : null);
       } else {
         setSelectedFilesList([]);
         setUploadStatus(null);
@@ -355,26 +355,38 @@ const Sidebar = React.forwardRef<
 
       setIsProcessing(true);
       setUploadStatus(`Processing ${selectedFilesList.length} file(s)...`);
-      
-      let newProcessedFiles: StoredFileMetadata[] = [...processedFiles];
+
+      let newlyAddedMetadataList: StoredFileMetadata[] = [];
       let filesProcessedCount = 0;
+      let filesSkippedCount = 0;
 
       for (const file of selectedFilesList) {
-        const fileId = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`; // Basic unique ID
+        const deterministicFileId = `${file.name}-${file.size}-${file.lastModified}`;
+
+        const isDuplicate = processedFiles.some(pf => pf.id === deterministicFileId);
+        if (isDuplicate) {
+          toast({
+            title: "File Skipped",
+            description: `"${file.name}" already exists and was not re-added.`,
+          });
+          filesSkippedCount++;
+          continue;
+        }
+
         let isTextContentStored = false;
 
         if (file.type === "text/plain") {
           try {
             const text = await file.text();
             if (typeof window !== "undefined") {
-              localStorage.setItem(`${FILE_CONTENT_PREFIX_KEY}${fileId}`, text);
+              localStorage.setItem(`${FILE_CONTENT_PREFIX_KEY}${deterministicFileId}`, text);
             }
             isTextContentStored = true;
-            toast({ title: "Text File Processed", description: `Successfully stored "${file.name}".` });
+            toast({ title: "Text File Stored", description: `Successfully stored "${file.name}".` });
           } catch (error) {
             console.error(`Error reading text file "${file.name}":`, error);
             toast({ title: "Error", description: `Could not read text file "${file.name}".`, variant: "destructive" });
-            continue; 
+            continue;
           }
         } else if (file.type === "audio/mpeg") {
           toast({ title: "MP3 File Metadata Stored", description: `Metadata for "${file.name}" stored. Audio content not stored.` });
@@ -384,24 +396,30 @@ const Sidebar = React.forwardRef<
         }
 
         const newFileMetadata: StoredFileMetadata = {
-          id: fileId,
+          id: deterministicFileId,
           name: file.name,
           type: file.type,
           size: file.size,
           lastModified: file.lastModified,
           isTextContentStored: isTextContentStored,
         };
-        newProcessedFiles = newProcessedFiles.filter(f => f.id !== fileId); // Remove old version if any
-        newProcessedFiles.push(newFileMetadata);
+        newlyAddedMetadataList.push(newFileMetadata);
         filesProcessedCount++;
       }
+
+      if (newlyAddedMetadataList.length > 0) {
+        const updatedAllFiles = [...processedFiles, ...newlyAddedMetadataList];
+        setProcessedFiles(updatedAllFiles);
+        saveProcessedFilesIndex(updatedAllFiles);
+      }
       
-      setProcessedFiles(newProcessedFiles);
-      saveProcessedFilesIndex(newProcessedFiles);
-      
-      setUploadStatus(`${filesProcessedCount} of ${selectedFilesList.length} file(s) processed and stored.`);
+      let finalStatus = `${filesProcessedCount} file(s) processed and stored.`;
+      if (filesSkippedCount > 0) {
+        finalStatus += ` ${filesSkippedCount} file(s) skipped as duplicates.`
+      }
+      setUploadStatus(finalStatus);
       setIsProcessing(false);
-      handleClearFile(); // Clear selection after processing
+      handleClearFile();
     };
 
     const handleViewTextFile = (file: StoredFileMetadata) => {
@@ -454,7 +472,7 @@ const Sidebar = React.forwardRef<
                 <UiSheetTitle className="text-lg font-headline text-primary">SBC APP</UiSheetTitle>
               </div>
             </UiSheetHeader>
-            
+
             <div className="p-4 border-b border-sidebar-border space-y-2">
               <Dialog open={isAddHymnDialogOpen} onOpenChange={setIsAddHymnDialogOpen}>
                 <DialogTrigger asChild>
@@ -494,7 +512,7 @@ const Sidebar = React.forwardRef<
                             <Input id="dialog-hymn-page-number" value={hymnPageNumber} onChange={(e) => setHymnPageNumber(e.target.value)} placeholder="e.g., 101" className="border-muted-foreground mt-1"/>
                           </div>
                         </div>
-                        
+
                         <div>
                           <Label htmlFor="dialog-hymn-lyrics-hiligaynon" className="font-semibold">Lyrics (Hiligaynon)</Label>
                           <Textarea id="dialog-hymn-lyrics-hiligaynon" value={hymnLyricsHiligaynon} onChange={(e) => setHymnLyricsHiligaynon(e.target.value)} placeholder="Enter Hiligaynon lyrics here..." rows={10} required className="border-muted-foreground mt-1"/>
@@ -554,8 +572,8 @@ const Sidebar = React.forwardRef<
                     <DialogClose asChild>
                       <Button type="button" variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button 
-                      type="button" 
+                    <Button
+                      type="button"
                       variant="destructive"
                       onClick={handleDeleteSelectedHymns}
                       disabled={selectedHymnIds.length === 0}
@@ -576,7 +594,7 @@ const Sidebar = React.forwardRef<
                   <DialogHeader>
                     <DialogTitle className="font-headline text-2xl">Processed Files</DialogTitle>
                     <DialogDescription>
-                      List of files processed during this session. Click on a text file to view its content. MP3 content is not viewable.
+                      List of files processed and stored. Click on a text file to view its content. MP3 content is not viewable.
                     </DialogDescription>
                   </DialogHeader>
                   <ScrollArea className="h-[60vh] my-4 pr-3">
@@ -591,12 +609,16 @@ const Sidebar = React.forwardRef<
                             className="w-full justify-start h-auto p-3 border rounded-md bg-background hover:bg-muted/50"
                             onClick={() => file.isTextContentStored && handleViewTextFile(file)}
                             disabled={!file.isTextContentStored}
+                            title={file.isTextContentStored ? `View ${file.name}` : `${file.name} (cannot be viewed)`}
                           >
                             <div className="flex items-center gap-3 w-full">
                               {file.type.startsWith('text/') ? <FileText className="h-5 w-5 text-primary flex-shrink-0" /> : <FileAudio className="h-5 w-5 text-primary flex-shrink-0" />}
-                              <div className="flex-grow text-left">
-                                <p className="font-medium">{file.name}</p>
-                                <Badge variant="secondary" className="text-xs mt-1">{file.type} - {(file.size / 1024).toFixed(2)} KB</Badge>
+                              <div className="flex-grow text-left overflow-hidden">
+                                <p className="font-medium truncate">{file.name}</p>
+                                <div className="flex items-center gap-2 text-xs mt-1">
+                                  <Badge variant="secondary">{file.type}</Badge>
+                                  <Badge variant="outline">{(file.size / 1024).toFixed(2)} KB</Badge>
+                                </div>
                               </div>
                             </div>
                           </Button>
@@ -612,7 +634,7 @@ const Sidebar = React.forwardRef<
                 </DialogContent>
               </Dialog>
 
-              <Dialog open={isUploadDialogOpen} onOpenChange={(isOpen) => { setIsUploadDialogOpen(isOpen); if (!isOpen) { setSelectedFilesList([]); setUploadStatus(null); setIsProcessing(false); if (fileInputRef.current) fileInputRef.current.value = ''; }}}>
+              <Dialog open={isUploadDialogOpen} onOpenChange={(isOpen) => { setIsUploadDialogOpen(isOpen); if (!isOpen) { handleClearFile(); setIsProcessing(false); }}}>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="lg" className="w-full flex items-center justify-center gap-2">
                     <Upload className="mr-2 h-5 w-5" /> Upload Data
@@ -631,19 +653,19 @@ const Sidebar = React.forwardRef<
                     <div className="space-y-2">
                       <Label htmlFor="file-upload">Choose .txt or .mp3 File(s)</Label>
                       <div className="flex items-center gap-2">
-                        <Input 
+                        <Input
                           ref={fileInputRef}
-                          id="file-upload" 
-                          type="file" 
+                          id="file-upload"
+                          type="file"
                           accept=".txt,.mp3,text/plain,audio/mpeg"
-                          multiple // Allow multiple file selection
+                          multiple
                           onChange={handleFileChange}
                           className="border-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 flex-grow"
                         />
                         {selectedFilesList.length > 0 && (
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={handleClearFile}
                             aria-label="Remove selected files"
                             className="text-destructive hover:bg-destructive/10"
@@ -656,14 +678,16 @@ const Sidebar = React.forwardRef<
                         <ScrollArea className="max-h-32 mt-2 border rounded-md p-2">
                           <ul className="text-sm space-y-1">
                             {selectedFilesList.map(file => (
-                              <li key={file.name + file.lastModified} className="truncate">{file.name} ({(file.size/1024).toFixed(2)} KB)</li>
+                              <li key={file.name + file.lastModified + file.size} className="truncate flex items-center justify-between">
+                                <span>{file.name} ({(file.size/1024).toFixed(2)} KB)</span>
+                              </li>
                             ))}
                           </ul>
                         </ScrollArea>
                       )}
                     </div>
                     {uploadStatus && (
-                      <p className={cn("text-sm", uploadStatus.startsWith("Error") || uploadStatus.startsWith("Invalid") || uploadStatus.startsWith("Unsupported") ? "text-destructive" : "text-muted-foreground")}>
+                      <p className={cn("text-sm", uploadStatus.includes("Error") || uploadStatus.includes("Invalid") || uploadStatus.includes("Unsupported") ? "text-destructive" : "text-muted-foreground")}>
                         {uploadStatus}
                       </p>
                     )}
@@ -672,9 +696,9 @@ const Sidebar = React.forwardRef<
                     <DialogClose asChild>
                       <Button type="button" variant="outline">Close</Button>
                     </DialogClose>
-                    <Button 
-                      type="button" 
-                      onClick={handleProcessFile} 
+                    <Button
+                      type="button"
+                      onClick={handleProcessFile}
                       disabled={selectedFilesList.length === 0 || isProcessing}
                     >
                       {isProcessing ? (
@@ -718,15 +742,15 @@ const Sidebar = React.forwardRef<
             </div>
           </SheetContent>
         </Sheet>
-        
+
         <Dialog open={isViewFileDialogOpen} onOpenChange={setIsViewFileDialogOpen}>
-            <DialogContent className="p-4 max-w-lg sm:max-w-xl md:max-w-2xl max-h-[90vh] overflow-y-auto rounded-[25px]">
+            <DialogContent className="p-4 max-w-lg sm:max-w-xl md:max-w-2xl max-h-[90vh] rounded-[25px]">
                 <DialogHeader>
                     <DialogTitle className="font-headline text-2xl flex items-center gap-2">
                         <FileText className="h-6 w-6 text-primary" /> Viewing: {viewFileName}
                     </DialogTitle>
                 </DialogHeader>
-                <ScrollArea className="h-[65vh] my-4 pr-3 border rounded-md">
+                <ScrollArea className="h-[65vh] my-4 pr-3 border rounded-md bg-muted/20">
                     <pre className="p-4 text-sm whitespace-pre-wrap break-words">
                         {viewFileContent || "No content to display."}
                     </pre>
@@ -937,7 +961,6 @@ const SidebarContent = React.forwardRef<
       )}
       {...props}
     >
-    {/* Pass setOpenMobile to children if they are SidebarNav */}
     {React.Children.map(children, child => {
         if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarNav' && setOpenMobile) {
           return React.cloneElement(child, { setOpenMobile });
@@ -1054,7 +1077,7 @@ const SidebarMenuItem = React.forwardRef<
         if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarMenuButton' && setOpenMobile) {
           return React.cloneElement(child as React.ReactElement<any>, { onClick: () => {
             if (child.props.onClick) child.props.onClick();
-            if (setOpenMobile) setOpenMobile(false); // Ensure setOpenMobile exists before calling
+            if (setOpenMobile) setOpenMobile(false);
           }});
         }
         return child;
@@ -1102,7 +1125,7 @@ const SidebarMenuButton = React.forwardRef<
       size = "default",
       tooltip,
       className,
-      onClick, 
+      onClick,
       ...props
     },
     ref
@@ -1117,7 +1140,7 @@ const SidebarMenuButton = React.forwardRef<
         data-size={size}
         data-active={isActive}
         className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
-        onClick={onClick} 
+        onClick={onClick}
         {...props}
       />
     )
