@@ -200,7 +200,7 @@ const Sidebar = React.forwardRef<
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar text-sidebar-foreground [&>button]:hidden flex flex-col"
+            className="w-[--sidebar-width] bg-sidebar text-sidebar-foreground [&>button]:hidden flex flex-col p-0"
             style={
               {
                 "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -209,13 +209,16 @@ const Sidebar = React.forwardRef<
             side={side}
           >
             <UiSheetHeader className="p-4 border-b border-sidebar-border flex-shrink-0 flex items-center gap-2">
-              <Image src="https://placehold.co/28x28.png" alt="SBC APP Logo" width={28} height={28} data-ai-hint="logo" className="shrink-0" />
+              <Image src="https://placehold.co/28x28.png" alt="SBC APP Logo" width={28} height={28} data-ai-hint="logo church" className="shrink-0" />
               <UiSheetTitle className="text-lg font-headline text-primary">SBC APP</UiSheetTitle>
             </UiSheetHeader>
             <div className="flex-grow overflow-y-auto">
-              {React.Children.toArray(children).find(child =>
-                React.isValidElement(child) && (child.type as any).displayName === 'SidebarContent'
-              )}
+              {React.Children.map(children, child => {
+                if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarContent') {
+                  return child;
+                }
+                return null;
+              })}
             </div>
           </SheetContent>
         </Sheet>
