@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2 } from "lucide-react"
+import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2 } from "lucide-react"
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -190,37 +190,49 @@ const Sidebar = React.forwardRef<
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
 
-    // State for Add Hymn Dialog
     const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = React.useState(false);
-    const [hymnTitle, setHymnTitle] = React.useState('');
-    const [hymnNumber, setHymnNumber] = React.useState('');
-    const [hymnLyrics, setHymnLyrics] = React.useState('');
-    const [hymnAuthor, setHymnAuthor] = React.useState('');
-    const [hymnComposer, setHymnComposer] = React.useState('');
-    const [hymnCategory, setHymnCategory] = React.useState('');
+    const [hymnTitleHiligaynon, setHymnTitleHiligaynon] = React.useState('');
+    const [hymnTitleFilipino, setHymnTitleFilipino] = React.useState('');
+    const [hymnTitleEnglish, setHymnTitleEnglish] = React.useState('');
+    const [hymnKey, setHymnKey] = React.useState('');
+    const [hymnPageNumber, setHymnPageNumber] = React.useState('');
+    const [hymnLyricsHiligaynon, setHymnLyricsHiligaynon] = React.useState('');
+    const [hymnLyricsFilipino, setHymnLyricsFilipino] = React.useState('');
+    const [hymnLyricsEnglish, setHymnLyricsEnglish] = React.useState('');
     const { toast } = useToast();
 
     const handleAddHymnSubmit = (e: React.FormEvent) => {
       e.preventDefault();
-      if (!hymnTitle || !hymnLyrics) {
+      if (!hymnTitleHiligaynon || !hymnLyricsHiligaynon) {
         toast({
           title: "Error",
-          description: "Title and Lyrics are required.",
+          description: "Hiligaynon Title and Lyrics are required.",
           variant: "destructive",
         });
         return;
       }
-      console.log('New Hymn (from dialog):', { title: hymnTitle, number: hymnNumber, lyrics: hymnLyrics, author: hymnAuthor, composer: hymnComposer, category: hymnCategory });
+      console.log('New Hymn (from dialog):', { 
+        titleHiligaynon: hymnTitleHiligaynon,
+        titleFilipino: hymnTitleFilipino,
+        titleEnglish: hymnTitleEnglish,
+        key: hymnKey,
+        pageNumber: hymnPageNumber,
+        lyricsHiligaynon: hymnLyricsHiligaynon,
+        lyricsFilipino: hymnLyricsFilipino,
+        lyricsEnglish: hymnLyricsEnglish,
+      });
       toast({
         title: "Hymn Added (Simulated)",
-        description: `"${hymnTitle}" has been added to the list (not actually saved).`,
+        description: `"${hymnTitleHiligaynon}" has been added to the list (not actually saved).`,
       });
-      setHymnTitle('');
-      setHymnNumber('');
-      setHymnLyrics('');
-      setHymnAuthor('');
-      setHymnComposer('');
-      setHymnCategory('');
+      setHymnTitleHiligaynon('');
+      setHymnTitleFilipino('');
+      setHymnTitleEnglish('');
+      setHymnKey('');
+      setHymnPageNumber('');
+      setHymnLyricsHiligaynon('');
+      setHymnLyricsFilipino('');
+      setHymnLyricsEnglish('');
       setIsAddHymnDialogOpen(false);
     };
 
@@ -272,37 +284,45 @@ const Sidebar = React.forwardRef<
                 <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
                   <DialogHeader>
                     <DialogTitle className="font-headline text-2xl">Add New Hymn</DialogTitle>
-                    <DialogDescription>Fill in the details for the new hymn. Click save when you&apos;re done.</DialogDescription>
+                    <DialogDescription>Fill in the details for the new hymn. Hiligaynon is the default language. Click save when you&apos;re done.</DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleAddHymnSubmit}>
                     <div className="space-y-4 py-4">
-                      <div className="space-y-1">
-                        <Label htmlFor="dialog-hymn-title">Title</Label>
-                        <Input id="dialog-hymn-title" value={hymnTitle} onChange={(e) => setHymnTitle(e.target.value)} placeholder="e.g., Amazing Grace" required className="border-muted-foreground"/>
+                      <div>
+                        <Label htmlFor="dialog-hymn-title-hiligaynon" className="font-semibold">Title (Hiligaynon)</Label>
+                        <Input id="dialog-hymn-title-hiligaynon" value={hymnTitleHiligaynon} onChange={(e) => setHymnTitleHiligaynon(e.target.value)} placeholder="e.g., Daku Nga Kalipay" required className="border-muted-foreground mt-1"/>
                       </div>
+                      <div>
+                        <Label htmlFor="dialog-hymn-title-filipino">Title (Filipino) (Optional)</Label>
+                        <Input id="dialog-hymn-title-filipino" value={hymnTitleFilipino} onChange={(e) => setHymnTitleFilipino(e.target.value)} placeholder="e.g., Dakilang Kagalakan" className="border-muted-foreground mt-1"/>
+                      </div>
+                      <div>
+                        <Label htmlFor="dialog-hymn-title-english">Title (English) (Optional)</Label>
+                        <Input id="dialog-hymn-title-english" value={hymnTitleEnglish} onChange={(e) => setHymnTitleEnglish(e.target.value)} placeholder="e.g., Amazing Grace" className="border-muted-foreground mt-1"/>
+                      </div>
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <Label htmlFor="dialog-hymn-number">Number (Optional)</Label>
-                          <Input id="dialog-hymn-number" value={hymnNumber} onChange={(e) => setHymnNumber(e.target.value)} placeholder="e.g., 202" className="border-muted-foreground"/>
+                        <div>
+                          <Label htmlFor="dialog-hymn-key">Key (Optional)</Label>
+                          <Input id="dialog-hymn-key" value={hymnKey} onChange={(e) => setHymnKey(e.target.value)} placeholder="e.g., C Major" className="border-muted-foreground mt-1"/>
                         </div>
-                        <div className="space-y-1">
-                          <Label htmlFor="dialog-hymn-category">Category (Optional)</Label>
-                          <Input id="dialog-hymn-category" value={hymnCategory} onChange={(e) => setHymnCategory(e.target.value)} placeholder="e.g., Worship" className="border-muted-foreground"/>
+                        <div>
+                          <Label htmlFor="dialog-hymn-page-number">Page Number (Optional)</Label>
+                          <Input id="dialog-hymn-page-number" value={hymnPageNumber} onChange={(e) => setHymnPageNumber(e.target.value)} placeholder="e.g., 101" className="border-muted-foreground mt-1"/>
                         </div>
                       </div>
-                      <div className="space-y-1">
-                        <Label htmlFor="dialog-hymn-lyrics">Lyrics</Label>
-                        <Textarea id="dialog-hymn-lyrics" value={hymnLyrics} onChange={(e) => setHymnLyrics(e.target.value)} placeholder="Enter hymn lyrics here..." rows={8} required className="border-muted-foreground"/>
+                      
+                      <div>
+                        <Label htmlFor="dialog-hymn-lyrics-hiligaynon" className="font-semibold">Lyrics (Hiligaynon)</Label>
+                        <Textarea id="dialog-hymn-lyrics-hiligaynon" value={hymnLyricsHiligaynon} onChange={(e) => setHymnLyricsHiligaynon(e.target.value)} placeholder="Enter Hiligaynon lyrics here..." rows={10} required className="border-muted-foreground mt-1"/>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <Label htmlFor="dialog-hymn-author">Author (Optional)</Label>
-                          <Input id="dialog-hymn-author" value={hymnAuthor} onChange={(e) => setHymnAuthor(e.target.value)} placeholder="e.g., John Newton" className="border-muted-foreground"/>
-                        </div>
-                        <div className="space-y-1">
-                          <Label htmlFor="dialog-hymn-composer">Composer (Optional)</Label>
-                          <Input id="dialog-hymn-composer" value={hymnComposer} onChange={(e) => setHymnComposer(e.target.value)} placeholder="e.g., Traditional" className="border-muted-foreground"/>
-                        </div>
+                      <div>
+                        <Label htmlFor="dialog-hymn-lyrics-filipino">Lyrics (Filipino) (Optional)</Label>
+                        <Textarea id="dialog-hymn-lyrics-filipino" value={hymnLyricsFilipino} onChange={(e) => setHymnLyricsFilipino(e.target.value)} placeholder="Enter Filipino lyrics here..." rows={6} className="border-muted-foreground mt-1"/>
+                      </div>
+                      <div>
+                        <Label htmlFor="dialog-hymn-lyrics-english">Lyrics (English) (Optional)</Label>
+                        <Textarea id="dialog-hymn-lyrics-english" value={hymnLyricsEnglish} onChange={(e) => setHymnLyricsEnglish(e.target.value)} placeholder="Enter English lyrics here..." rows={6} className="border-muted-foreground mt-1"/>
                       </div>
                     </div>
                     <DialogFooter>
@@ -315,8 +335,8 @@ const Sidebar = React.forwardRef<
                 </DialogContent>
               </Dialog>
 
-              <Button asChild variant="destructive" size="lg" className="w-full">
-                <Link href="/delete-data" className="flex items-center justify-center gap-2">
+              <Button asChild variant="destructive" size="lg" className="w-full flex items-center justify-center gap-2">
+                <Link href="/delete-data">
                   <Trash2 className="mr-2 h-5 w-5" /> Delete Data
                 </Link>
               </Button>
@@ -897,4 +917,3 @@ export {
   SidebarTrigger,
   useSidebar,
 }
-
