@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database } from "lucide-react"
+import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload } from "lucide-react"
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -212,6 +212,8 @@ const Sidebar = React.forwardRef<
 
     // State for new "Data" Dialog
     const [isDataDialogOpen, setIsDataDialogOpen] = React.useState(false);
+    // State for new "Upload" Dialog
+    const [isUploadDialogOpen, setIsUploadDialogOpen] = React.useState(false);
 
 
     const handleAddHymnSubmit = (e: React.FormEvent) => {
@@ -449,6 +451,30 @@ const Sidebar = React.forwardRef<
                 </DialogContent>
               </Dialog>
 
+              <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="lg" className="w-full flex items-center justify-center gap-2">
+                    <Upload className="mr-2 h-5 w-5" /> Upload Data
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
+                  <DialogHeader>
+                    <DialogTitle className="font-headline text-2xl">Upload Data</DialogTitle>
+                    <DialogDescription>
+                      Functionality to upload data will be available here. (Content TBD)
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="py-4 text-center">
+                    <p className="text-muted-foreground">This feature is currently under development.</p>
+                  </div>
+                  <DialogFooter className="pt-4 border-t">
+                    <DialogClose asChild>
+                      <Button type="button" variant="outline">Close</Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
             </div>
 
             <div className="flex-grow overflow-y-auto">
@@ -462,17 +488,17 @@ const Sidebar = React.forwardRef<
             </div>
 
             <div className="mt-auto p-4 border-t border-sidebar-border space-y-2">
-              <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => setOpenMobile(false)}>
+              <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => { setOpenMobile(false); }}>
                 <Link href="/settings">
                   <Settings className="mr-2 h-5 w-5" /> Settings
                 </Link>
               </Button>
-              <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => setOpenMobile(false)}>
+              <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => { setOpenMobile(false); }}>
                 <Link href="/help">
                   <HelpCircle className="mr-2 h-5 w-5" /> Help
                 </Link>
               </Button>
-              <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => setOpenMobile(false)}>
+              <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => { setOpenMobile(false); }}>
                 <Link href="/about">
                   <Info className="mr-2 h-5 w-5" /> About
                 </Link>
