@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2 } from "lucide-react" // Changed FileJson to FileUp
+import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2, X } from "lucide-react" // Changed FileJson to FileUp
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -214,6 +214,7 @@ const Sidebar = React.forwardRef<
     const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
     const [uploadStatus, setUploadStatus] = React.useState<string | null>(null);
     const [isProcessing, setIsProcessing] = React.useState(false);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
 
     const handleAddHymnSubmit = (e: React.FormEvent) => {
@@ -286,6 +287,14 @@ const Sidebar = React.forwardRef<
       } else {
         setSelectedFile(null);
         setUploadStatus(null);
+      }
+    };
+
+    const handleClearFile = () => {
+      setSelectedFile(null);
+      setUploadStatus(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
     };
 
@@ -503,7 +512,7 @@ const Sidebar = React.forwardRef<
                 </DialogContent>
               </Dialog>
 
-              <Dialog open={isUploadDialogOpen} onOpenChange={(isOpen) => { setIsUploadDialogOpen(isOpen); if (!isOpen) { setSelectedFile(null); setUploadStatus(null); setIsProcessing(false); }}}>
+              <Dialog open={isUploadDialogOpen} onOpenChange={(isOpen) => { setIsUploadDialogOpen(isOpen); if (!isOpen) { setSelectedFile(null); setUploadStatus(null); setIsProcessing(false); if (fileInputRef.current) fileInputRef.current.value = ''; }}}>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="lg" className="w-full flex items-center justify-center gap-2">
                     <Upload className="mr-2 h-5 w-5" /> Upload Data
@@ -521,13 +530,27 @@ const Sidebar = React.forwardRef<
                   <div className="py-4 space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="file-upload">Choose .txt or .mp3 File</Label>
-                      <Input 
-                        id="file-upload" 
-                        type="file" 
-                        accept=".txt,.mp3,text/plain,audio/mpeg"
-                        onChange={handleFileChange}
-                        className="border-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
-                      />
+                      <div className="flex items-center gap-2">
+                        <Input 
+                          ref={fileInputRef}
+                          id="file-upload" 
+                          type="file" 
+                          accept=".txt,.mp3,text/plain,audio/mpeg"
+                          onChange={handleFileChange}
+                          className="border-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 flex-grow"
+                        />
+                        {selectedFile && (
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={handleClearFile}
+                            aria-label="Remove selected file"
+                            className="text-destructive hover:bg-destructive/10"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                     {uploadStatus && (
                       <p className={cn("text-sm", uploadStatus.startsWith("Error") || uploadStatus.startsWith("Invalid") || uploadStatus.startsWith("Unsupported") ? "text-destructive" : "text-muted-foreground")}>
