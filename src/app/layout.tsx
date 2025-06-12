@@ -1,9 +1,10 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"; // Import Toaster
 
 export const metadata: Metadata = {
-  title: 'GraceNotes',
+  title: 'SBC APP',
   description: 'A companion for hymns, programs, and readings.',
 };
 

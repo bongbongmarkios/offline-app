@@ -1,8 +1,9 @@
+
 import AppHeader from '@/components/layout/AppHeader';
 import AISuggestionDisplay from '@/components/ai/AISuggestionDisplay';
 
 export const metadata = {
-  title: 'Suggestions | GraceNotes',
+  title: 'Suggestions | SBC APP',
 };
 
 export default function SuggestionsPage() {

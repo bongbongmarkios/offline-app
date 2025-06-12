@@ -5,6 +5,7 @@ import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
+import Image from "next/image"; // Import Next Image
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -207,8 +208,9 @@ const Sidebar = React.forwardRef<
             }
             side={side}
           >
-            <UiSheetHeader className="p-4 border-b border-sidebar-border flex-shrink-0">
-              <UiSheetTitle className="text-lg font-headline text-primary">GraceNotes</UiSheetTitle>
+            <UiSheetHeader className="p-4 border-b border-sidebar-border flex-shrink-0 flex items-center gap-2">
+              <Image src="https://placehold.co/28x28.png" alt="SBC APP Logo" width={28} height={28} data-ai-hint="logo" className="shrink-0" />
+              <UiSheetTitle className="text-lg font-headline text-primary">SBC APP</UiSheetTitle>
             </UiSheetHeader>
             <div className="flex-grow overflow-y-auto">
               {React.Children.toArray(children).find(child =>
