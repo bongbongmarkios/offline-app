@@ -269,10 +269,10 @@ const Sidebar = React.forwardRef<
                     Add New Hymn
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto">
+                <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[50px]">
                   <DialogHeader>
                     <DialogTitle className="font-headline text-2xl">Add New Hymn</DialogTitle>
-                    <DialogDescription>Fill in the details for the new hymn. Click save when you're done.</DialogDescription>
+                    <DialogDescription>Fill in the details for the new hymn. Click save when you&apos;re done.</DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleAddHymnSubmit}>
                     <div className="space-y-4 py-4">
