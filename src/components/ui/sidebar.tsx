@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2, X, FileText } from "lucide-react"
+import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2, X, FileText, Palette, Moon, Sun, FileAudio } from "lucide-react"
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -44,6 +44,9 @@ import { sampleHymns } from "@/data/hymns";
 import type { Hymn } from "@/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { useTheme, type PrimaryColor } from '@/context/ThemeContext';
+
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -52,16 +55,17 @@ const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
-const PROCESSED_FILES_INDEX_KEY = "processedFilesIndex_v2";
-const FILE_CONTENT_PREFIX_KEY = "fileContent_v2_";
+const PROCESSED_FILES_INDEX_KEY = "processedFilesIndex_v3"; 
+const FILE_CONTENT_PREFIX_KEY = "fileContent_v3_"; 
 
 interface StoredFileMetadata {
-  id: string;
+  id: string; 
   name: string;
-  type: string; // Will primarily be 'text/plain' now
+  type: string;
   size: number;
   lastModified: number;
-  isTextContentStored: boolean; // Will always be true for stored files
+  isTextContentStored: boolean;
+  fullContent?: string; 
 }
 
 type SidebarContext = {
@@ -118,7 +122,9 @@ const SidebarProvider = React.forwardRef<
         } else {
           _setOpen(openState)
         }
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+        if (typeof document !== "undefined") {
+          document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+        }
       },
       [setOpenProp, open]
     )
@@ -139,9 +145,10 @@ const SidebarProvider = React.forwardRef<
           toggleSidebar()
         }
       }
-
-      window.addEventListener("keydown", handleKeyDown)
-      return () => window.removeEventListener("keydown", handleKeyDown)
+      if (typeof window !== "undefined") {
+        window.addEventListener("keydown", handleKeyDown)
+        return () => window.removeEventListener("keydown", handleKeyDown)
+      }
     }, [toggleSidebar])
 
     const state = open ? "expanded" : "collapsed"
@@ -206,6 +213,7 @@ const Sidebar = React.forwardRef<
     ref
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+    const { theme, setTheme, primaryColor, setPrimaryColor: setAppPrimaryColor, isThemeReady } = useTheme();
 
     const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = React.useState(false);
     const [hymnTitleHiligaynon, setHymnTitleHiligaynon] = React.useState('');
@@ -234,16 +242,28 @@ const Sidebar = React.forwardRef<
     const [isViewFileDialogOpen, setIsViewFileDialogOpen] = React.useState(false);
     const [viewFileContent, setViewFileContent] = React.useState<string | undefined>('');
     const [viewFileName, setViewFileName] = React.useState('');
+    
+    const [isSettingsDialogOpen, setIsSettingsDialogOpen] = React.useState(false);
+
 
     React.useEffect(() => {
       if (typeof window !== "undefined") {
         const storedIndex = localStorage.getItem(PROCESSED_FILES_INDEX_KEY);
         if (storedIndex) {
           try {
-            setProcessedFiles(JSON.parse(storedIndex));
+            const parsedIndex: StoredFileMetadata[] = JSON.parse(storedIndex);
+            // Optionally, load fullContent for text files if not already included or needed immediately
+            const filesWithPotentialContent = parsedIndex.map(fileMeta => {
+              if (fileMeta.isTextContentStored && !fileMeta.fullContent) {
+                const content = localStorage.getItem(`${FILE_CONTENT_PREFIX_KEY}${fileMeta.id}`);
+                return { ...fileMeta, fullContent: content || undefined };
+              }
+              return fileMeta;
+            });
+            setProcessedFiles(filesWithPotentialContent);
           } catch (e) {
             console.error("Error parsing processed files index from localStorage", e);
-            localStorage.removeItem(PROCESSED_FILES_INDEX_KEY);
+            localStorage.removeItem(PROCESSED_FILES_INDEX_KEY); 
           }
         }
       }
@@ -251,7 +271,9 @@ const Sidebar = React.forwardRef<
 
     const saveProcessedFilesIndex = (updatedFiles: StoredFileMetadata[]) => {
       if (typeof window !== "undefined") {
-        localStorage.setItem(PROCESSED_FILES_INDEX_KEY, JSON.stringify(updatedFiles));
+         // Store only metadata in the index; full content is stored separately
+        const metadataOnly = updatedFiles.map(({ fullContent, ...meta }) => meta);
+        localStorage.setItem(PROCESSED_FILES_INDEX_KEY, JSON.stringify(metadataOnly));
       }
     };
 
@@ -387,17 +409,19 @@ const Sidebar = React.forwardRef<
               size: file.size,
               lastModified: file.lastModified,
               isTextContentStored: true,
+              fullContent: text, 
             };
             newlyAddedMetadataList.push(newFileMetadata);
             filesProcessedCount++;
-            toast({ title: "Text File Stored", description: `Successfully stored "${file.name}".` });
+            // Removed individual toast for each file for cleaner UX with multiple files
           } catch (error) {
             console.error(`Error reading text file "${file.name}":`, error);
-            toast({ title: "Error", description: `Could not read text file "${file.name}".`, variant: "destructive" });
-            continue;
+            toast({ title: "Error Reading File", description: `Could not read text file "${file.name}".`, variant: "destructive" });
+            continue; 
           }
         } else {
-          toast({ title: "Unsupported File", description: `File "${file.name}" has an unsupported type: ${file.type || 'unknown'}. Only .txt files are supported. Skipped.`, variant: "destructive" });
+          toast({ title: "Unsupported File", description: `File "${file.name}" is not a .txt file. Only .txt files are supported. Skipped.`, variant: "destructive" });
+          filesSkippedCount++;
           continue;
         }
       }
@@ -406,23 +430,28 @@ const Sidebar = React.forwardRef<
         const updatedAllFiles = [...processedFiles, ...newlyAddedMetadataList];
         setProcessedFiles(updatedAllFiles);
         saveProcessedFilesIndex(updatedAllFiles);
+         toast({ title: "Files Processed", description: `${filesProcessedCount} new text file(s) stored successfully.`});
       }
       
-      let finalStatus = `${filesProcessedCount} file(s) processed and stored.`;
+      let finalStatus = `${filesProcessedCount} new file(s) processed.`;
       if (filesSkippedCount > 0) {
-        finalStatus += ` ${filesSkippedCount} file(s) skipped as duplicates.`
+        finalStatus += ` ${filesSkippedCount} file(s) skipped (duplicates or unsupported).`
       }
-      setUploadStatus(finalStatus);
+       setUploadStatus(filesProcessedCount > 0 || filesSkippedCount > 0 ? finalStatus : "No new files were processed.");
       setIsProcessing(false);
-      handleClearFile();
+      handleClearFile(); 
     };
 
     const handleViewTextFile = (file: StoredFileMetadata) => {
       if (file.isTextContentStored && typeof window !== "undefined") {
-        const content = localStorage.getItem(`${FILE_CONTENT_PREFIX_KEY}${file.id}`);
-        if (content !== null) {
+        const contentFromState = file.fullContent;
+        const contentFromStorage = localStorage.getItem(`${FILE_CONTENT_PREFIX_KEY}${file.id}`);
+        
+        const displayContent = contentFromState || contentFromStorage;
+
+        if (displayContent !== null && displayContent !== undefined) {
           setViewFileName(file.name);
-          setViewFileContent(content);
+          setViewFileContent(displayContent);
           setIsViewFileDialogOpen(true);
         } else {
           toast({ title: "Error", description: "Could not retrieve file content.", variant: "destructive"});
@@ -430,6 +459,13 @@ const Sidebar = React.forwardRef<
       }
     };
 
+
+    const colorOptions: { name: string; value: PrimaryColor; colorClass: string }[] = [
+      { name: 'Deep Purple', value: 'purple', colorClass: 'bg-[#673AB7]' },
+      { name: 'Sky Blue', value: 'skyBlue', colorClass: 'bg-[#0099ff]' },
+      { name: 'Avocado Green', value: 'avocadoGreen', colorClass: 'bg-[#558040]' },
+      { name: 'Maroon', value: 'maroon', colorClass: 'bg-[#800000]' },
+    ];
 
     if (collapsible === "none") {
       return (
@@ -589,7 +625,7 @@ const Sidebar = React.forwardRef<
                   <DialogHeader>
                     <DialogTitle className="font-headline text-2xl">Processed Text Files</DialogTitle>
                     <DialogDescription>
-                      List of text files processed and stored. Click on a file to view its content.
+                      List of text files processed and stored in your browser. Click on a file to view its content.
                     </DialogDescription>
                   </DialogHeader>
                   <ScrollArea className="h-[60vh] my-4 pr-3">
@@ -604,9 +640,10 @@ const Sidebar = React.forwardRef<
                             className="w-full justify-start h-auto p-3 border rounded-md bg-background hover:bg-muted/50"
                             onClick={() => handleViewTextFile(file)}
                             title={`View ${file.name}`}
+                            disabled={!file.isTextContentStored}
                           >
                             <div className="flex items-center gap-3 w-full">
-                              <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+                              {file.isTextContentStored ? <FileText className="h-5 w-5 text-primary flex-shrink-0" /> : <FileAudio className="h-5 w-5 text-muted-foreground flex-shrink-0"/>}
                               <div className="flex-grow text-left overflow-hidden">
                                 <p className="font-medium truncate">{file.name}</p>
                                 <div className="flex items-center gap-2 text-xs mt-1">
@@ -640,7 +677,7 @@ const Sidebar = React.forwardRef<
                       <FileUp className="h-6 w-6 text-primary" /> Upload Text Files
                     </DialogTitle>
                     <DialogDescription>
-                      Select up to 10 .txt (text) files to upload. Text file content will be stored.
+                      Select up to 10 .txt (text) files to upload. Text file content will be stored in your browser.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="py-4 space-y-4">
@@ -708,21 +745,66 @@ const Sidebar = React.forwardRef<
 
             </div>
 
-            <div className="flex-grow overflow-y-auto">
-              {React.Children.map(children, child => {
-                if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarContent') {
-                  return React.cloneElement(child as React.ReactElement<any>, { setOpenMobile });
-                }
-                return null;
-              })}
-            </div>
-
             <div className="mt-auto p-4 border-t border-sidebar-border space-y-2">
-              <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => { setOpenMobile(false); }}>
-                <Link href="/settings">
-                  <Settings className="mr-2 h-5 w-5" /> Settings
-                </Link>
-              </Button>
+             {isThemeReady ? (
+                <Dialog open={isSettingsDialogOpen} onOpenChange={setIsSettingsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" className="w-full justify-start text-sm">
+                      <Settings className="mr-2 h-5 w-5" /> Settings
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="p-4 max-w-md sm:max-w-lg rounded-[25px]">
+                    <DialogHeader>
+                      <DialogTitle className="font-headline text-2xl flex items-center gap-2">
+                        <Palette className="h-6 w-6 text-primary" /> App Settings
+                      </DialogTitle>
+                      <DialogDescription>
+                        Customize the look and feel of the application.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-6 space-y-6">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="theme-switch" className="text-base flex items-center">
+                          {theme === 'dark' ? <Moon className="mr-2 h-5 w-5" /> : <Sun className="mr-2 h-5 w-5" />}
+                          Dark Mode
+                        </Label>
+                        <Switch
+                          id="theme-switch"
+                          checked={theme === 'dark'}
+                          onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+                        />
+                      </div>
+                      <Separator />
+                      <div>
+                        <Label className="text-base mb-3 block">Primary Color</Label>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          {colorOptions.map(opt => (
+                            <Button
+                              key={opt.value}
+                              variant={primaryColor === opt.value ? 'default' : 'outline'}
+                              onClick={() => setAppPrimaryColor(opt.value)}
+                              className="flex items-center justify-start gap-2 h-12 text-sm"
+                            >
+                              <span className={cn("h-5 w-5 rounded-full border border-black/20", opt.colorClass)}></span>
+                              {opt.name}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter className="pt-4 border-t">
+                      <DialogClose asChild>
+                        <Button type="button" variant="outline">Done</Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              ) : (
+                <Button variant="ghost" className="w-full justify-start text-sm" disabled>
+                  <Settings className="mr-2 h-5 w-5" /> Settings (Loading...)
+                </Button>
+              )}
+
               <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => { setOpenMobile(false); }}>
                 <Link href="/help">
                   <HelpCircle className="mr-2 h-5 w-5" /> Help
@@ -1069,9 +1151,9 @@ const SidebarMenuItem = React.forwardRef<
   >
     {React.Children.map(children, child => {
         if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarMenuButton' && setOpenMobile) {
-          return React.cloneElement(child as React.ReactElement<any>, { onClick: () => {
-            if (child.props.onClick) child.props.onClick();
-            if (setOpenMobile) setOpenMobile(false);
+          return React.cloneElement(child as React.ReactElement<any>, { onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+            if (child.props.onClick) child.props.onClick(event);
+            if (setOpenMobile && child.props.href) setOpenMobile(false); 
           }});
         }
         return child;
@@ -1104,11 +1186,12 @@ const sidebarMenuButtonVariants = cva(
 
 const SidebarMenuButton = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentProps<"button"> & {
+  React.ComponentProps<"button"> & { 
     asChild?: boolean
     isActive?: boolean
     tooltip?: string | React.ComponentProps<typeof TooltipContent>
     onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+    href?: string; 
   } & VariantProps<typeof sidebarMenuButtonVariants>
 >(
   (
@@ -1119,7 +1202,8 @@ const SidebarMenuButton = React.forwardRef<
       size = "default",
       tooltip,
       className,
-      onClick,
+      onClick, 
+      href,  
       ...props
     },
     ref
@@ -1135,6 +1219,7 @@ const SidebarMenuButton = React.forwardRef<
         data-active={isActive}
         className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
         onClick={onClick}
+        {...(Comp === "button" && {type: "button"})} 
         {...props}
       />
     )
@@ -1332,5 +1417,3 @@ export {
   useSidebar,
 }
 
-
-    

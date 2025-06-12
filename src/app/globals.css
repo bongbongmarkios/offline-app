@@ -12,8 +12,31 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
 
-    --primary: 261 51% 54%; /* Deep purple #673AB7 */
-    --primary-foreground: 0 0% 100%; /* White */
+    /* Default Primary Color (Deep Purple) */
+    --primary-purple-hsl: 261 51% 54%;
+    --primary-purple-foreground-hsl: 0 0% 100%;
+    --ring-purple-hsl: 261 51% 54%;
+
+    /* Sky Blue */
+    --primary-sky-blue-hsl: 199 89% 49%;
+    --primary-sky-blue-foreground-hsl: 0 0% 100%;
+    --ring-sky-blue-hsl: 199 89% 49%;
+
+    /* Avocado Green */
+    --primary-avocado-green-hsl: 81 34% 44%;
+    --primary-avocado-green-foreground-hsl: 0 0% 100%;
+    --ring-avocado-green-hsl: 81 34% 44%;
+
+    /* Maroon */
+    --primary-maroon-hsl: 0 100% 25%;
+    --primary-maroon-foreground-hsl: 0 0% 100%;
+    --ring-maroon-hsl: 0 100% 25%;
+
+    /* Dynamically set based on selection */
+    --primary: var(--primary-purple-hsl);
+    --primary-foreground: var(--primary-purple-foreground-hsl);
+    --ring: var(--ring-purple-hsl);
+
 
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
@@ -28,7 +51,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
-    --ring: 261 51% 54%; /* Adjusted to primary color */
+    /* --ring is now dynamic */
 
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
@@ -37,7 +60,6 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
 
-    /* Sidebar variables - retain for shadcn consistency, but may not be heavily used */
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -56,8 +78,25 @@
     --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
     
-    --primary: 261 51% 60%; /* Slightly lighter purple for dark mode */
-    --primary-foreground: 0 0% 100%;
+    /* Default Primary Color (Deep Purple) - Dark Mode */
+    --primary-purple-hsl-dark: 261 51% 60%;
+    --ring-purple-hsl-dark: 261 51% 60%;
+
+    /* Sky Blue - Dark Mode */
+    --primary-sky-blue-hsl-dark: 199 80% 55%;
+    --ring-sky-blue-hsl-dark: 199 80% 55%;
+
+    /* Avocado Green - Dark Mode */
+    --primary-avocado-green-hsl-dark: 81 30% 50%;
+    --ring-avocado-green-hsl-dark: 81 30% 50%;
+    
+    /* Maroon - Dark Mode */
+    --primary-maroon-hsl-dark: 0 70% 35%;
+    --ring-maroon-hsl-dark: 0 70% 35%;
+
+    /* Dynamically set based on selection for dark mode */
+    /* --primary, --primary-foreground, --ring will be updated by JS */
+    /* For initial setup, they'll inherit from non-dark, then JS applies dark versions */
 
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
@@ -71,7 +110,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 14.9%;
     --input: 0 0% 14.9%;
-    --ring: 261 51% 60%; /* Adjusted to primary color for dark mode */
+    /* --ring is now dynamic */
     
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
