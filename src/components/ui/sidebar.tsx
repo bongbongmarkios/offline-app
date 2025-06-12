@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2, X, FileText, FileAudio } from "lucide-react"
+import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2, X, FileText } from "lucide-react"
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -52,16 +52,16 @@ const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
-const PROCESSED_FILES_INDEX_KEY = "processedFilesIndex_v2"; // Incremented version for new ID structure
-const FILE_CONTENT_PREFIX_KEY = "fileContent_v2_"; // Incremented version
+const PROCESSED_FILES_INDEX_KEY = "processedFilesIndex_v2";
+const FILE_CONTENT_PREFIX_KEY = "fileContent_v2_";
 
 interface StoredFileMetadata {
-  id: string; // Deterministic: e.g., `${name}-${size}-${lastModified}`
+  id: string;
   name: string;
-  type: string;
+  type: string; // Will primarily be 'text/plain' now
   size: number;
   lastModified: number;
-  isTextContentStored: boolean;
+  isTextContentStored: boolean; // Will always be true for stored files
 }
 
 type SidebarContext = {
@@ -325,7 +325,7 @@ const Sidebar = React.forwardRef<
         if (filesArray.length > 10) {
           toast({
             title: "File Limit Exceeded",
-            description: "You can select up to 10 files at a time.",
+            description: "You can select up to 10 text files at a time.",
             variant: "destructive",
           });
           filesArray = filesArray.slice(0, 10);
@@ -373,7 +373,6 @@ const Sidebar = React.forwardRef<
           continue;
         }
 
-        let isTextContentStored = false;
 
         if (file.type === "text/plain") {
           try {
@@ -381,30 +380,26 @@ const Sidebar = React.forwardRef<
             if (typeof window !== "undefined") {
               localStorage.setItem(`${FILE_CONTENT_PREFIX_KEY}${deterministicFileId}`, text);
             }
-            isTextContentStored = true;
+            const newFileMetadata: StoredFileMetadata = {
+              id: deterministicFileId,
+              name: file.name,
+              type: file.type,
+              size: file.size,
+              lastModified: file.lastModified,
+              isTextContentStored: true,
+            };
+            newlyAddedMetadataList.push(newFileMetadata);
+            filesProcessedCount++;
             toast({ title: "Text File Stored", description: `Successfully stored "${file.name}".` });
           } catch (error) {
             console.error(`Error reading text file "${file.name}":`, error);
             toast({ title: "Error", description: `Could not read text file "${file.name}".`, variant: "destructive" });
             continue;
           }
-        } else if (file.type === "audio/mpeg") {
-          toast({ title: "MP3 File Metadata Stored", description: `Metadata for "${file.name}" stored. Audio content not stored.` });
         } else {
-          toast({ title: "Unsupported File", description: `File "${file.name}" has an unsupported type: ${file.type || 'unknown'}. Skipped.`, variant: "destructive" });
+          toast({ title: "Unsupported File", description: `File "${file.name}" has an unsupported type: ${file.type || 'unknown'}. Only .txt files are supported. Skipped.`, variant: "destructive" });
           continue;
         }
-
-        const newFileMetadata: StoredFileMetadata = {
-          id: deterministicFileId,
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          lastModified: file.lastModified,
-          isTextContentStored: isTextContentStored,
-        };
-        newlyAddedMetadataList.push(newFileMetadata);
-        filesProcessedCount++;
       }
 
       if (newlyAddedMetadataList.length > 0) {
@@ -592,9 +587,9 @@ const Sidebar = React.forwardRef<
                 </DialogTrigger>
                 <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
                   <DialogHeader>
-                    <DialogTitle className="font-headline text-2xl">Processed Files</DialogTitle>
+                    <DialogTitle className="font-headline text-2xl">Processed Text Files</DialogTitle>
                     <DialogDescription>
-                      List of files processed and stored. Click on a text file to view its content. MP3 content is not viewable.
+                      List of text files processed and stored. Click on a file to view its content.
                     </DialogDescription>
                   </DialogHeader>
                   <ScrollArea className="h-[60vh] my-4 pr-3">
@@ -605,14 +600,13 @@ const Sidebar = React.forwardRef<
                         {processedFiles.map((file) => (
                           <Button
                             key={file.id}
-                            variant={file.isTextContentStored ? "ghost" : "outline"}
+                            variant="ghost"
                             className="w-full justify-start h-auto p-3 border rounded-md bg-background hover:bg-muted/50"
-                            onClick={() => file.isTextContentStored && handleViewTextFile(file)}
-                            disabled={!file.isTextContentStored}
-                            title={file.isTextContentStored ? `View ${file.name}` : `${file.name} (cannot be viewed)`}
+                            onClick={() => handleViewTextFile(file)}
+                            title={`View ${file.name}`}
                           >
                             <div className="flex items-center gap-3 w-full">
-                              {file.type.startsWith('text/') ? <FileText className="h-5 w-5 text-primary flex-shrink-0" /> : <FileAudio className="h-5 w-5 text-primary flex-shrink-0" />}
+                              <FileText className="h-5 w-5 text-primary flex-shrink-0" />
                               <div className="flex-grow text-left overflow-hidden">
                                 <p className="font-medium truncate">{file.name}</p>
                                 <div className="flex items-center gap-2 text-xs mt-1">
@@ -643,21 +637,21 @@ const Sidebar = React.forwardRef<
                 <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
                   <DialogHeader>
                     <DialogTitle className="font-headline text-2xl flex items-center gap-2">
-                      <FileUp className="h-6 w-6 text-primary" /> Upload Files
+                      <FileUp className="h-6 w-6 text-primary" /> Upload Text Files
                     </DialogTitle>
                     <DialogDescription>
-                      Select up to 10 .txt (text) or .mp3 (audio) files to upload. Text file content will be stored; MP3 metadata only.
+                      Select up to 10 .txt (text) files to upload. Text file content will be stored.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="py-4 space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="file-upload">Choose .txt or .mp3 File(s)</Label>
+                      <Label htmlFor="file-upload">Choose .txt File(s)</Label>
                       <div className="flex items-center gap-2">
                         <Input
                           ref={fileInputRef}
                           id="file-upload"
                           type="file"
-                          accept=".txt,.mp3,text/plain,audio/mpeg"
+                          accept=".txt,text/plain"
                           multiple
                           onChange={handleFileChange}
                           className="border-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 flex-grow"
@@ -1338,3 +1332,5 @@ export {
   useSidebar,
 }
 
+
+    
