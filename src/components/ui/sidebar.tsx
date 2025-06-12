@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked } from "lucide-react"
+import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database } from "lucide-react"
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -209,6 +209,9 @@ const Sidebar = React.forwardRef<
     // State for "Delete Hymns" Dialog
     const [isDeleteHymnsDialogOpen, setIsDeleteHymnsDialogOpen] = React.useState(false);
     const [selectedHymnIds, setSelectedHymnIds] = React.useState<string[]>([]);
+
+    // State for new "Data" Dialog
+    const [isDataDialogOpen, setIsDataDialogOpen] = React.useState(false);
 
 
     const handleAddHymnSubmit = (e: React.FormEvent) => {
@@ -418,6 +421,30 @@ const Sidebar = React.forwardRef<
                     >
                       Delete Selected ({selectedHymnIds.length})
                     </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={isDataDialogOpen} onOpenChange={setIsDataDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="lg" className="w-full flex items-center justify-center gap-2">
+                    <Database className="mr-2 h-5 w-5" /> Data
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
+                  <DialogHeader>
+                    <DialogTitle className="font-headline text-2xl">Data Options</DialogTitle>
+                    <DialogDescription>
+                      Further data management options will be available here. (Content TBD)
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="py-4 text-center">
+                    <p className="text-muted-foreground">Functionality for this section is under development.</p>
+                  </div>
+                  <DialogFooter className="pt-4 border-t">
+                    <DialogClose asChild>
+                      <Button type="button" variant="outline">Close</Button>
+                    </DialogClose>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
