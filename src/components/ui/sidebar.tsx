@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload } from "lucide-react"
+import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileJson, Loader2 } from "lucide-react"
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -194,7 +194,6 @@ const Sidebar = React.forwardRef<
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
 
-    // State for "Add New Hymn" Dialog
     const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = React.useState(false);
     const [hymnTitleHiligaynon, setHymnTitleHiligaynon] = React.useState('');
     const [hymnTitleFilipino, setHymnTitleFilipino] = React.useState('');
@@ -206,14 +205,15 @@ const Sidebar = React.forwardRef<
     const [hymnLyricsEnglish, setHymnLyricsEnglish] = React.useState('');
     const { toast } = useToast();
 
-    // State for "Delete Hymns" Dialog
     const [isDeleteHymnsDialogOpen, setIsDeleteHymnsDialogOpen] = React.useState(false);
     const [selectedHymnIds, setSelectedHymnIds] = React.useState<string[]>([]);
 
-    // State for new "Data" Dialog
     const [isDataDialogOpen, setIsDataDialogOpen] = React.useState(false);
-    // State for new "Upload" Dialog
+    
     const [isUploadDialogOpen, setIsUploadDialogOpen] = React.useState(false);
+    const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+    const [uploadStatus, setUploadStatus] = React.useState<string | null>(null);
+    const [isProcessing, setIsProcessing] = React.useState(false);
 
 
     const handleAddHymnSubmit = (e: React.FormEvent) => {
@@ -277,6 +277,52 @@ const Sidebar = React.forwardRef<
       });
       setSelectedHymnIds([]);
       setIsDeleteHymnsDialogOpen(false);
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (event.target.files && event.target.files[0]) {
+        setSelectedFile(event.target.files[0]);
+        setUploadStatus(`File selected: ${event.target.files[0].name}`);
+      } else {
+        setSelectedFile(null);
+        setUploadStatus(null);
+      }
+    };
+
+    const handleProcessFile = async () => {
+      if (!selectedFile) {
+        setUploadStatus("No file selected.");
+        return;
+      }
+
+      setIsProcessing(true);
+      setUploadStatus("Processing file...");
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const text = e.target?.result as string;
+          const data = JSON.parse(text);
+
+          if (Array.isArray(data) && data.length > 0 && data.every(item => typeof item.title === 'string' && typeof item.lyrics === 'string')) {
+            // Basic validation passes: it's an array of objects with title and lyrics
+            setUploadStatus(`Successfully parsed ${data.length} hymn(s). (Data not yet integrated)`);
+            toast({ title: "File Processed", description: `Found ${data.length} hymn(s) in the file.`});
+          } else {
+            setUploadStatus("Invalid file format. Expected an array of hymn objects with 'title' and 'lyrics'.");
+          }
+        } catch (error) {
+          console.error("Error parsing JSON:", error);
+          setUploadStatus("Error parsing JSON file. Make sure it's a valid JSON.");
+        } finally {
+          setIsProcessing(false);
+        }
+      };
+      reader.onerror = () => {
+        setUploadStatus("Error reading file.");
+        setIsProcessing(false);
+      };
+      reader.readAsText(selectedFile);
     };
 
 
@@ -451,7 +497,7 @@ const Sidebar = React.forwardRef<
                 </DialogContent>
               </Dialog>
 
-              <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+              <Dialog open={isUploadDialogOpen} onOpenChange={(isOpen) => { setIsUploadDialogOpen(isOpen); if (!isOpen) { setSelectedFile(null); setUploadStatus(null); }}}>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="lg" className="w-full flex items-center justify-center gap-2">
                     <Upload className="mr-2 h-5 w-5" /> Upload Data
@@ -459,18 +505,46 @@ const Sidebar = React.forwardRef<
                 </DialogTrigger>
                 <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
                   <DialogHeader>
-                    <DialogTitle className="font-headline text-2xl">Upload Data</DialogTitle>
+                    <DialogTitle className="font-headline text-2xl flex items-center gap-2">
+                      <FileJson className="h-6 w-6 text-primary" /> Upload Hymn Data
+                    </DialogTitle>
                     <DialogDescription>
-                      Functionality to upload data will be available here. (Content TBD)
+                      Select a JSON file containing an array of hymn objects. Each object should have at least a 'title' and 'lyrics' property.
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="py-4 text-center">
-                    <p className="text-muted-foreground">This feature is currently under development.</p>
+                  <div className="py-4 space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="json-file-upload">Choose JSON File</Label>
+                      <Input 
+                        id="json-file-upload" 
+                        type="file" 
+                        accept=".json" 
+                        onChange={handleFileChange}
+                        className="border-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                      />
+                    </div>
+                    {uploadStatus && (
+                      <p className={cn("text-sm", uploadStatus.startsWith("Error") || uploadStatus.startsWith("Invalid") ? "text-destructive" : "text-muted-foreground")}>
+                        {uploadStatus}
+                      </p>
+                    )}
                   </div>
                   <DialogFooter className="pt-4 border-t">
                     <DialogClose asChild>
                       <Button type="button" variant="outline">Close</Button>
                     </DialogClose>
+                    <Button 
+                      type="button" 
+                      onClick={handleProcessFile} 
+                      disabled={!selectedFile || isProcessing}
+                    >
+                      {isProcessing ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Upload className="mr-2 h-4 w-4" />
+                      )}
+                      {isProcessing ? "Processing..." : "Process File"}
+                    </Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -480,7 +554,6 @@ const Sidebar = React.forwardRef<
             <div className="flex-grow overflow-y-auto">
               {React.Children.map(children, child => {
                 if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarContent') {
-                  // Pass setOpenMobile to SidebarContent, which then passes to SidebarNav, which passes to SidebarMenuItem for SheetClose
                   return React.cloneElement(child as React.ReactElement<any>, { setOpenMobile });
                 }
                 return null;
@@ -879,10 +952,10 @@ const SidebarMenuButton = React.forwardRef<
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
       if (props.onClick) {
-        props.onClick(event); // Call original onClick if present
+        props.onClick(event); 
       }
       if (onClick) {
-        onClick(); // Call the passed onClick (for closing sheet)
+        onClick(); 
       }
     };
 
@@ -893,7 +966,7 @@ const SidebarMenuButton = React.forwardRef<
         data-size={size}
         data-active={isActive}
         className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
-        onClick={handleClick} // Use combined handleClick
+        onClick={handleClick} 
         {...props}
       />
     )
