@@ -2,18 +2,35 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"; 
+import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2 } from "lucide-react" 
-import Image from "next/image"; 
+import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2 } from "lucide-react"
+import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button" 
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent, SheetHeader as UiSheetHeader, SheetTitle as UiSheetTitle } from "@/components/ui/sheet" 
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader as UiSheetHeader,
+  SheetTitle as UiSheetTitle
+} from "@/components/ui/sheet"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
@@ -21,6 +38,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useToast } from "@/hooks/use-toast";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -73,8 +91,6 @@ const SidebarProvider = React.forwardRef<
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
 
-    // This is the internal state of the sidebar.
-    // We use openProp and setOpenProp for control from outside the component.
     const [_open, _setOpen] = React.useState(defaultOpen)
     const open = openProp ?? _open
     const setOpen = React.useCallback(
@@ -85,21 +101,17 @@ const SidebarProvider = React.forwardRef<
         } else {
           _setOpen(openState)
         }
-
-        // This sets the cookie to keep the sidebar state.
         document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
       },
       [setOpenProp, open]
     )
 
-    // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
       return isMobile
         ? setOpenMobile((open) => !open)
         : setOpen((open) => !open)
     }, [isMobile, setOpen, setOpenMobile])
 
-    // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
         if (
@@ -115,8 +127,6 @@ const SidebarProvider = React.forwardRef<
       return () => window.removeEventListener("keydown", handleKeyDown)
     }, [toggleSidebar])
 
-    // We add a state so that we can do data-state="expanded" or "collapsed".
-    // This makes it easier to style the sidebar with Tailwind classes.
     const state = open ? "expanded" : "collapsed"
 
     const contextValue = React.useMemo<SidebarContext>(
@@ -178,7 +188,42 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+    const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+
+    // State for Add Hymn Dialog
+    const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = React.useState(false);
+    const [hymnTitle, setHymnTitle] = React.useState('');
+    const [hymnNumber, setHymnNumber] = React.useState('');
+    const [hymnLyrics, setHymnLyrics] = React.useState('');
+    const [hymnAuthor, setHymnAuthor] = React.useState('');
+    const [hymnComposer, setHymnComposer] = React.useState('');
+    const [hymnCategory, setHymnCategory] = React.useState('');
+    const { toast } = useToast();
+
+    const handleAddHymnSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!hymnTitle || !hymnLyrics) {
+        toast({
+          title: "Error",
+          description: "Title and Lyrics are required.",
+          variant: "destructive",
+        });
+        return;
+      }
+      console.log('New Hymn (from dialog):', { title: hymnTitle, number: hymnNumber, lyrics: hymnLyrics, author: hymnAuthor, composer: hymnComposer, category: hymnCategory });
+      toast({
+        title: "Hymn Added (Simulated)",
+        description: `"${hymnTitle}" has been added to the list (not actually saved).`,
+      });
+      setHymnTitle('');
+      setHymnNumber('');
+      setHymnLyrics('');
+      setHymnAuthor('');
+      setHymnComposer('');
+      setHymnCategory('');
+      setIsAddHymnDialogOpen(false);
+    };
+
 
     if (collapsible === "none") {
       return (
@@ -215,14 +260,61 @@ const Sidebar = React.forwardRef<
                 <UiSheetTitle className="text-lg font-headline text-primary">SBC APP</UiSheetTitle>
               </div>
             </UiSheetHeader>
-            
+
             <div className="p-4 border-b border-sidebar-border space-y-2">
-              <Button asChild variant="default" size="lg" className="w-full">
-                <Link href="/hymnal/add" className="flex items-center justify-center gap-2">
-                  <PlusCircle className="h-5 w-5" />
-                  Add New Hymn
-                </Link>
-              </Button>
+              <Dialog open={isAddHymnDialogOpen} onOpenChange={setIsAddHymnDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="default" size="lg" className="w-full flex items-center justify-center gap-2">
+                    <PlusCircle className="h-5 w-5" />
+                    Add New Hymn
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="font-headline text-2xl">Add New Hymn</DialogTitle>
+                    <DialogDescription>Fill in the details for the new hymn. Click save when you're done.</DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleAddHymnSubmit}>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-1">
+                        <Label htmlFor="dialog-hymn-title">Title</Label>
+                        <Input id="dialog-hymn-title" value={hymnTitle} onChange={(e) => setHymnTitle(e.target.value)} placeholder="e.g., Amazing Grace" required />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <Label htmlFor="dialog-hymn-number">Number (Optional)</Label>
+                          <Input id="dialog-hymn-number" value={hymnNumber} onChange={(e) => setHymnNumber(e.target.value)} placeholder="e.g., 202" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="dialog-hymn-category">Category (Optional)</Label>
+                          <Input id="dialog-hymn-category" value={hymnCategory} onChange={(e) => setHymnCategory(e.target.value)} placeholder="e.g., Worship" />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="dialog-hymn-lyrics">Lyrics</Label>
+                        <Textarea id="dialog-hymn-lyrics" value={hymnLyrics} onChange={(e) => setHymnLyrics(e.target.value)} placeholder="Enter hymn lyrics here..." rows={8} required />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <Label htmlFor="dialog-hymn-author">Author (Optional)</Label>
+                          <Input id="dialog-hymn-author" value={hymnAuthor} onChange={(e) => setHymnAuthor(e.target.value)} placeholder="e.g., John Newton" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="dialog-hymn-composer">Composer (Optional)</Label>
+                          <Input id="dialog-hymn-composer" value={hymnComposer} onChange={(e) => setHymnComposer(e.target.value)} placeholder="e.g., Traditional" />
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button type="button" variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <Button type="submit">Save Hymn</Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+
               <Button asChild variant="destructive" size="lg" className="w-full">
                 <Link href="/delete-data" className="flex items-center justify-center gap-2">
                   <Trash2 className="mr-2 h-5 w-5" /> Delete Data
@@ -238,7 +330,7 @@ const Sidebar = React.forwardRef<
                 return null;
               })}
             </div>
-            
+
             <div className="mt-auto p-4 border-t border-sidebar-border space-y-2">
               <Button asChild variant="ghost" className="w-full justify-start text-sm">
                 <Link href="/settings">
@@ -270,7 +362,6 @@ const Sidebar = React.forwardRef<
         data-variant={variant}
         data-side={side}
       >
-        {/* This is what handles the sidebar gap on desktop */}
         <div
           className={cn(
             "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
@@ -287,7 +378,6 @@ const Sidebar = React.forwardRef<
             side === "left"
               ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
               : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
-            // Adjust the padding for floating and inset variants.
             variant === "floating" || variant === "inset"
               ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
               : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l",
@@ -510,7 +600,6 @@ const SidebarGroupAction = React.forwardRef<
       data-sidebar="group-action"
       className={cn(
         "absolute right-3 top-3.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
-        // Increases the hit area of the button on mobile.
         "after:absolute after:-inset-2 after:md:hidden",
         "group-data-[collapsible=icon]:hidden",
         className
@@ -656,7 +745,6 @@ const SidebarMenuAction = React.forwardRef<
       data-sidebar="menu-action"
       className={cn(
         "absolute right-1 top-1.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground [&>svg]:size-4 [&>svg]:shrink-0",
-        // Increases the hit area of the button on mobile.
         "after:absolute after:-inset-2 after:md:hidden",
         "peer-data-[size=sm]/menu-button:top-1",
         "peer-data-[size=default]/menu-button:top-1.5",
@@ -699,7 +787,6 @@ const SidebarMenuSkeleton = React.forwardRef<
     showIcon?: boolean
   }
 >(({ className, showIcon = false, ...props }, ref) => {
-  // Random width between 50 to 90%.
   const width = React.useMemo(() => {
     return `${Math.floor(Math.random() * 40) + 50}%`
   }, [])
@@ -810,4 +897,3 @@ export {
   SidebarTrigger,
   useSidebar,
 }
-
