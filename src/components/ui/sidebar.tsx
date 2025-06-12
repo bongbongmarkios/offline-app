@@ -260,7 +260,7 @@ const Sidebar = React.forwardRef<
                 <UiSheetTitle className="text-lg font-headline text-primary">SBC APP</UiSheetTitle>
               </div>
             </UiSheetHeader>
-
+            
             <div className="p-4 border-b border-sidebar-border space-y-2">
               <Dialog open={isAddHymnDialogOpen} onOpenChange={setIsAddHymnDialogOpen}>
                 <DialogTrigger asChild>
@@ -269,7 +269,7 @@ const Sidebar = React.forwardRef<
                     Add New Hymn
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle className="font-headline text-2xl">Add New Hymn</DialogTitle>
                     <DialogDescription>Fill in the details for the new hymn. Click save when you're done.</DialogDescription>
@@ -897,3 +897,4 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+
