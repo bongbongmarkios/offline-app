@@ -209,7 +209,7 @@ const Sidebar = React.forwardRef<
             side={side}
           >
             <UiSheetHeader className="p-4 border-b border-sidebar-border flex-shrink-0 flex flex-row items-center gap-2">
-              <Image src="https://i.imgur.com/BJ43v7S.png" alt="SBC APP Logo" width={28} height={28} data-ai-hint="logo" className="shrink-0" />
+              <Image src="https://i.imgur.com/BJ43v7S.png" alt="SBC APP Logo" width={36} height={36} data-ai-hint="logo" className="shrink-0" />
               <UiSheetTitle className="text-lg font-headline text-primary">SBC APP</UiSheetTitle>
             </UiSheetHeader>
             <div className="flex-grow overflow-y-auto">
