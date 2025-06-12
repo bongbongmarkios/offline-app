@@ -23,7 +23,7 @@ export default function MainLayout({
         {/* Sidebar for desktop, hidden on mobile (mobile uses Sheet via SidebarTrigger) */}
         <Sidebar collapsible="icon" className="border-r bg-card hidden md:flex" side="left">
           <SidebarHeader className="p-2 flex items-center justify-center group-data-[state=expanded]:justify-start group-data-[state=expanded]:pl-3">
-            <Image src="https://placehold.co/28x28.png" alt="SBC APP Logo" width={28} height={28} data-ai-hint="logo" className="shrink-0 group-data-[state=expanded]:mr-2" />
+            <Image src="https://i.imgur.com/BJ43v7S.png" alt="SBC APP Logo" width={28} height={28} data-ai-hint="logo" className="shrink-0 group-data-[state=expanded]:mr-2" />
             <div className="font-headline text-xl text-primary group-data-[state=expanded]:block hidden whitespace-nowrap">SBC APP</div>
           </SidebarHeader>
           <SidebarContent>
