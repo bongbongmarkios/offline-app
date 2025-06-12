@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2 } from "lucide-react"
+import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked } from "lucide-react"
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -39,6 +39,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useToast } from "@/hooks/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
+import { sampleHymns } from "@/data/hymns"; // For listing hymns
+import type { Hymn } from "@/types"; // Hymn type
+import { ScrollArea } from "@/components/ui/scroll-area"; // For scrollable list
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -190,6 +194,7 @@ const Sidebar = React.forwardRef<
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
 
+    // State for "Add New Hymn" Dialog
     const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = React.useState(false);
     const [hymnTitleHiligaynon, setHymnTitleHiligaynon] = React.useState('');
     const [hymnTitleFilipino, setHymnTitleFilipino] = React.useState('');
@@ -200,6 +205,11 @@ const Sidebar = React.forwardRef<
     const [hymnLyricsFilipino, setHymnLyricsFilipino] = React.useState('');
     const [hymnLyricsEnglish, setHymnLyricsEnglish] = React.useState('');
     const { toast } = useToast();
+
+    // State for "Delete Hymns" Dialog
+    const [isDeleteHymnsDialogOpen, setIsDeleteHymnsDialogOpen] = React.useState(false);
+    const [selectedHymnIds, setSelectedHymnIds] = React.useState<string[]>([]);
+
 
     const handleAddHymnSubmit = (e: React.FormEvent) => {
       e.preventDefault();
@@ -234,6 +244,34 @@ const Sidebar = React.forwardRef<
       setHymnLyricsFilipino('');
       setHymnLyricsEnglish('');
       setIsAddHymnDialogOpen(false);
+    };
+
+    const handleHymnSelectionChange = (hymnId: string, checked: boolean) => {
+      setSelectedHymnIds(prevSelectedIds => {
+        if (checked) {
+          return [...prevSelectedIds, hymnId];
+        } else {
+          return prevSelectedIds.filter(id => id !== hymnId);
+        }
+      });
+    };
+
+    const handleDeleteSelectedHymns = () => {
+      if (selectedHymnIds.length === 0) {
+        toast({
+          title: "No Hymns Selected",
+          description: "Please select at least one hymn to delete.",
+          variant: "destructive",
+        });
+        return;
+      }
+      console.log("Deleting Hymns (Simulated):", selectedHymnIds);
+      toast({
+        title: "Hymns Deleted (Simulated)",
+        description: `${selectedHymnIds.length} hymn(s) have been "deleted". This is a simulation.`,
+      });
+      setSelectedHymnIds([]);
+      setIsDeleteHymnsDialogOpen(false);
     };
 
 
@@ -287,45 +325,47 @@ const Sidebar = React.forwardRef<
                     <DialogDescription>Fill in the details for the new hymn. Hiligaynon is the default language. Click save when you&apos;re done.</DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleAddHymnSubmit}>
-                    <div className="space-y-4 py-4">
-                      <div>
-                        <Label htmlFor="dialog-hymn-title-hiligaynon" className="font-semibold">Title (Hiligaynon)</Label>
-                        <Input id="dialog-hymn-title-hiligaynon" value={hymnTitleHiligaynon} onChange={(e) => setHymnTitleHiligaynon(e.target.value)} placeholder="e.g., Daku Nga Kalipay" required className="border-muted-foreground mt-1"/>
-                      </div>
-                      <div>
-                        <Label htmlFor="dialog-hymn-title-filipino">Title (Filipino) (Optional)</Label>
-                        <Input id="dialog-hymn-title-filipino" value={hymnTitleFilipino} onChange={(e) => setHymnTitleFilipino(e.target.value)} placeholder="e.g., Dakilang Kagalakan" className="border-muted-foreground mt-1"/>
-                      </div>
-                      <div>
-                        <Label htmlFor="dialog-hymn-title-english">Title (English) (Optional)</Label>
-                        <Input id="dialog-hymn-title-english" value={hymnTitleEnglish} onChange={(e) => setHymnTitleEnglish(e.target.value)} placeholder="e.g., Amazing Grace" className="border-muted-foreground mt-1"/>
-                      </div>
+                    <ScrollArea className="h-[65vh] pr-3">
+                      <div className="space-y-4 py-4">
+                        <div>
+                          <Label htmlFor="dialog-hymn-title-hiligaynon" className="font-semibold">Title (Hiligaynon)</Label>
+                          <Input id="dialog-hymn-title-hiligaynon" value={hymnTitleHiligaynon} onChange={(e) => setHymnTitleHiligaynon(e.target.value)} placeholder="e.g., Daku Nga Kalipay" required className="border-muted-foreground mt-1"/>
+                        </div>
+                        <div>
+                          <Label htmlFor="dialog-hymn-title-filipino">Title (Filipino) (Optional)</Label>
+                          <Input id="dialog-hymn-title-filipino" value={hymnTitleFilipino} onChange={(e) => setHymnTitleFilipino(e.target.value)} placeholder="e.g., Dakilang Kagalakan" className="border-muted-foreground mt-1"/>
+                        </div>
+                        <div>
+                          <Label htmlFor="dialog-hymn-title-english">Title (English) (Optional)</Label>
+                          <Input id="dialog-hymn-title-english" value={hymnTitleEnglish} onChange={(e) => setHymnTitleEnglish(e.target.value)} placeholder="e.g., Amazing Grace" className="border-muted-foreground mt-1"/>
+                        </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="dialog-hymn-key">Key (Optional)</Label>
+                            <Input id="dialog-hymn-key" value={hymnKey} onChange={(e) => setHymnKey(e.target.value)} placeholder="e.g., C Major" className="border-muted-foreground mt-1"/>
+                          </div>
+                          <div>
+                            <Label htmlFor="dialog-hymn-page-number">Page Number (Optional)</Label>
+                            <Input id="dialog-hymn-page-number" value={hymnPageNumber} onChange={(e) => setHymnPageNumber(e.target.value)} placeholder="e.g., 101" className="border-muted-foreground mt-1"/>
+                          </div>
+                        </div>
+                        
                         <div>
-                          <Label htmlFor="dialog-hymn-key">Key (Optional)</Label>
-                          <Input id="dialog-hymn-key" value={hymnKey} onChange={(e) => setHymnKey(e.target.value)} placeholder="e.g., C Major" className="border-muted-foreground mt-1"/>
+                          <Label htmlFor="dialog-hymn-lyrics-hiligaynon" className="font-semibold">Lyrics (Hiligaynon)</Label>
+                          <Textarea id="dialog-hymn-lyrics-hiligaynon" value={hymnLyricsHiligaynon} onChange={(e) => setHymnLyricsHiligaynon(e.target.value)} placeholder="Enter Hiligaynon lyrics here..." rows={10} required className="border-muted-foreground mt-1"/>
                         </div>
                         <div>
-                          <Label htmlFor="dialog-hymn-page-number">Page Number (Optional)</Label>
-                          <Input id="dialog-hymn-page-number" value={hymnPageNumber} onChange={(e) => setHymnPageNumber(e.target.value)} placeholder="e.g., 101" className="border-muted-foreground mt-1"/>
+                          <Label htmlFor="dialog-hymn-lyrics-filipino">Lyrics (Filipino) (Optional)</Label>
+                          <Textarea id="dialog-hymn-lyrics-filipino" value={hymnLyricsFilipino} onChange={(e) => setHymnLyricsFilipino(e.target.value)} placeholder="Enter Filipino lyrics here..." rows={6} className="border-muted-foreground mt-1"/>
+                        </div>
+                        <div>
+                          <Label htmlFor="dialog-hymn-lyrics-english">Lyrics (English) (Optional)</Label>
+                          <Textarea id="dialog-hymn-lyrics-english" value={hymnLyricsEnglish} onChange={(e) => setHymnLyricsEnglish(e.target.value)} placeholder="Enter English lyrics here..." rows={6} className="border-muted-foreground mt-1"/>
                         </div>
                       </div>
-                      
-                      <div>
-                        <Label htmlFor="dialog-hymn-lyrics-hiligaynon" className="font-semibold">Lyrics (Hiligaynon)</Label>
-                        <Textarea id="dialog-hymn-lyrics-hiligaynon" value={hymnLyricsHiligaynon} onChange={(e) => setHymnLyricsHiligaynon(e.target.value)} placeholder="Enter Hiligaynon lyrics here..." rows={10} required className="border-muted-foreground mt-1"/>
-                      </div>
-                      <div>
-                        <Label htmlFor="dialog-hymn-lyrics-filipino">Lyrics (Filipino) (Optional)</Label>
-                        <Textarea id="dialog-hymn-lyrics-filipino" value={hymnLyricsFilipino} onChange={(e) => setHymnLyricsFilipino(e.target.value)} placeholder="Enter Filipino lyrics here..." rows={6} className="border-muted-foreground mt-1"/>
-                      </div>
-                      <div>
-                        <Label htmlFor="dialog-hymn-lyrics-english">Lyrics (English) (Optional)</Label>
-                        <Textarea id="dialog-hymn-lyrics-english" value={hymnLyricsEnglish} onChange={(e) => setHymnLyricsEnglish(e.target.value)} placeholder="Enter English lyrics here..." rows={6} className="border-muted-foreground mt-1"/>
-                      </div>
-                    </div>
-                    <DialogFooter>
+                    </ScrollArea>
+                    <DialogFooter className="pt-4 border-t">
                       <DialogClose asChild>
                         <Button type="button" variant="outline">Cancel</Button>
                       </DialogClose>
@@ -335,34 +375,77 @@ const Sidebar = React.forwardRef<
                 </DialogContent>
               </Dialog>
 
-              <Button asChild variant="destructive" size="lg" className="w-full flex items-center justify-center gap-2">
-                <Link href="/delete-data">
-                  <Trash2 className="mr-2 h-5 w-5" /> Delete Data
-                </Link>
-              </Button>
+              <Dialog open={isDeleteHymnsDialogOpen} onOpenChange={setIsDeleteHymnsDialogOpen}>
+                <DialogTrigger asChild>
+                   <Button variant="destructive" size="lg" className="w-full flex items-center justify-center gap-2">
+                    <Trash2 className="mr-2 h-5 w-5" /> Delete Data
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
+                  <DialogHeader>
+                    <DialogTitle className="font-headline text-2xl">Delete Hymns</DialogTitle>
+                    <DialogDescription>Select hymns from the list to delete. This action is simulated and will not permanently alter the data.</DialogDescription>
+                  </DialogHeader>
+                  <ScrollArea className="h-[60vh] my-4 pr-3">
+                    <div className="space-y-2">
+                      {sampleHymns.map((hymn) => (
+                        <div key={hymn.id} className="flex items-center space-x-2 p-2 border rounded-md hover:bg-muted/50">
+                          <Checkbox
+                            id={`delete-hymn-${hymn.id}`}
+                            checked={selectedHymnIds.includes(hymn.id)}
+                            onCheckedChange={(checked) => handleHymnSelectionChange(hymn.id, !!checked)}
+                            aria-labelledby={`label-delete-hymn-${hymn.id}`}
+                          />
+                          <Label htmlFor={`delete-hymn-${hymn.id}`} id={`label-delete-hymn-${hymn.id}`} className="flex-grow cursor-pointer">
+                            {hymn.title} {hymn.number ? `(#${hymn.number})` : ''}
+                          </Label>
+                        </div>
+                      ))}
+                      {sampleHymns.length === 0 && (
+                        <p className="text-muted-foreground text-center py-4">No hymns available to delete.</p>
+                      )}
+                    </div>
+                  </ScrollArea>
+                  <DialogFooter className="pt-4 border-t">
+                    <DialogClose asChild>
+                      <Button type="button" variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <Button 
+                      type="button" 
+                      variant="destructive"
+                      onClick={handleDeleteSelectedHymns}
+                      disabled={selectedHymnIds.length === 0}
+                    >
+                      Delete Selected ({selectedHymnIds.length})
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
             </div>
 
             <div className="flex-grow overflow-y-auto">
               {React.Children.map(children, child => {
                 if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarContent') {
-                  return child;
+                  // Pass setOpenMobile to SidebarContent, which then passes to SidebarNav, which passes to SidebarMenuItem for SheetClose
+                  return React.cloneElement(child as React.ReactElement<any>, { setOpenMobile });
                 }
                 return null;
               })}
             </div>
 
             <div className="mt-auto p-4 border-t border-sidebar-border space-y-2">
-              <Button asChild variant="ghost" className="w-full justify-start text-sm">
+              <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => setOpenMobile(false)}>
                 <Link href="/settings">
                   <Settings className="mr-2 h-5 w-5" /> Settings
                 </Link>
               </Button>
-              <Button asChild variant="ghost" className="w-full justify-start text-sm">
+              <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => setOpenMobile(false)}>
                 <Link href="/help">
                   <HelpCircle className="mr-2 h-5 w-5" /> Help
                 </Link>
               </Button>
-              <Button asChild variant="ghost" className="w-full justify-start text-sm">
+              <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => setOpenMobile(false)}>
                 <Link href="/about">
                   <Info className="mr-2 h-5 w-5" /> About
                 </Link>
@@ -556,8 +639,8 @@ SidebarSeparator.displayName = "SidebarSeparator"
 
 const SidebarContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<"div">
->(({ className, ...props }, ref) => {
+  React.ComponentProps<"div"> & { setOpenMobile?: (open: boolean) => void }
+>(({ className, children, setOpenMobile, ...props }, ref) => {
   return (
     <div
       ref={ref}
@@ -567,7 +650,15 @@ const SidebarContent = React.forwardRef<
         className
       )}
       {...props}
-    />
+    >
+    {/* Pass setOpenMobile to children if they are SidebarNav */}
+    {React.Children.map(children, child => {
+        if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarNav' && setOpenMobile) {
+          return React.cloneElement(child, { setOpenMobile });
+        }
+        return child;
+      })}
+    </div>
   )
 })
 SidebarContent.displayName = "SidebarContent"
@@ -645,27 +736,44 @@ SidebarGroupContent.displayName = "SidebarGroupContent"
 
 const SidebarMenu = React.forwardRef<
   HTMLUListElement,
-  React.ComponentProps<"ul">
->(({ className, ...props }, ref) => (
+  React.ComponentProps<"ul"> & { setOpenMobile?: (open: boolean) => void }
+>(({ className, children, setOpenMobile, ...props }, ref) => (
   <ul
     ref={ref}
     data-sidebar="menu"
     className={cn("flex w-full min-w-0 flex-col gap-1", className)}
     {...props}
-  />
+  >
+    {React.Children.map(children, child => {
+        if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarMenuItem' && setOpenMobile) {
+          return React.cloneElement(child, { setOpenMobile });
+        }
+        return child;
+      })}
+  </ul>
 ))
 SidebarMenu.displayName = "SidebarMenu"
 
 const SidebarMenuItem = React.forwardRef<
   HTMLLIElement,
-  React.ComponentProps<"li">
->(({ className, ...props }, ref) => (
+  React.ComponentProps<"li"> & { setOpenMobile?: (open: boolean) => void }
+>(({ className, children, setOpenMobile, ...props }, ref) => (
   <li
     ref={ref}
     data-sidebar="menu-item"
     className={cn("group/menu-item relative", className)}
     {...props}
-  />
+  >
+    {React.Children.map(children, child => {
+        if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarMenuButton' && setOpenMobile) {
+          return React.cloneElement(child as React.ReactElement<any>, { onClick: () => {
+            if (child.props.onClick) child.props.onClick();
+            setOpenMobile(false);
+          }});
+        }
+        return child;
+      })}
+  </li>
 ))
 SidebarMenuItem.displayName = "SidebarMenuItem"
 
@@ -697,6 +805,7 @@ const SidebarMenuButton = React.forwardRef<
     asChild?: boolean
     isActive?: boolean
     tooltip?: string | React.ComponentProps<typeof TooltipContent>
+    onClick?: () => void;
   } & VariantProps<typeof sidebarMenuButtonVariants>
 >(
   (
@@ -707,12 +816,22 @@ const SidebarMenuButton = React.forwardRef<
       size = "default",
       tooltip,
       className,
+      onClick,
       ...props
     },
     ref
   ) => {
     const Comp = asChild ? Slot : "button"
     const { isMobile, state } = useSidebar()
+
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+      if (props.onClick) {
+        props.onClick(event); // Call original onClick if present
+      }
+      if (onClick) {
+        onClick(); // Call the passed onClick (for closing sheet)
+      }
+    };
 
     const button = (
       <Comp
@@ -721,6 +840,7 @@ const SidebarMenuButton = React.forwardRef<
         data-size={size}
         data-active={isActive}
         className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+        onClick={handleClick} // Use combined handleClick
         {...props}
       />
     )
@@ -917,3 +1037,4 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+
