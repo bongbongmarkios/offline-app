@@ -214,11 +214,11 @@ const Sidebar = React.forwardRef<
                 <Image src="https://i.imgur.com/BJ43v7S.png" alt="SBC APP Logo" width={36} height={36} data-ai-hint="logo" className="shrink-0" />
                 <UiSheetTitle className="text-lg font-headline text-primary">SBC APP</UiSheetTitle>
               </div>
-              <Link href="/hymnal/add" passHref legacyBehavior>
-                <Button asChild variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
-                  <a><PlusCircle className="h-6 w-6" aria-label="Add Hymn" /></a>
-                </Button>
-              </Link>
+              <Button asChild variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
+                <Link href="/hymnal/add">
+                  <PlusCircle className="h-6 w-6" aria-label="Add Hymn" />
+                </Link>
+              </Button>
             </UiSheetHeader>
             <div className="flex-grow overflow-y-auto">
               {React.Children.map(children, child => {
