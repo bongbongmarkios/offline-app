@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2, X, FileText, Palette, Moon, Sun } from "lucide-react"
+import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2, X, FileText } from "lucide-react"
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -43,8 +43,6 @@ import { sampleHymns } from "@/data/hymns";
 import type { Hymn } from "@/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-// Switch, useTheme, PrimaryColor are removed as they were for the Settings dialog
-// Palette, Moon, Sun icons are removed as they were for the Settings dialog
 
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
@@ -227,7 +225,6 @@ const Sidebar = React.forwardRef<
     const [selectedHymnIds, setSelectedHymnIds] = React.useState<string[]>([]);
 
     const [isDataDialogOpen, setIsDataDialogOpen] = React.useState(false);
-
     const [isUploadDialogOpen, setIsUploadDialogOpen] = React.useState(false);
     const [selectedFilesList, setSelectedFilesList] = React.useState<File[]>([]);
     const [uploadStatus, setUploadStatus] = React.useState<string | null>(null);
@@ -239,6 +236,10 @@ const Sidebar = React.forwardRef<
     const [isViewFileDialogOpen, setIsViewFileDialogOpen] = React.useState(false);
     const [viewFileContent, setViewFileContent] = React.useState<string | undefined>('');
     const [viewFileName, setViewFileName] = React.useState('');
+
+    const [isSettingsDialogOpen, setIsSettingsDialogOpen] = React.useState(false);
+    const [isHelpDialogOpen, setIsHelpDialogOpen] = React.useState(false);
+
 
     React.useEffect(() => {
       if (typeof window !== "undefined") {
@@ -303,6 +304,9 @@ const Sidebar = React.forwardRef<
       setHymnLyricsFilipino('');
       setHymnLyricsEnglish('');
       setIsAddHymnDialogOpen(false);
+      if (isMobile) {
+        setOpenMobile(false); // Close mobile sidebar after successful add
+      }
     };
 
     const handleHymnSelectionChange = (hymnId: string, checked: boolean) => {
@@ -331,6 +335,9 @@ const Sidebar = React.forwardRef<
       });
       setSelectedHymnIds([]);
       setIsDeleteHymnsDialogOpen(false);
+      if (isMobile) {
+        setOpenMobile(false);
+      }
     };
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -431,6 +438,12 @@ const Sidebar = React.forwardRef<
       setUploadStatus(filesProcessedCount > 0 || filesSkippedCount > 0 ? finalStatus : "No new files were processed.");
       setIsProcessing(false);
       handleClearFile();
+      if (filesProcessedCount > 0 && isMobile) { // Close mobile sidebar if files were successfully processed
+          setIsUploadDialogOpen(false); // Also close the upload dialog
+          setOpenMobile(false);
+      } else if (filesProcessedCount > 0) {
+           setIsUploadDialogOpen(false); // Close dialog even on desktop
+      }
     };
 
     const handleViewTextFile = (file: StoredFileMetadata) => {
@@ -447,6 +460,16 @@ const Sidebar = React.forwardRef<
         } else {
           toast({ title: "Error", description: "Could not retrieve file content.", variant: "destructive" });
         }
+      }
+    };
+    
+    const handleDialogAndSidebarClose = (
+      setDialogState: React.Dispatch<React.SetStateAction<boolean>>,
+      isOpening: boolean
+    ) => {
+      setDialogState(isOpening);
+      if (isOpening && isMobile) {
+        setOpenMobile(false);
       }
     };
 
@@ -489,7 +512,7 @@ const Sidebar = React.forwardRef<
               </UiSheetHeader>
 
               <div className="p-4 border-b border-sidebar-border space-y-2">
-                <Dialog open={isAddHymnDialogOpen} onOpenChange={setIsAddHymnDialogOpen}>
+                <Dialog open={isAddHymnDialogOpen} onOpenChange={(isOpen) => handleDialogAndSidebarClose(setIsAddHymnDialogOpen, isOpen)}>
                   <DialogTrigger asChild>
                     <Button variant="default" size="lg" className="w-full flex items-center justify-center gap-2">
                       <PlusCircle className="h-5 w-5" />
@@ -552,7 +575,7 @@ const Sidebar = React.forwardRef<
                   </DialogContent>
                 </Dialog>
 
-                <Dialog open={isDeleteHymnsDialogOpen} onOpenChange={setIsDeleteHymnsDialogOpen}>
+                <Dialog open={isDeleteHymnsDialogOpen} onOpenChange={(isOpen) => handleDialogAndSidebarClose(setIsDeleteHymnsDialogOpen, isOpen)}>
                   <DialogTrigger asChild>
                     <Button variant="destructive" size="lg" className="w-full flex items-center justify-center gap-2">
                       <Trash2 className="mr-2 h-5 w-5" /> Delete Hymns
@@ -599,10 +622,10 @@ const Sidebar = React.forwardRef<
                   </DialogContent>
                 </Dialog>
 
-                <Dialog open={isDataDialogOpen} onOpenChange={setIsDataDialogOpen}>
+                <Dialog open={isDataDialogOpen} onOpenChange={(isOpen) => handleDialogAndSidebarClose(setIsDataDialogOpen, isOpen)}>
                   <DialogTrigger asChild>
                     <Button variant="outline" size="lg" className="w-full flex items-center justify-center gap-2">
-                      <Database className="mr-2 h-5 w-5" /> Processed Text Files
+                      <Database className="mr-2 h-5 w-5" /> Data
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
@@ -649,7 +672,10 @@ const Sidebar = React.forwardRef<
                   </DialogContent>
                 </Dialog>
 
-                <Dialog open={isUploadDialogOpen} onOpenChange={(isOpen) => { setIsUploadDialogOpen(isOpen); if (!isOpen) { handleClearFile(); setIsProcessing(false); } }}>
+                <Dialog open={isUploadDialogOpen} onOpenChange={(isOpen) => {
+                  handleDialogAndSidebarClose(setIsUploadDialogOpen, isOpen);
+                  if (!isOpen) { handleClearFile(); setIsProcessing(false); }
+                }}>
                   <DialogTrigger asChild>
                     <Button variant="outline" size="lg" className="w-full flex items-center justify-center gap-2">
                       <Upload className="mr-2 h-5 w-5" /> Upload Text Files
@@ -730,26 +756,17 @@ const Sidebar = React.forwardRef<
               </div>
 
               <ScrollArea className="flex-grow p-4 overflow-y-auto">
-                {/* Navigation items were previously here */}
+                {/* Navigation items were previously here, now removed */}
               </ScrollArea>
 
 
               <div className="mt-auto p-4 border-t border-sidebar-border space-y-2">
-                <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => { setOpenMobile(false); }}>
+                <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => setOpenMobile(false)}>
                   <Link href="/about">
                     <Info className="mr-2 h-5 w-5" /> About
                   </Link>
                 </Button>
-                 <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => { setOpenMobile(false); }}>
-                  <Link href="/settings">
-                    <Settings className="mr-2 h-5 w-5" /> Settings
-                  </Link>
-                </Button>
-                 <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => { setOpenMobile(false); }}>
-                  <Link href="/help">
-                    <HelpCircle className="mr-2 h-5 w-5" /> Help
-                  </Link>
-                </Button>
+                 {/* Settings and Help Dialogs have been removed */}
               </div>
             </SheetContent>
           </Sheet>
@@ -1353,4 +1370,3 @@ export {
   SidebarTrigger,
   useSidebar,
 }
-
