@@ -467,20 +467,6 @@ const Sidebar = React.forwardRef<
       { name: 'Maroon', value: 'maroon', colorClass: 'bg-[#800000]' },
     ];
 
-    const handleSettingsDialogOpenChange = (open: boolean) => {
-      setIsSettingsDialogOpen(open);
-      if (open && isThemeReady) { // Only close sidebar if dialog is opening AND theme is ready
-        setOpenMobile(false);
-      }
-    };
-
-    const handleHelpDialogOpenChange = (open: boolean) => {
-      setIsHelpDialogOpen(open);
-      if (open) {
-        setOpenMobile(false);
-      }
-    };
-
 
     if (collapsible === "none") {
       return (
@@ -787,73 +773,80 @@ const Sidebar = React.forwardRef<
 
 
               <div className="mt-auto p-4 border-t border-sidebar-border space-y-2">
-                {isThemeReady ? (
-                  <Dialog open={isSettingsDialogOpen} onOpenChange={handleSettingsDialogOpenChange}>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sm"
-                        disabled={!isThemeReady}
-                      >
-                        {isThemeReady ? <Settings className="mr-2 h-5 w-5" /> : <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                        {isThemeReady ? "Settings" : "Settings (Loading...)"}
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="p-4 max-w-md sm:max-w-lg rounded-[25px]">
-                      <DialogHeader>
-                        <DialogTitle className="font-headline text-2xl flex items-center gap-2">
-                          <Palette className="h-6 w-6 text-primary" /> App Settings
-                        </DialogTitle>
-                        <DialogDescription>
-                          Customize the look and feel of the application.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="py-6 space-y-6">
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="theme-switch" className="text-base flex items-center">
-                            {theme === 'dark' ? <Moon className="mr-2 h-5 w-5" /> : <Sun className="mr-2 h-5 w-5" />}
-                            Dark Mode
-                          </Label>
-                          <Switch
-                            id="theme-switch"
-                            checked={theme === 'dark'}
-                            onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-                          />
-                        </div>
-                        <Separator />
-                        <div>
-                          <Label className="text-base mb-3 block">Primary Color</Label>
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                            {colorOptions.map(opt => (
-                              <Button
-                                key={opt.value}
-                                variant={primaryColor === opt.value ? 'default' : 'outline'}
-                                onClick={() => setAppPrimaryColor(opt.value)}
-                                className="flex items-center justify-start gap-2 h-12 text-sm"
-                              >
-                                <span className={cn("h-5 w-5 rounded-full border border-black/20", opt.colorClass)}></span>
-                                {opt.name}
-                              </Button>
-                            ))}
-                          </div>
+                <Dialog open={isSettingsDialogOpen} onOpenChange={setIsSettingsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-sm"
+                      disabled={!isThemeReady}
+                      onClick={() => {
+                        if (!isSettingsDialogOpen && isThemeReady) {
+                          setTimeout(() => setOpenMobile(false), 0);
+                        }
+                      }}
+                    >
+                      {isThemeReady ? <Settings className="mr-2 h-5 w-5" /> : <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                      {isThemeReady ? "Settings" : "Settings (Loading...)"}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="p-4 max-w-md sm:max-w-lg rounded-[25px]">
+                    <DialogHeader>
+                      <DialogTitle className="font-headline text-2xl flex items-center gap-2">
+                        <Palette className="h-6 w-6 text-primary" /> App Settings
+                      </DialogTitle>
+                      <DialogDescription>
+                        Customize the look and feel of the application.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-6 space-y-6">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="theme-switch" className="text-base flex items-center">
+                          {theme === 'dark' ? <Moon className="mr-2 h-5 w-5" /> : <Sun className="mr-2 h-5 w-5" />}
+                          Dark Mode
+                        </Label>
+                        <Switch
+                          id="theme-switch"
+                          checked={theme === 'dark'}
+                          onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+                        />
+                      </div>
+                      <Separator />
+                      <div>
+                        <Label className="text-base mb-3 block">Primary Color</Label>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          {colorOptions.map(opt => (
+                            <Button
+                              key={opt.value}
+                              variant={primaryColor === opt.value ? 'default' : 'outline'}
+                              onClick={() => setAppPrimaryColor(opt.value)}
+                              className="flex items-center justify-start gap-2 h-12 text-sm"
+                            >
+                              <span className={cn("h-5 w-5 rounded-full border border-black/20", opt.colorClass)}></span>
+                              {opt.name}
+                            </Button>
+                          ))}
                         </div>
                       </div>
-                      <DialogFooter className="pt-4 border-t">
-                        <DialogClose asChild>
-                          <Button type="button" variant="outline">Done</Button>
-                        </DialogClose>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                ) : (
-                  <Button variant="ghost" className="w-full justify-start text-sm" disabled>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Settings (Loading...)
-                  </Button>
-                )}
+                    </div>
+                    <DialogFooter className="pt-4 border-t">
+                      <DialogClose asChild>
+                        <Button type="button" variant="outline">Done</Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
 
-                <Dialog open={isHelpDialogOpen} onOpenChange={handleHelpDialogOpenChange}>
+                <Dialog open={isHelpDialogOpen} onOpenChange={setIsHelpDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-start text-sm">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-sm"
+                      onClick={() => {
+                        if (!isHelpDialogOpen) {
+                          setTimeout(() => setOpenMobile(false), 0);
+                        }
+                      }}
+                    >
                       <HelpCircle className="mr-2 h-5 w-5" /> Help
                     </Button>
                   </DialogTrigger>
@@ -1549,4 +1542,3 @@ export {
   SidebarTrigger,
   useSidebar,
 }
-
