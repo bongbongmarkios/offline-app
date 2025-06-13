@@ -440,10 +440,13 @@ const Sidebar = React.forwardRef<
        setUploadStatus(filesProcessedCount > 0 || filesSkippedCount > 0 ? finalStatus : "No new files were processed.");
       setIsProcessing(false);
       handleClearFile(); 
+      // No need to close dialog here, user might want to upload more or see status
+      // setIsUploadDialogOpen(false); 
     };
 
     const handleViewTextFile = (file: StoredFileMetadata) => {
       if (file.isTextContentStored && typeof window !== "undefined") {
+        // Try to get content from state first (if just uploaded), then from localStorage
         const contentFromState = file.fullContent;
         const contentFromStorage = localStorage.getItem(`${FILE_CONTENT_PREFIX_KEY}${file.id}`);
         
@@ -749,8 +752,17 @@ const Sidebar = React.forwardRef<
              {isThemeReady ? (
                 <Dialog open={isSettingsDialogOpen} onOpenChange={setIsSettingsDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-start text-sm">
-                      <Settings className="mr-2 h-5 w-5" /> Settings
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-sm" 
+                      onClick={() => {
+                        setOpenMobile(false); 
+                        // setIsSettingsDialogOpen(true); // Let DialogTrigger handle this
+                      }}
+                      disabled={!isThemeReady} // Keep disabled logic based on isThemeReady
+                    >
+                      {isThemeReady ? <Settings className="mr-2 h-5 w-5" /> : <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                      {isThemeReady ? "Settings" : "Settings (Loading...)"}
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="p-4 max-w-md sm:max-w-lg rounded-[25px]">
@@ -801,13 +813,13 @@ const Sidebar = React.forwardRef<
                 </Dialog>
               ) : (
                 <Button variant="ghost" className="w-full justify-start text-sm" disabled>
-                  <Settings className="mr-2 h-5 w-5" /> Settings (Loading...)
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Settings (Loading...)
                 </Button>
               )}
 
               <Dialog open={isHelpDialogOpen} onOpenChange={setIsHelpDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="ghost" className="w-full justify-start text-sm" onClick={() => { setOpenMobile(false); setIsHelpDialogOpen(true); }}>
+                  <Button variant="ghost" className="w-full justify-start text-sm" onClick={() => setOpenMobile(false)}>
                     <HelpCircle className="mr-2 h-5 w-5" /> Help
                   </Button>
                 </DialogTrigger>
@@ -844,9 +856,9 @@ const Sidebar = React.forwardRef<
                         <h3 className="font-semibold text-lg mb-2 text-primary">Uploading & Viewing Text Files</h3>
                         <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
                           <li>Access the "Upload Text Files" dialog from the sidebar.</li>
-                          <li>Click "Choose .txt File(s)" and select up to 10 text files from your device.</li>
-                          <li>Once selected, click "Process File(s)". The app will store the metadata and content of these files in your browser.</li>
-                          <li>To view uploaded files, open the "Stored Text Files" dialog from the sidebar.</li>
+                          <li>Click "Choose .txt File(s)" and select up to 10 text files from your device. Only .txt files are supported.</li>
+                          <li>Once selected, click "Process File(s)". The app will store the metadata and content of these files in your browser. Duplicate files (based on name, size, and last modified date) will be skipped.</li>
+                          <li>To view uploaded files, open the "Processed Text Files" dialog from the sidebar.</li>
                           <li>Click on a file name in the list to open a new dialog displaying its content.</li>
                         </ol>
                          <p className="mt-2 text-xs text-muted-foreground">
@@ -1501,4 +1513,3 @@ export {
   SidebarTrigger,
   useSidebar,
 }
-
