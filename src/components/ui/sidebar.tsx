@@ -773,17 +773,20 @@ const Sidebar = React.forwardRef<
 
 
               <div className="mt-auto p-4 border-t border-sidebar-border space-y-2">
-                <Dialog open={isSettingsDialogOpen} onOpenChange={setIsSettingsDialogOpen}>
+                <Dialog
+                  open={isSettingsDialogOpen}
+                  onOpenChange={(isOpen) => {
+                    setIsSettingsDialogOpen(isOpen);
+                    if (isOpen && isMobile) {
+                      setOpenMobile(false);
+                    }
+                  }}
+                >
                   <DialogTrigger asChild>
                     <Button
                       variant="ghost"
                       className="w-full justify-start text-sm"
                       disabled={!isThemeReady}
-                      onClick={() => {
-                        if (!isSettingsDialogOpen && isThemeReady) {
-                          setTimeout(() => setOpenMobile(false), 0);
-                        }
-                      }}
                     >
                       {isThemeReady ? <Settings className="mr-2 h-5 w-5" /> : <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                       {isThemeReady ? "Settings" : "Settings (Loading...)"}
@@ -836,16 +839,19 @@ const Sidebar = React.forwardRef<
                   </DialogContent>
                 </Dialog>
 
-                <Dialog open={isHelpDialogOpen} onOpenChange={setIsHelpDialogOpen}>
+                <Dialog
+                  open={isHelpDialogOpen}
+                  onOpenChange={(isOpen) => {
+                    setIsHelpDialogOpen(isOpen);
+                    if (isOpen && isMobile) {
+                      setOpenMobile(false);
+                    }
+                  }}
+                >
                   <DialogTrigger asChild>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       className="w-full justify-start text-sm"
-                      onClick={() => {
-                        if (!isHelpDialogOpen) {
-                          setTimeout(() => setOpenMobile(false), 0);
-                        }
-                      }}
                     >
                       <HelpCircle className="mr-2 h-5 w-5" /> Help
                     </Button>
@@ -1542,3 +1548,4 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+
