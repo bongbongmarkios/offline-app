@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2, X, FileText, Palette, Moon, Sun } from "lucide-react"
+import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2, X, FileText } from "lucide-react"
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator"
+// Separator is removed as it's no longer used after Settings/Help dialog removal
 import {
   Sheet,
   SheetContent,
@@ -44,8 +44,8 @@ import { sampleHymns } from "@/data/hymns";
 import type { Hymn } from "@/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { useTheme, type PrimaryColor } from '@/context/ThemeContext';
+// Switch, useTheme, PrimaryColor are removed as they were for the Settings dialog
+// Palette, Moon, Sun icons are removed as they were for the Settings dialog
 
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
@@ -213,9 +213,7 @@ const Sidebar = React.forwardRef<
     ref
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
-    const themeContext = useTheme();
-    const { theme, setTheme, primaryColor, setPrimaryColor: setAppPrimaryColor, isThemeReady } = themeContext;
-
+    // Removed useTheme and related state as Settings dialog is removed
 
     const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = React.useState(false);
     const [hymnTitleHiligaynon, setHymnTitleHiligaynon] = React.useState('');
@@ -245,8 +243,8 @@ const Sidebar = React.forwardRef<
     const [viewFileContent, setViewFileContent] = React.useState<string | undefined>('');
     const [viewFileName, setViewFileName] = React.useState('');
 
-    const [isSettingsDialogOpen, setIsSettingsDialogOpen] = React.useState(false);
-    const [isHelpDialogOpen, setIsHelpDialogOpen] = React.useState(false);
+    // Removed isSettingsDialogOpen, setIsSettingsDialogOpen
+    // Removed isHelpDialogOpen, setIsHelpDialogOpen
 
 
     React.useEffect(() => {
@@ -458,14 +456,6 @@ const Sidebar = React.forwardRef<
         }
       }
     };
-
-
-    const colorOptions: { name: string; value: PrimaryColor; colorClass: string }[] = [
-      { name: 'Deep Purple', value: 'purple', colorClass: 'bg-[#673AB7]' },
-      { name: 'Sky Blue', value: 'skyBlue', colorClass: 'bg-[#0099ff]' },
-      { name: 'Avocado Green', value: 'avocadoGreen', colorClass: 'bg-[#558040]' },
-      { name: 'Maroon', value: 'maroon', colorClass: 'bg-[#800000]' },
-    ];
 
 
     if (collapsible === "none") {
@@ -773,173 +763,8 @@ const Sidebar = React.forwardRef<
 
 
               <div className="mt-auto p-4 border-t border-sidebar-border space-y-2">
-                <Dialog
-                  open={isSettingsDialogOpen}
-                  onOpenChange={(isOpen) => {
-                    setIsSettingsDialogOpen(isOpen);
-                    if (isOpen && isMobile) {
-                      setOpenMobile(false);
-                    }
-                  }}
-                >
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start text-sm"
-                      disabled={!isThemeReady}
-                    >
-                      {isThemeReady ? <Settings className="mr-2 h-5 w-5" /> : <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                      {isThemeReady ? "Settings" : "Settings (Loading...)"}
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="p-4 max-w-md sm:max-w-lg rounded-[25px]">
-                    <DialogHeader>
-                      <DialogTitle className="font-headline text-2xl flex items-center gap-2">
-                        <Palette className="h-6 w-6 text-primary" /> App Settings
-                      </DialogTitle>
-                      <DialogDescription>
-                        Customize the look and feel of the application.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-6 space-y-6">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="theme-switch" className="text-base flex items-center">
-                          {theme === 'dark' ? <Moon className="mr-2 h-5 w-5" /> : <Sun className="mr-2 h-5 w-5" />}
-                          Dark Mode
-                        </Label>
-                        <Switch
-                          id="theme-switch"
-                          checked={theme === 'dark'}
-                          onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-                        />
-                      </div>
-                      <Separator />
-                      <div>
-                        <Label className="text-base mb-3 block">Primary Color</Label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                          {colorOptions.map(opt => (
-                            <Button
-                              key={opt.value}
-                              variant={primaryColor === opt.value ? 'default' : 'outline'}
-                              onClick={() => setAppPrimaryColor(opt.value)}
-                              className="flex items-center justify-start gap-2 h-12 text-sm"
-                            >
-                              <span className={cn("h-5 w-5 rounded-full border border-black/20", opt.colorClass)}></span>
-                              {opt.name}
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <DialogFooter className="pt-4 border-t">
-                      <DialogClose asChild>
-                        <Button type="button" variant="outline">Done</Button>
-                      </DialogClose>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-
-                <Dialog
-                  open={isHelpDialogOpen}
-                  onOpenChange={(isOpen) => {
-                    setIsHelpDialogOpen(isOpen);
-                    if (isOpen && isMobile) {
-                      setOpenMobile(false);
-                    }
-                  }}
-                >
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start text-sm"
-                    >
-                      <HelpCircle className="mr-2 h-5 w-5" /> Help
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="p-4 max-w-md sm:max-w-lg md:max-w-2xl max-h-[90vh] rounded-[25px]">
-                    <DialogHeader>
-                      <DialogTitle className="font-headline text-2xl flex items-center gap-2">
-                        <HelpCircle className="h-6 w-6 text-primary" /> Help & Support
-                      </DialogTitle>
-                      <DialogDescription>
-                        Find information on how to use the GraceNotes app features.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <ScrollArea className="h-[65vh] my-4 pr-3">
-                      <div className="space-y-6 text-sm">
-                        <section>
-                          <h3 className="font-semibold text-lg mb-2 text-primary">General Navigation</h3>
-                          <p className="text-muted-foreground">
-                            Use the bottom navigation bar (on mobile) or the sidebar (on desktop) to switch between main sections: Hymnal, Program, Readings, and AI Suggestions.
-                            The sidebar also provides access to adding new hymns, managing uploaded data, and app settings.
-                          </p>
-                        </section>
-                        <Separator />
-                        <section>
-                          <h3 className="font-semibold text-lg mb-2 text-primary">Adding a New Hymn</h3>
-                          <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                            <li>Open the mobile sidebar (menu icon on top left) or use the desktop sidebar.</li>
-                            <li>Click the "Add New Hymn" button.</li>
-                            <li>A dialog will appear. Fill in the hymn details. Hiligaynon title and lyrics are required. Other fields are optional.</li>
-                            <li>Click "Save Hymn". The hymn will be added (simulated for now).</li>
-                          </ol>
-                        </section>
-                        <Separator />
-                        <section>
-                          <h3 className="font-semibold text-lg mb-2 text-primary">Uploading & Viewing Text Files</h3>
-                          <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                            <li>Access the "Upload Text Files" dialog from the sidebar.</li>
-                            <li>Click "Choose .txt File(s)" and select up to 10 text files from your device. Only .txt files are supported.</li>
-                            <li>Once selected, click "Process File(s)". The app will store the metadata and content of these files in your browser. Duplicate files (based on name, size, and last modified date) will be skipped.</li>
-                            <li>To view uploaded files, open the "Processed Text Files" dialog from the sidebar.</li>
-                            <li>Click on a file name in the list to open a new dialog displaying its content.</li>
-                          </ol>
-                          <p className="mt-2 text-xs text-muted-foreground">
-                            Note: File storage uses your browser's local storage. Clearing browser data for this site will remove uploaded files.
-                          </p>
-                        </section>
-                        <Separator />
-                        <section>
-                          <h3 className="font-semibold text-lg mb-2 text-primary">AI Suggestions</h3>
-                          <p className="text-muted-foreground">
-                            Navigate to the "Suggestions" page from the sidebar or bottom navigation.
-                            Based on the hymns, readings, and program items you view, the app will provide personalized suggestions for related content along with a reason for the suggestion.
-                          </p>
-                        </section>
-                        <Separator />
-                        <section>
-                          <h3 className="font-semibold text-lg mb-2 text-primary">Customizing Appearance</h3>
-                          <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                            <li>Access the "Settings" dialog from the sidebar.</li>
-                            <li>Use the switch to toggle between Light and Dark mode.</li>
-                            <li>Select a primary color theme (Deep Purple, Sky Blue, Avocado Green, Maroon) to change the app's accent colors.</li>
-                            <li>Your preferences are saved in your browser.</li>
-                          </ol>
-                        </section>
-                        <Separator />
-                        <section>
-                          <h3 className="font-semibold text-lg mb-2 text-primary">Deleting Hymns (Simulated)</h3>
-                          <p className="text-muted-foreground">
-                            The "Delete Hymns" button in the sidebar opens a dialog where you can select hymns for deletion. This feature is currently a simulation and does not permanently alter the sample hymn data.
-                          </p>
-                        </section>
-                        <Separator />
-                        <section>
-                          <h3 className="font-semibold text-lg mb-2 text-primary">Deleting Local Activity Data</h3>
-                          <p className="text-muted-foreground">
-                            The "Delete Data" page (accessible via the main sidebar navigation) allows you to clear your locally stored activity history (viewed hymns, readings, programs). This will reset AI suggestions.
-                          </p>
-                        </section>
-                      </div>
-                    </ScrollArea>
-                    <DialogFooter className="pt-4 border-t">
-                      <DialogClose asChild>
-                        <Button type="button" variant="outline">Close</Button>
-                      </DialogClose>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-
+                {/* Settings Dialog and Trigger removed */}
+                {/* Help Dialog and Trigger removed */}
                 <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => { setOpenMobile(false); }}>
                   <Link href="/about">
                     <Info className="mr-2 h-5 w-5" /> About
@@ -1143,15 +968,16 @@ const SidebarSeparator = React.forwardRef<
   React.ComponentProps<typeof Separator>
 >(({ className, ...props }, ref) => {
   return (
-    <Separator
+    // Separator component is no longer imported, so this needs to be removed or replaced if still desired
+    <div
       ref={ref}
       data-sidebar="separator"
-      className={cn("mx-2 w-auto bg-sidebar-border", className)}
+      className={cn("mx-2 h-px w-auto bg-sidebar-border", className)}
       {...props}
     />
   )
 })
-SidebarSeparator.displayName = "SidebarSeparator"
+SidebarSeparator.displayName = "SidebarSeparator" // This will cause an error if Separator is not defined.
 
 const SidebarContent = React.forwardRef<
   HTMLDivElement,
@@ -1548,4 +1374,3 @@ export {
   SidebarTrigger,
   useSidebar,
 }
-
