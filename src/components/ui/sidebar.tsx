@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2, X, FileText } from "lucide-react"
+import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2, X, FileText, Palette, Moon, Sun } from "lucide-react"
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-// Separator is removed as it's no longer used after Settings/Help dialog removal
 import {
   Sheet,
   SheetContent,
@@ -212,9 +211,7 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
-    // Removed useTheme and related state as Settings dialog is removed
-
+    const { isMobile, state, openMobile, setOpenMobile, toggleSidebar } = useSidebar();
     const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = React.useState(false);
     const [hymnTitleHiligaynon, setHymnTitleHiligaynon] = React.useState('');
     const [hymnTitleFilipino, setHymnTitleFilipino] = React.useState('');
@@ -242,10 +239,6 @@ const Sidebar = React.forwardRef<
     const [isViewFileDialogOpen, setIsViewFileDialogOpen] = React.useState(false);
     const [viewFileContent, setViewFileContent] = React.useState<string | undefined>('');
     const [viewFileName, setViewFileName] = React.useState('');
-
-    // Removed isSettingsDialogOpen, setIsSettingsDialogOpen
-    // Removed isHelpDialogOpen, setIsHelpDialogOpen
-
 
     React.useEffect(() => {
       if (typeof window !== "undefined") {
@@ -737,37 +730,24 @@ const Sidebar = React.forwardRef<
               </div>
 
               <ScrollArea className="flex-grow p-4 overflow-y-auto">
-                <SidebarMenu className="p-0">
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={false} onClick={() => setOpenMobile(false)}>
-                      <Link href="/hymnal"><Music /> Hymnal</Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={false} onClick={() => setOpenMobile(false)}>
-                      <Link href="/program"><ListOrdered /> Program</Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={false} onClick={() => setOpenMobile(false)}>
-                      <Link href="/readings"><BookOpenText /> Readings</Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={false} onClick={() => setOpenMobile(false)}>
-                      <Link href="/suggestions"><Wand2 /> AI Suggestions</Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
+                {/* Navigation items were previously here */}
               </ScrollArea>
 
 
               <div className="mt-auto p-4 border-t border-sidebar-border space-y-2">
-                {/* Settings Dialog and Trigger removed */}
-                {/* Help Dialog and Trigger removed */}
                 <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => { setOpenMobile(false); }}>
                   <Link href="/about">
                     <Info className="mr-2 h-5 w-5" /> About
+                  </Link>
+                </Button>
+                 <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => { setOpenMobile(false); }}>
+                  <Link href="/settings">
+                    <Settings className="mr-2 h-5 w-5" /> Settings
+                  </Link>
+                </Button>
+                 <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => { setOpenMobile(false); }}>
+                  <Link href="/help">
+                    <HelpCircle className="mr-2 h-5 w-5" /> Help
                   </Link>
                 </Button>
               </div>
@@ -964,11 +944,10 @@ const SidebarFooter = React.forwardRef<
 SidebarFooter.displayName = "SidebarFooter"
 
 const SidebarSeparator = React.forwardRef<
-  React.ElementRef<typeof Separator>,
-  React.ComponentProps<typeof Separator>
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
   return (
-    // Separator component is no longer imported, so this needs to be removed or replaced if still desired
     <div
       ref={ref}
       data-sidebar="separator"
@@ -977,7 +956,7 @@ const SidebarSeparator = React.forwardRef<
     />
   )
 })
-SidebarSeparator.displayName = "SidebarSeparator" // This will cause an error if Separator is not defined.
+SidebarSeparator.displayName = "SidebarSeparator"
 
 const SidebarContent = React.forwardRef<
   HTMLDivElement,
@@ -1374,3 +1353,4 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+
