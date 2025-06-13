@@ -55,17 +55,17 @@ const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
-const PROCESSED_FILES_INDEX_KEY = "processedFilesIndex_v3"; 
-const FILE_CONTENT_PREFIX_KEY = "fileContent_v3_"; 
+const PROCESSED_FILES_INDEX_KEY = "processedFilesIndex_v3";
+const FILE_CONTENT_PREFIX_KEY = "fileContent_v3_";
 
 interface StoredFileMetadata {
-  id: string; 
+  id: string;
   name: string;
   type: string;
   size: number;
   lastModified: number;
   isTextContentStored: boolean;
-  fullContent?: string; 
+  fullContent?: string;
 }
 
 type SidebarContext = {
@@ -244,7 +244,7 @@ const Sidebar = React.forwardRef<
     const [isViewFileDialogOpen, setIsViewFileDialogOpen] = React.useState(false);
     const [viewFileContent, setViewFileContent] = React.useState<string | undefined>('');
     const [viewFileName, setViewFileName] = React.useState('');
-    
+
     const [isSettingsDialogOpen, setIsSettingsDialogOpen] = React.useState(false);
     const [isHelpDialogOpen, setIsHelpDialogOpen] = React.useState(false);
 
@@ -265,7 +265,7 @@ const Sidebar = React.forwardRef<
             setProcessedFiles(filesWithPotentialContent);
           } catch (e) {
             console.error("Error parsing processed files index from localStorage", e);
-            localStorage.removeItem(PROCESSED_FILES_INDEX_KEY); 
+            localStorage.removeItem(PROCESSED_FILES_INDEX_KEY);
           }
         }
       }
@@ -385,11 +385,11 @@ const Sidebar = React.forwardRef<
 
       for (const file of selectedFilesList) {
         if (file.type !== "text/plain") {
-            toast({ title: "Unsupported File Type", description: `"${file.name}" is not a .txt file. Only .txt files are supported. Skipped.`, variant: "destructive" });
-            filesSkippedCount++;
-            continue;
+          toast({ title: "Unsupported File Type", description: `"${file.name}" is not a .txt file. Only .txt files are supported. Skipped.`, variant: "destructive" });
+          filesSkippedCount++;
+          continue;
         }
-        
+
         const deterministicFileId = `${file.name}-${file.size}-${file.lastModified}`;
 
         const isDuplicate = processedFiles.some(pf => pf.id === deterministicFileId);
@@ -404,52 +404,49 @@ const Sidebar = React.forwardRef<
 
 
         try {
-            const text = await file.text();
-            if (typeof window !== "undefined") {
-              localStorage.setItem(`${FILE_CONTENT_PREFIX_KEY}${deterministicFileId}`, text);
-            }
-            const newFileMetadata: StoredFileMetadata = {
-              id: deterministicFileId,
-              name: file.name,
-              type: file.type,
-              size: file.size,
-              lastModified: file.lastModified,
-              isTextContentStored: true,
-              fullContent: text, 
-            };
-            newlyAddedMetadataList.push(newFileMetadata);
-            filesProcessedCount++;
-          } catch (error) {
-            console.error(`Error reading text file "${file.name}":`, error);
-            toast({ title: "Error Reading File", description: `Could not read text file "${file.name}".`, variant: "destructive" });
-            continue; 
+          const text = await file.text();
+          if (typeof window !== "undefined") {
+            localStorage.setItem(`${FILE_CONTENT_PREFIX_KEY}${deterministicFileId}`, text);
           }
+          const newFileMetadata: StoredFileMetadata = {
+            id: deterministicFileId,
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            lastModified: file.lastModified,
+            isTextContentStored: true,
+            fullContent: text,
+          };
+          newlyAddedMetadataList.push(newFileMetadata);
+          filesProcessedCount++;
+        } catch (error) {
+          console.error(`Error reading text file "${file.name}":`, error);
+          toast({ title: "Error Reading File", description: `Could not read text file "${file.name}".`, variant: "destructive" });
+          continue;
+        }
       }
 
       if (newlyAddedMetadataList.length > 0) {
         const updatedAllFiles = [...processedFiles, ...newlyAddedMetadataList];
         setProcessedFiles(updatedAllFiles);
         saveProcessedFilesIndex(updatedAllFiles);
-         toast({ title: "Files Processed", description: `${filesProcessedCount} new text file(s) stored successfully.`});
+        toast({ title: "Files Processed", description: `${filesProcessedCount} new text file(s) stored successfully.` });
       }
-      
+
       let finalStatus = `${filesProcessedCount} new file(s) processed.`;
       if (filesSkippedCount > 0) {
         finalStatus += ` ${filesSkippedCount} file(s) skipped (duplicates or unsupported).`
       }
-       setUploadStatus(filesProcessedCount > 0 || filesSkippedCount > 0 ? finalStatus : "No new files were processed.");
+      setUploadStatus(filesProcessedCount > 0 || filesSkippedCount > 0 ? finalStatus : "No new files were processed.");
       setIsProcessing(false);
-      handleClearFile(); 
-      // No need to close dialog here, user might want to upload more or see status
-      // setIsUploadDialogOpen(false); 
+      handleClearFile();
     };
 
     const handleViewTextFile = (file: StoredFileMetadata) => {
       if (file.isTextContentStored && typeof window !== "undefined") {
-        // Try to get content from state first (if just uploaded), then from localStorage
         const contentFromState = file.fullContent;
         const contentFromStorage = localStorage.getItem(`${FILE_CONTENT_PREFIX_KEY}${file.id}`);
-        
+
         const displayContent = contentFromState || contentFromStorage;
 
         if (displayContent !== null && displayContent !== undefined) {
@@ -457,7 +454,7 @@ const Sidebar = React.forwardRef<
           setViewFileContent(displayContent);
           setIsViewFileDialogOpen(true);
         } else {
-          toast({ title: "Error", description: "Could not retrieve file content.", variant: "destructive"});
+          toast({ title: "Error", description: "Could not retrieve file content.", variant: "destructive" });
         }
       }
     };
@@ -469,6 +466,21 @@ const Sidebar = React.forwardRef<
       { name: 'Avocado Green', value: 'avocadoGreen', colorClass: 'bg-[#558040]' },
       { name: 'Maroon', value: 'maroon', colorClass: 'bg-[#800000]' },
     ];
+
+    const handleSettingsDialogOpenChange = (open: boolean) => {
+      setIsSettingsDialogOpen(open);
+      if (open && isThemeReady) { // Only close sidebar if dialog is opening AND theme is ready
+        setOpenMobile(false);
+      }
+    };
+
+    const handleHelpDialogOpenChange = (open: boolean) => {
+      setIsHelpDialogOpen(open);
+      if (open) {
+        setOpenMobile(false);
+      }
+    };
+
 
     if (collapsible === "none") {
       return (
@@ -488,453 +500,475 @@ const Sidebar = React.forwardRef<
     if (isMobile) {
       return (
         <>
-        <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
-          <SheetContent
-            data-sidebar="sidebar"
-            data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar text-sidebar-foreground [&>button]:hidden flex flex-col p-0"
-            style={
-              {
-                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-              } as React.CSSProperties
-            }
-            side={side}
-          >
-            <UiSheetHeader className="p-4 border-b border-sidebar-border flex-shrink-0 flex flex-row items-center justify-between gap-2">
-              <div className="flex flex-row items-center gap-2">
-                <Image src="https://i.imgur.com/BJ43v7S.png" alt="SBC APP Logo" width={36} height={36} data-ai-hint="logo" className="shrink-0" />
-                <UiSheetTitle className="text-lg font-headline text-primary">GraceNotes</UiSheetTitle>
-              </div>
-            </UiSheetHeader>
+          <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+            <SheetContent
+              data-sidebar="sidebar"
+              data-mobile="true"
+              className="w-[--sidebar-width] bg-sidebar text-sidebar-foreground [&>button]:hidden flex flex-col p-0"
+              style={
+                {
+                  "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+                } as React.CSSProperties
+              }
+              side={side}
+            >
+              <UiSheetHeader className="p-4 border-b border-sidebar-border flex-shrink-0 flex flex-row items-center justify-between gap-2">
+                <div className="flex flex-row items-center gap-2">
+                  <Image src="https://i.imgur.com/BJ43v7S.png" alt="SBC APP Logo" width={36} height={36} data-ai-hint="logo" className="shrink-0" />
+                  <UiSheetTitle className="text-lg font-headline text-primary">GraceNotes</UiSheetTitle>
+                </div>
+              </UiSheetHeader>
 
-            <div className="p-4 border-b border-sidebar-border space-y-2">
-              <Dialog open={isAddHymnDialogOpen} onOpenChange={setIsAddHymnDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="default" size="lg" className="w-full flex items-center justify-center gap-2">
-                    <PlusCircle className="h-5 w-5" />
-                    Add New Hymn
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
-                  <DialogHeader>
-                    <DialogTitle className="font-headline text-2xl">Add New Hymn</DialogTitle>
-                    <DialogDescription>Fill in the details for the new hymn. Hiligaynon is the default language. Click save when you&apos;re done.</DialogDescription>
-                  </DialogHeader>
-                  <form onSubmit={handleAddHymnSubmit}>
-                    <ScrollArea className="h-[65vh] pr-3">
-                      <div className="space-y-4 py-4">
-                        <div>
-                          <Label htmlFor="dialog-hymn-title-hiligaynon" className="font-semibold">Title (Hiligaynon)</Label>
-                          <Input id="dialog-hymn-title-hiligaynon" value={hymnTitleHiligaynon} onChange={(e) => setHymnTitleHiligaynon(e.target.value)} placeholder="e.g., Daku Nga Kalipay" required className="border-muted-foreground mt-1"/>
-                        </div>
-                        <div>
-                          <Label htmlFor="dialog-hymn-title-filipino">Title (Filipino) (Optional)</Label>
-                          <Input id="dialog-hymn-title-filipino" value={hymnTitleFilipino} onChange={(e) => setHymnTitleFilipino(e.target.value)} placeholder="e.g., Dakilang Kagalakan" className="border-muted-foreground mt-1"/>
-                        </div>
-                        <div>
-                          <Label htmlFor="dialog-hymn-title-english">Title (English) (Optional)</Label>
-                          <Input id="dialog-hymn-title-english" value={hymnTitleEnglish} onChange={(e) => setHymnTitleEnglish(e.target.value)} placeholder="e.g., Amazing Grace" className="border-muted-foreground mt-1"/>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 border-b border-sidebar-border space-y-2">
+                <Dialog open={isAddHymnDialogOpen} onOpenChange={setIsAddHymnDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="default" size="lg" className="w-full flex items-center justify-center gap-2">
+                      <PlusCircle className="h-5 w-5" />
+                      Add New Hymn
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
+                    <DialogHeader>
+                      <DialogTitle className="font-headline text-2xl">Add New Hymn</DialogTitle>
+                      <DialogDescription>Fill in the details for the new hymn. Hiligaynon is the default language. Click save when you&apos;re done.</DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleAddHymnSubmit}>
+                      <ScrollArea className="h-[65vh] pr-3">
+                        <div className="space-y-4 py-4">
                           <div>
-                            <Label htmlFor="dialog-hymn-key">Key (Optional)</Label>
-                            <Input id="dialog-hymn-key" value={hymnKey} onChange={(e) => setHymnKey(e.target.value)} placeholder="e.g., C Major" className="border-muted-foreground mt-1"/>
+                            <Label htmlFor="dialog-hymn-title-hiligaynon" className="font-semibold">Title (Hiligaynon)</Label>
+                            <Input id="dialog-hymn-title-hiligaynon" value={hymnTitleHiligaynon} onChange={(e) => setHymnTitleHiligaynon(e.target.value)} placeholder="e.g., Daku Nga Kalipay" required className="border-muted-foreground mt-1" />
                           </div>
                           <div>
-                            <Label htmlFor="dialog-hymn-page-number">Page Number (Optional)</Label>
-                            <Input id="dialog-hymn-page-number" value={hymnPageNumber} onChange={(e) => setHymnPageNumber(e.target.value)} placeholder="e.g., 101" className="border-muted-foreground mt-1"/>
+                            <Label htmlFor="dialog-hymn-title-filipino">Title (Filipino) (Optional)</Label>
+                            <Input id="dialog-hymn-title-filipino" value={hymnTitleFilipino} onChange={(e) => setHymnTitleFilipino(e.target.value)} placeholder="e.g., Dakilang Kagalakan" className="border-muted-foreground mt-1" />
+                          </div>
+                          <div>
+                            <Label htmlFor="dialog-hymn-title-english">Title (English) (Optional)</Label>
+                            <Input id="dialog-hymn-title-english" value={hymnTitleEnglish} onChange={(e) => setHymnTitleEnglish(e.target.value)} placeholder="e.g., Amazing Grace" className="border-muted-foreground mt-1" />
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="dialog-hymn-key">Key (Optional)</Label>
+                              <Input id="dialog-hymn-key" value={hymnKey} onChange={(e) => setHymnKey(e.target.value)} placeholder="e.g., C Major" className="border-muted-foreground mt-1" />
+                            </div>
+                            <div>
+                              <Label htmlFor="dialog-hymn-page-number">Page Number (Optional)</Label>
+                              <Input id="dialog-hymn-page-number" value={hymnPageNumber} onChange={(e) => setHymnPageNumber(e.target.value)} placeholder="e.g., 101" className="border-muted-foreground mt-1" />
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label htmlFor="dialog-hymn-lyrics-hiligaynon" className="font-semibold">Lyrics (Hiligaynon)</Label>
+                            <Textarea id="dialog-hymn-lyrics-hiligaynon" value={hymnLyricsHiligaynon} onChange={(e) => setHymnLyricsHiligaynon(e.target.value)} placeholder="Enter Hiligaynon lyrics here..." rows={10} required className="border-muted-foreground mt-1" />
+                          </div>
+                          <div>
+                            <Label htmlFor="dialog-hymn-lyrics-filipino">Lyrics (Filipino) (Optional)</Label>
+                            <Textarea id="dialog-hymn-lyrics-filipino" value={hymnLyricsFilipino} onChange={(e) => setHymnLyricsFilipino(e.target.value)} placeholder="Enter Filipino lyrics here..." rows={6} className="border-muted-foreground mt-1" />
+                          </div>
+                          <div>
+                            <Label htmlFor="dialog-hymn-lyrics-english">Lyrics (English) (Optional)</Label>
+                            <Textarea id="dialog-hymn-lyrics-english" value={hymnLyricsEnglish} onChange={(e) => setHymnLyricsEnglish(e.target.value)} placeholder="Enter English lyrics here..." rows={6} className="border-muted-foreground mt-1" />
                           </div>
                         </div>
+                      </ScrollArea>
+                      <DialogFooter className="pt-4 border-t">
+                        <DialogClose asChild>
+                          <Button type="button" variant="outline">Cancel</Button>
+                        </DialogClose>
+                        <Button type="submit">Save Hymn</Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
 
-                        <div>
-                          <Label htmlFor="dialog-hymn-lyrics-hiligaynon" className="font-semibold">Lyrics (Hiligaynon)</Label>
-                          <Textarea id="dialog-hymn-lyrics-hiligaynon" value={hymnLyricsHiligaynon} onChange={(e) => setHymnLyricsHiligaynon(e.target.value)} placeholder="Enter Hiligaynon lyrics here..." rows={10} required className="border-muted-foreground mt-1"/>
-                        </div>
-                        <div>
-                          <Label htmlFor="dialog-hymn-lyrics-filipino">Lyrics (Filipino) (Optional)</Label>
-                          <Textarea id="dialog-hymn-lyrics-filipino" value={hymnLyricsFilipino} onChange={(e) => setHymnLyricsFilipino(e.target.value)} placeholder="Enter Filipino lyrics here..." rows={6} className="border-muted-foreground mt-1"/>
-                        </div>
-                        <div>
-                          <Label htmlFor="dialog-hymn-lyrics-english">Lyrics (English) (Optional)</Label>
-                          <Textarea id="dialog-hymn-lyrics-english" value={hymnLyricsEnglish} onChange={(e) => setHymnLyricsEnglish(e.target.value)} placeholder="Enter English lyrics here..." rows={6} className="border-muted-foreground mt-1"/>
-                        </div>
+                <Dialog open={isDeleteHymnsDialogOpen} onOpenChange={setIsDeleteHymnsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="destructive" size="lg" className="w-full flex items-center justify-center gap-2">
+                      <Trash2 className="mr-2 h-5 w-5" /> Delete Hymns
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
+                    <DialogHeader>
+                      <DialogTitle className="font-headline text-2xl">Delete Hymns</DialogTitle>
+                      <DialogDescription>Select hymns from the list to delete. This action is simulated and will not permanently alter the data.</DialogDescription>
+                    </DialogHeader>
+                    <ScrollArea className="h-[60vh] my-4 pr-3">
+                      <div className="space-y-2">
+                        {sampleHymns.map((hymn) => (
+                          <div key={hymn.id} className="flex items-center space-x-2 p-2 border rounded-md hover:bg-muted/50">
+                            <Checkbox
+                              id={`delete-hymn-${hymn.id}`}
+                              checked={selectedHymnIds.includes(hymn.id)}
+                              onCheckedChange={(checked) => handleHymnSelectionChange(hymn.id, !!checked)}
+                              aria-labelledby={`label-delete-hymn-${hymn.id}`}
+                            />
+                            <Label htmlFor={`delete-hymn-${hymn.id}`} id={`label-delete-hymn-${hymn.id}`} className="flex-grow cursor-pointer">
+                              {hymn.title} {hymn.number ? `(#${hymn.number})` : ''}
+                            </Label>
+                          </div>
+                        ))}
+                        {sampleHymns.length === 0 && (
+                          <p className="text-muted-foreground text-center py-4">No hymns available to delete.</p>
+                        )}
                       </div>
                     </ScrollArea>
                     <DialogFooter className="pt-4 border-t">
                       <DialogClose asChild>
                         <Button type="button" variant="outline">Cancel</Button>
                       </DialogClose>
-                      <Button type="submit">Save Hymn</Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={handleDeleteSelectedHymns}
+                        disabled={selectedHymnIds.length === 0}
+                      >
+                        Delete Selected ({selectedHymnIds.length})
+                      </Button>
                     </DialogFooter>
-                  </form>
-                </DialogContent>
-              </Dialog>
+                  </DialogContent>
+                </Dialog>
 
-              <Dialog open={isDeleteHymnsDialogOpen} onOpenChange={setIsDeleteHymnsDialogOpen}>
-                <DialogTrigger asChild>
-                   <Button variant="destructive" size="lg" className="w-full flex items-center justify-center gap-2">
-                    <Trash2 className="mr-2 h-5 w-5" /> Delete Hymns
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
-                  <DialogHeader>
-                    <DialogTitle className="font-headline text-2xl">Delete Hymns</DialogTitle>
-                    <DialogDescription>Select hymns from the list to delete. This action is simulated and will not permanently alter the data.</DialogDescription>
-                  </DialogHeader>
-                  <ScrollArea className="h-[60vh] my-4 pr-3">
-                    <div className="space-y-2">
-                      {sampleHymns.map((hymn) => (
-                        <div key={hymn.id} className="flex items-center space-x-2 p-2 border rounded-md hover:bg-muted/50">
-                          <Checkbox
-                            id={`delete-hymn-${hymn.id}`}
-                            checked={selectedHymnIds.includes(hymn.id)}
-                            onCheckedChange={(checked) => handleHymnSelectionChange(hymn.id, !!checked)}
-                            aria-labelledby={`label-delete-hymn-${hymn.id}`}
-                          />
-                          <Label htmlFor={`delete-hymn-${hymn.id}`} id={`label-delete-hymn-${hymn.id}`} className="flex-grow cursor-pointer">
-                            {hymn.title} {hymn.number ? `(#${hymn.number})` : ''}
-                          </Label>
-                        </div>
-                      ))}
-                      {sampleHymns.length === 0 && (
-                        <p className="text-muted-foreground text-center py-4">No hymns available to delete.</p>
-                      )}
-                    </div>
-                  </ScrollArea>
-                  <DialogFooter className="pt-4 border-t">
-                    <DialogClose asChild>
-                      <Button type="button" variant="outline">Cancel</Button>
-                    </DialogClose>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      onClick={handleDeleteSelectedHymns}
-                      disabled={selectedHymnIds.length === 0}
-                    >
-                      Delete Selected ({selectedHymnIds.length})
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-
-              <Dialog open={isDataDialogOpen} onOpenChange={setIsDataDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="lg" className="w-full flex items-center justify-center gap-2">
-                    <Database className="mr-2 h-5 w-5" /> Processed Text Files
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
-                  <DialogHeader>
-                    <DialogTitle className="font-headline text-2xl">Processed Text Files</DialogTitle>
-                    <DialogDescription>
-                      List of text files processed and stored in your browser. Click on a file to view its content.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <ScrollArea className="h-[60vh] my-4 pr-3">
-                    {processedFiles.length === 0 ? (
-                      <p className="text-muted-foreground text-center py-4">No files processed yet.</p>
-                    ) : (
-                      <div className="space-y-2">
-                        {processedFiles.map((file) => (
-                          <Button
-                            key={file.id}
-                            variant="ghost"
-                            className="w-full justify-start h-auto p-3 border rounded-md bg-background hover:bg-muted/50"
-                            onClick={() => handleViewTextFile(file)}
-                            title={`View ${file.name}`}
-                            disabled={!file.isTextContentStored}
-                          >
-                            <div className="flex items-center gap-3 w-full">
-                              <FileText className="h-5 w-5 text-primary flex-shrink-0" />
-                              <div className="flex-grow text-left overflow-hidden">
-                                <p className="font-medium truncate">{file.name}</p>
-                                <div className="flex items-center gap-2 text-xs mt-1">
-                                  <Badge variant="secondary">{file.type}</Badge>
-                                  <Badge variant="outline">{(file.size / 1024).toFixed(2)} KB</Badge>
-                                </div>
-                              </div>
-                            </div>
-                          </Button>
-                        ))}
-                      </div>
-                    )}
-                  </ScrollArea>
-                  <DialogFooter className="pt-4 border-t">
-                    <DialogClose asChild>
-                      <Button type="button" variant="outline">Close</Button>
-                    </DialogClose>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-
-              <Dialog open={isUploadDialogOpen} onOpenChange={(isOpen) => { setIsUploadDialogOpen(isOpen); if (!isOpen) { handleClearFile(); setIsProcessing(false); }}}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="lg" className="w-full flex items-center justify-center gap-2">
-                    <Upload className="mr-2 h-5 w-5" /> Upload Text Files
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
-                  <DialogHeader>
-                    <DialogTitle className="font-headline text-2xl flex items-center gap-2">
-                      <FileUp className="h-6 w-6 text-primary" /> Upload Text Files
-                    </DialogTitle>
-                    <DialogDescription>
-                      Select up to 10 .txt (text) files to upload. Text file content will be stored in your browser.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="py-4 space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="file-upload">Choose .txt File(s)</Label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          ref={fileInputRef}
-                          id="file-upload"
-                          type="file"
-                          accept=".txt,text/plain"
-                          multiple
-                          onChange={handleFileChange}
-                          className="border-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 flex-grow"
-                        />
-                        {selectedFilesList.length > 0 && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={handleClearFile}
-                            aria-label="Remove selected files"
-                            className="text-destructive hover:bg-destructive/10"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                      {selectedFilesList.length > 0 && (
-                        <ScrollArea className="max-h-32 mt-2 border rounded-md p-2">
-                          <ul className="text-sm space-y-1">
-                            {selectedFilesList.map(file => (
-                              <li key={file.name + file.lastModified + file.size} className="truncate flex items-center justify-between">
-                                <span>{file.name} ({(file.size/1024).toFixed(2)} KB)</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </ScrollArea>
-                      )}
-                    </div>
-                    {uploadStatus && (
-                      <p className={cn("text-sm", uploadStatus.includes("Error") || uploadStatus.includes("Invalid") || uploadStatus.includes("Unsupported") ? "text-destructive" : "text-muted-foreground")}>
-                        {uploadStatus}
-                      </p>
-                    )}
-                  </div>
-                  <DialogFooter className="pt-4 border-t">
-                    <DialogClose asChild>
-                      <Button type="button" variant="outline">Close</Button>
-                    </DialogClose>
-                    <Button
-                      type="button"
-                      onClick={handleProcessFile}
-                      disabled={selectedFilesList.length === 0 || isProcessing}
-                    >
-                      {isProcessing ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Upload className="mr-2 h-4 w-4" />
-                      )}
-                      {isProcessing ? "Processing..." : `Process ${selectedFilesList.length} File(s)`}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-
-            </div>
-
-            <div className="mt-auto p-4 border-t border-sidebar-border space-y-2">
-             {isThemeReady ? (
-                <Dialog open={isSettingsDialogOpen} onOpenChange={setIsSettingsDialogOpen}>
+                <Dialog open={isDataDialogOpen} onOpenChange={setIsDataDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-sm" 
-                      onClick={() => {
-                        setOpenMobile(false); 
-                        // setIsSettingsDialogOpen(true); // Let DialogTrigger handle this
-                      }}
-                      disabled={!isThemeReady} // Keep disabled logic based on isThemeReady
-                    >
-                      {isThemeReady ? <Settings className="mr-2 h-5 w-5" /> : <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                      {isThemeReady ? "Settings" : "Settings (Loading...)"}
+                    <Button variant="outline" size="lg" className="w-full flex items-center justify-center gap-2">
+                      <Database className="mr-2 h-5 w-5" /> Processed Text Files
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="p-4 max-w-md sm:max-w-lg rounded-[25px]">
+                  <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
                     <DialogHeader>
-                      <DialogTitle className="font-headline text-2xl flex items-center gap-2">
-                        <Palette className="h-6 w-6 text-primary" /> App Settings
-                      </DialogTitle>
+                      <DialogTitle className="font-headline text-2xl">Processed Text Files</DialogTitle>
                       <DialogDescription>
-                        Customize the look and feel of the application.
+                        List of text files processed and stored in your browser. Click on a file to view its content.
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="py-6 space-y-6">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="theme-switch" className="text-base flex items-center">
-                          {theme === 'dark' ? <Moon className="mr-2 h-5 w-5" /> : <Sun className="mr-2 h-5 w-5" />}
-                          Dark Mode
-                        </Label>
-                        <Switch
-                          id="theme-switch"
-                          checked={theme === 'dark'}
-                          onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-                        />
-                      </div>
-                      <Separator />
-                      <div>
-                        <Label className="text-base mb-3 block">Primary Color</Label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                          {colorOptions.map(opt => (
+                    <ScrollArea className="h-[60vh] my-4 pr-3">
+                      {processedFiles.length === 0 ? (
+                        <p className="text-muted-foreground text-center py-4">No files processed yet.</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {processedFiles.map((file) => (
                             <Button
-                              key={opt.value}
-                              variant={primaryColor === opt.value ? 'default' : 'outline'}
-                              onClick={() => setAppPrimaryColor(opt.value)}
-                              className="flex items-center justify-start gap-2 h-12 text-sm"
+                              key={file.id}
+                              variant="ghost"
+                              className="w-full justify-start h-auto p-3 border rounded-md bg-background hover:bg-muted/50"
+                              onClick={() => handleViewTextFile(file)}
+                              title={`View ${file.name}`}
+                              disabled={!file.isTextContentStored}
                             >
-                              <span className={cn("h-5 w-5 rounded-full border border-black/20", opt.colorClass)}></span>
-                              {opt.name}
+                              <div className="flex items-center gap-3 w-full">
+                                <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+                                <div className="flex-grow text-left overflow-hidden">
+                                  <p className="font-medium truncate">{file.name}</p>
+                                  <div className="flex items-center gap-2 text-xs mt-1">
+                                    <Badge variant="secondary">{file.type}</Badge>
+                                    <Badge variant="outline">{(file.size / 1024).toFixed(2)} KB</Badge>
+                                  </div>
+                                </div>
+                              </div>
                             </Button>
                           ))}
                         </div>
-                      </div>
-                    </div>
+                      )}
+                    </ScrollArea>
                     <DialogFooter className="pt-4 border-t">
                       <DialogClose asChild>
-                        <Button type="button" variant="outline">Done</Button>
+                        <Button type="button" variant="outline">Close</Button>
                       </DialogClose>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
-              ) : (
-                <Button variant="ghost" className="w-full justify-start text-sm" disabled>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Settings (Loading...)
-                </Button>
-              )}
 
-              <Dialog open={isHelpDialogOpen} onOpenChange={setIsHelpDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" className="w-full justify-start text-sm" onClick={() => setOpenMobile(false)}>
-                    <HelpCircle className="mr-2 h-5 w-5" /> Help
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="p-4 max-w-md sm:max-w-lg md:max-w-2xl max-h-[90vh] rounded-[25px]">
-                  <DialogHeader>
-                    <DialogTitle className="font-headline text-2xl flex items-center gap-2">
-                      <HelpCircle className="h-6 w-6 text-primary"/> Help & Support
-                    </DialogTitle>
-                    <DialogDescription>
-                      Find information on how to use the GraceNotes app features.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <ScrollArea className="h-[65vh] my-4 pr-3">
-                    <div className="space-y-6 text-sm">
-                      <section>
-                        <h3 className="font-semibold text-lg mb-2 text-primary">General Navigation</h3>
-                        <p className="text-muted-foreground">
-                          Use the bottom navigation bar (on mobile) or the sidebar (on desktop) to switch between main sections: Hymnal, Program, Readings, and AI Suggestions.
-                          The sidebar also provides access to adding new hymns, managing uploaded data, and app settings.
+                <Dialog open={isUploadDialogOpen} onOpenChange={(isOpen) => { setIsUploadDialogOpen(isOpen); if (!isOpen) { handleClearFile(); setIsProcessing(false); } }}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="lg" className="w-full flex items-center justify-center gap-2">
+                      <Upload className="mr-2 h-5 w-5" /> Upload Text Files
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
+                    <DialogHeader>
+                      <DialogTitle className="font-headline text-2xl flex items-center gap-2">
+                        <FileUp className="h-6 w-6 text-primary" /> Upload Text Files
+                      </DialogTitle>
+                      <DialogDescription>
+                        Select up to 10 .txt (text) files to upload. Text file content will be stored in your browser.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="file-upload">Choose .txt File(s)</Label>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            ref={fileInputRef}
+                            id="file-upload"
+                            type="file"
+                            accept=".txt,text/plain"
+                            multiple
+                            onChange={handleFileChange}
+                            className="border-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 flex-grow"
+                          />
+                          {selectedFilesList.length > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={handleClearFile}
+                              aria-label="Remove selected files"
+                              className="text-destructive hover:bg-destructive/10"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                        {selectedFilesList.length > 0 && (
+                          <ScrollArea className="max-h-32 mt-2 border rounded-md p-2">
+                            <ul className="text-sm space-y-1">
+                              {selectedFilesList.map(file => (
+                                <li key={file.name + file.lastModified + file.size} className="truncate flex items-center justify-between">
+                                  <span>{file.name} ({(file.size / 1024).toFixed(2)} KB)</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </ScrollArea>
+                        )}
+                      </div>
+                      {uploadStatus && (
+                        <p className={cn("text-sm", uploadStatus.includes("Error") || uploadStatus.includes("Invalid") || uploadStatus.includes("Unsupported") ? "text-destructive" : "text-muted-foreground")}>
+                          {uploadStatus}
                         </p>
-                      </section>
-                       <Separator />
-                      <section>
-                        <h3 className="font-semibold text-lg mb-2 text-primary">Adding a New Hymn</h3>
-                        <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                          <li>Open the mobile sidebar (menu icon on top left) or use the desktop sidebar.</li>
-                          <li>Click the "Add New Hymn" button.</li>
-                          <li>A dialog will appear. Fill in the hymn details. Hiligaynon title and lyrics are required. Other fields are optional.</li>
-                          <li>Click "Save Hymn". The hymn will be added (simulated for now).</li>
-                        </ol>
-                      </section>
-                       <Separator />
-                      <section>
-                        <h3 className="font-semibold text-lg mb-2 text-primary">Uploading & Viewing Text Files</h3>
-                        <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                          <li>Access the "Upload Text Files" dialog from the sidebar.</li>
-                          <li>Click "Choose .txt File(s)" and select up to 10 text files from your device. Only .txt files are supported.</li>
-                          <li>Once selected, click "Process File(s)". The app will store the metadata and content of these files in your browser. Duplicate files (based on name, size, and last modified date) will be skipped.</li>
-                          <li>To view uploaded files, open the "Processed Text Files" dialog from the sidebar.</li>
-                          <li>Click on a file name in the list to open a new dialog displaying its content.</li>
-                        </ol>
-                         <p className="mt-2 text-xs text-muted-foreground">
+                      )}
+                    </div>
+                    <DialogFooter className="pt-4 border-t">
+                      <DialogClose asChild>
+                        <Button type="button" variant="outline">Close</Button>
+                      </DialogClose>
+                      <Button
+                        type="button"
+                        onClick={handleProcessFile}
+                        disabled={selectedFilesList.length === 0 || isProcessing}
+                      >
+                        {isProcessing ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Upload className="mr-2 h-4 w-4" />
+                        )}
+                        {isProcessing ? "Processing..." : `Process ${selectedFilesList.length} File(s)`}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+              </div>
+
+              <ScrollArea className="flex-grow p-4 overflow-y-auto">
+                <SidebarMenu className="p-0">
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={false} onClick={() => setOpenMobile(false)}>
+                      <Link href="/hymnal"><Music /> Hymnal</Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={false} onClick={() => setOpenMobile(false)}>
+                      <Link href="/program"><ListOrdered /> Program</Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={false} onClick={() => setOpenMobile(false)}>
+                      <Link href="/readings"><BookOpenText /> Readings</Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={false} onClick={() => setOpenMobile(false)}>
+                      <Link href="/suggestions"><Wand2 /> AI Suggestions</Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </ScrollArea>
+
+
+              <div className="mt-auto p-4 border-t border-sidebar-border space-y-2">
+                {isThemeReady ? (
+                  <Dialog open={isSettingsDialogOpen} onOpenChange={handleSettingsDialogOpenChange}>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sm"
+                        disabled={!isThemeReady}
+                      >
+                        {isThemeReady ? <Settings className="mr-2 h-5 w-5" /> : <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                        {isThemeReady ? "Settings" : "Settings (Loading...)"}
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="p-4 max-w-md sm:max-w-lg rounded-[25px]">
+                      <DialogHeader>
+                        <DialogTitle className="font-headline text-2xl flex items-center gap-2">
+                          <Palette className="h-6 w-6 text-primary" /> App Settings
+                        </DialogTitle>
+                        <DialogDescription>
+                          Customize the look and feel of the application.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="py-6 space-y-6">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="theme-switch" className="text-base flex items-center">
+                            {theme === 'dark' ? <Moon className="mr-2 h-5 w-5" /> : <Sun className="mr-2 h-5 w-5" />}
+                            Dark Mode
+                          </Label>
+                          <Switch
+                            id="theme-switch"
+                            checked={theme === 'dark'}
+                            onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+                          />
+                        </div>
+                        <Separator />
+                        <div>
+                          <Label className="text-base mb-3 block">Primary Color</Label>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            {colorOptions.map(opt => (
+                              <Button
+                                key={opt.value}
+                                variant={primaryColor === opt.value ? 'default' : 'outline'}
+                                onClick={() => setAppPrimaryColor(opt.value)}
+                                className="flex items-center justify-start gap-2 h-12 text-sm"
+                              >
+                                <span className={cn("h-5 w-5 rounded-full border border-black/20", opt.colorClass)}></span>
+                                {opt.name}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <DialogFooter className="pt-4 border-t">
+                        <DialogClose asChild>
+                          <Button type="button" variant="outline">Done</Button>
+                        </DialogClose>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                ) : (
+                  <Button variant="ghost" className="w-full justify-start text-sm" disabled>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Settings (Loading...)
+                  </Button>
+                )}
+
+                <Dialog open={isHelpDialogOpen} onOpenChange={handleHelpDialogOpenChange}>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" className="w-full justify-start text-sm">
+                      <HelpCircle className="mr-2 h-5 w-5" /> Help
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="p-4 max-w-md sm:max-w-lg md:max-w-2xl max-h-[90vh] rounded-[25px]">
+                    <DialogHeader>
+                      <DialogTitle className="font-headline text-2xl flex items-center gap-2">
+                        <HelpCircle className="h-6 w-6 text-primary" /> Help & Support
+                      </DialogTitle>
+                      <DialogDescription>
+                        Find information on how to use the GraceNotes app features.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <ScrollArea className="h-[65vh] my-4 pr-3">
+                      <div className="space-y-6 text-sm">
+                        <section>
+                          <h3 className="font-semibold text-lg mb-2 text-primary">General Navigation</h3>
+                          <p className="text-muted-foreground">
+                            Use the bottom navigation bar (on mobile) or the sidebar (on desktop) to switch between main sections: Hymnal, Program, Readings, and AI Suggestions.
+                            The sidebar also provides access to adding new hymns, managing uploaded data, and app settings.
+                          </p>
+                        </section>
+                        <Separator />
+                        <section>
+                          <h3 className="font-semibold text-lg mb-2 text-primary">Adding a New Hymn</h3>
+                          <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                            <li>Open the mobile sidebar (menu icon on top left) or use the desktop sidebar.</li>
+                            <li>Click the "Add New Hymn" button.</li>
+                            <li>A dialog will appear. Fill in the hymn details. Hiligaynon title and lyrics are required. Other fields are optional.</li>
+                            <li>Click "Save Hymn". The hymn will be added (simulated for now).</li>
+                          </ol>
+                        </section>
+                        <Separator />
+                        <section>
+                          <h3 className="font-semibold text-lg mb-2 text-primary">Uploading & Viewing Text Files</h3>
+                          <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                            <li>Access the "Upload Text Files" dialog from the sidebar.</li>
+                            <li>Click "Choose .txt File(s)" and select up to 10 text files from your device. Only .txt files are supported.</li>
+                            <li>Once selected, click "Process File(s)". The app will store the metadata and content of these files in your browser. Duplicate files (based on name, size, and last modified date) will be skipped.</li>
+                            <li>To view uploaded files, open the "Processed Text Files" dialog from the sidebar.</li>
+                            <li>Click on a file name in the list to open a new dialog displaying its content.</li>
+                          </ol>
+                          <p className="mt-2 text-xs text-muted-foreground">
                             Note: File storage uses your browser's local storage. Clearing browser data for this site will remove uploaded files.
                           </p>
-                      </section>
-                       <Separator />
-                      <section>
-                        <h3 className="font-semibold text-lg mb-2 text-primary">AI Suggestions</h3>
-                         <p className="text-muted-foreground">
-                          Navigate to the "Suggestions" page from the sidebar or bottom navigation.
-                          Based on the hymns, readings, and program items you view, the app will provide personalized suggestions for related content along with a reason for the suggestion.
-                        </p>
-                      </section>
-                       <Separator />
-                      <section>
-                        <h3 className="font-semibold text-lg mb-2 text-primary">Customizing Appearance</h3>
-                        <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                          <li>Access the "Settings" dialog from the sidebar.</li>
-                          <li>Use the switch to toggle between Light and Dark mode.</li>
-                          <li>Select a primary color theme (Deep Purple, Sky Blue, Avocado Green, Maroon) to change the app's accent colors.</li>
-                          <li>Your preferences are saved in your browser.</li>
-                        </ol>
-                      </section>
-                       <Separator />
-                       <section>
-                        <h3 className="font-semibold text-lg mb-2 text-primary">Deleting Hymns (Simulated)</h3>
-                         <p className="text-muted-foreground">
-                          The "Delete Hymns" button in the sidebar opens a dialog where you can select hymns for deletion. This feature is currently a simulation and does not permanently alter the sample hymn data.
-                        </p>
-                      </section>
-                       <Separator />
-                      <section>
-                        <h3 className="font-semibold text-lg mb-2 text-primary">Deleting Local Activity Data</h3>
-                        <p className="text-muted-foreground">
-                          The "Delete Data" page (accessible via the main sidebar navigation) allows you to clear your locally stored activity history (viewed hymns, readings, programs). This will reset AI suggestions.
-                        </p>
-                      </section>
-                    </div>
-                  </ScrollArea>
-                  <DialogFooter className="pt-4 border-t">
-                    <DialogClose asChild>
-                      <Button type="button" variant="outline">Close</Button>
-                    </DialogClose>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-
-              <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => { setOpenMobile(false); }}>
-                <Link href="/about">
-                  <Info className="mr-2 h-5 w-5" /> About
-                </Link>
-              </Button>
-            </div>
-          </SheetContent>
-        </Sheet>
-
-        <Dialog open={isViewFileDialogOpen} onOpenChange={setIsViewFileDialogOpen}>
-            <DialogContent className="p-4 max-w-lg sm:max-w-xl md:max-w-2xl max-h-[90vh] rounded-[25px]">
-                <DialogHeader>
-                    <DialogTitle className="font-headline text-2xl flex items-center gap-2">
-                        <FileText className="h-6 w-6 text-primary" /> Viewing: {viewFileName}
-                    </DialogTitle>
-                </DialogHeader>
-                <ScrollArea className="h-[65vh] my-4 pr-3 border rounded-md bg-muted/20">
-                    <pre className="p-4 text-sm whitespace-pre-wrap break-words">
-                        {viewFileContent || "No content to display."}
-                    </pre>
-                </ScrollArea>
-                <DialogFooter className="pt-4 border-t">
-                    <DialogClose asChild>
+                        </section>
+                        <Separator />
+                        <section>
+                          <h3 className="font-semibold text-lg mb-2 text-primary">AI Suggestions</h3>
+                          <p className="text-muted-foreground">
+                            Navigate to the "Suggestions" page from the sidebar or bottom navigation.
+                            Based on the hymns, readings, and program items you view, the app will provide personalized suggestions for related content along with a reason for the suggestion.
+                          </p>
+                        </section>
+                        <Separator />
+                        <section>
+                          <h3 className="font-semibold text-lg mb-2 text-primary">Customizing Appearance</h3>
+                          <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                            <li>Access the "Settings" dialog from the sidebar.</li>
+                            <li>Use the switch to toggle between Light and Dark mode.</li>
+                            <li>Select a primary color theme (Deep Purple, Sky Blue, Avocado Green, Maroon) to change the app's accent colors.</li>
+                            <li>Your preferences are saved in your browser.</li>
+                          </ol>
+                        </section>
+                        <Separator />
+                        <section>
+                          <h3 className="font-semibold text-lg mb-2 text-primary">Deleting Hymns (Simulated)</h3>
+                          <p className="text-muted-foreground">
+                            The "Delete Hymns" button in the sidebar opens a dialog where you can select hymns for deletion. This feature is currently a simulation and does not permanently alter the sample hymn data.
+                          </p>
+                        </section>
+                        <Separator />
+                        <section>
+                          <h3 className="font-semibold text-lg mb-2 text-primary">Deleting Local Activity Data</h3>
+                          <p className="text-muted-foreground">
+                            The "Delete Data" page (accessible via the main sidebar navigation) allows you to clear your locally stored activity history (viewed hymns, readings, programs). This will reset AI suggestions.
+                          </p>
+                        </section>
+                      </div>
+                    </ScrollArea>
+                    <DialogFooter className="pt-4 border-t">
+                      <DialogClose asChild>
                         <Button type="button" variant="outline">Close</Button>
-                    </DialogClose>
-                </DialogFooter>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => { setOpenMobile(false); }}>
+                  <Link href="/about">
+                    <Info className="mr-2 h-5 w-5" /> About
+                  </Link>
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          <Dialog open={isViewFileDialogOpen} onOpenChange={setIsViewFileDialogOpen}>
+            <DialogContent className="p-4 max-w-lg sm:max-w-xl md:max-w-2xl max-h-[90vh] rounded-[25px]">
+              <DialogHeader>
+                <DialogTitle className="font-headline text-2xl flex items-center gap-2">
+                  <FileText className="h-6 w-6 text-primary" /> Viewing: {viewFileName}
+                </DialogTitle>
+              </DialogHeader>
+              <ScrollArea className="h-[65vh] my-4 pr-3 border rounded-md bg-muted/20">
+                <pre className="p-4 text-sm whitespace-pre-wrap break-words">
+                  {viewFileContent || "No content to display."}
+                </pre>
+              </ScrollArea>
+              <DialogFooter className="pt-4 border-t">
+                <DialogClose asChild>
+                  <Button type="button" variant="outline">Close</Button>
+                </DialogClose>
+              </DialogFooter>
             </DialogContent>
-        </Dialog>
+          </Dialog>
         </>
       )
     }
@@ -1134,7 +1168,7 @@ const SidebarContent = React.forwardRef<
       )}
       {...props}
     >
-    {React.Children.map(children, child => {
+      {React.Children.map(children, child => {
         if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarNav' && setOpenMobile) {
           return React.cloneElement(child, { setOpenMobile });
         }
@@ -1227,11 +1261,11 @@ const SidebarMenu = React.forwardRef<
     {...props}
   >
     {React.Children.map(children, child => {
-        if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarMenuItem' && setOpenMobile) {
-          return React.cloneElement(child, { setOpenMobile });
-        }
-        return child;
-      })}
+      if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarMenuItem' && setOpenMobile) {
+        return React.cloneElement(child, { setOpenMobile });
+      }
+      return child;
+    })}
   </ul>
 ))
 SidebarMenu.displayName = "SidebarMenu"
@@ -1247,14 +1281,16 @@ const SidebarMenuItem = React.forwardRef<
     {...props}
   >
     {React.Children.map(children, child => {
-        if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarMenuButton' && setOpenMobile) {
-          return React.cloneElement(child as React.ReactElement<any>, { onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+      if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarMenuButton' && setOpenMobile) {
+        return React.cloneElement(child as React.ReactElement<any>, {
+          onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
             if (child.props.onClick) child.props.onClick(event);
-            if (setOpenMobile && child.props.href) setOpenMobile(false); 
-          }});
-        }
-        return child;
-      })}
+            if (setOpenMobile && child.props.href) setOpenMobile(false);
+          }
+        });
+      }
+      return child;
+    })}
   </li>
 ))
 SidebarMenuItem.displayName = "SidebarMenuItem"
@@ -1283,12 +1319,12 @@ const sidebarMenuButtonVariants = cva(
 
 const SidebarMenuButton = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentProps<"button"> & { 
+  React.ComponentProps<"button"> & {
     asChild?: boolean
     isActive?: boolean
     tooltip?: string | React.ComponentProps<typeof TooltipContent>
     onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
-    href?: string; 
+    href?: string;
   } & VariantProps<typeof sidebarMenuButtonVariants>
 >(
   (
@@ -1299,8 +1335,8 @@ const SidebarMenuButton = React.forwardRef<
       size = "default",
       tooltip,
       className,
-      onClick, 
-      href,  
+      onClick,
+      href,
       ...props
     },
     ref
@@ -1316,7 +1352,7 @@ const SidebarMenuButton = React.forwardRef<
         data-active={isActive}
         className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
         onClick={onClick}
-        {...(Comp === "button" && {type: "button"})} 
+        {...(Comp === "button" && { type: "button" })}
         {...props}
       />
     )
@@ -1367,7 +1403,7 @@ const SidebarMenuAction = React.forwardRef<
         "peer-data-[size=lg]/menu-button:top-2.5",
         "group-data-[collapsible=icon]:hidden",
         showOnHover &&
-          "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
+        "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
         className
       )}
       {...props}
@@ -1513,3 +1549,4 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+
