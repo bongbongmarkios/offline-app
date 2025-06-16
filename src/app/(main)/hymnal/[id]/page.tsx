@@ -36,14 +36,14 @@ export default async function HymnPage({ params }: HymnPageProps) {
   return (
     <>
       <AppHeader 
-        title="" 
-        actions={
+        title={
           <Button asChild variant="outline" size="sm">
             <Link href="/hymnal">
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Hymnal
             </Link>
           </Button>
-        }
+        } 
+        actions={null}
       />
       <div className="container mx-auto px-4 pb-8">
         <HymnDetail hymn={hymn} />

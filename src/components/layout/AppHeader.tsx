@@ -28,7 +28,7 @@ import { useRouter } from 'next/navigation';
 
 
 interface AppHeaderProps {
-  title: string;
+  title: ReactNode; // Changed from string to ReactNode
   actions?: ReactNode;
 }
 
@@ -47,15 +47,25 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
 
   const handleAddReadingSubmit = () => {
     setIsAddReadingDialogOpen(false);
-    // Consider adding router.refresh() here if AddReadingForm modifies global data
+    router.refresh(); 
   };
+
+  const handleDeleteSuccess = () => {
+    router.refresh();
+  }
 
   return (
     <>
       <header className="bg-card shadow-sm mb-4 md:mb-6 print:hidden">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-headline font-semibold text-primary sm:text-3xl">{title}</h1>
+          <div className="flex items-center gap-3"> {/* Left side container */}
+            {typeof title === 'string' && title.length > 0 ? (
+              <h1 className="text-2xl font-headline font-semibold text-primary sm:text-3xl">{title}</h1>
+            ) : typeof title === 'string' && title.length === 0 ? (
+              null // If title is an empty string, render nothing
+            ) : (
+              title // Otherwise, title is a ReactNode (e.g., a button), render it directly
+            )}
           </div>
           <div className="flex items-center gap-2">
             {actions}
@@ -158,7 +168,7 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
             onOpenChange={setIsDeleteHymnDialogOpen} 
             onDeleteSuccess={() => {
               setIsDeleteHymnDialogOpen(false);
-              router.refresh(); // Refresh data after simulated deletion
+              handleDeleteSuccess();
             }}
           />
         </DialogContent>
@@ -176,7 +186,7 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
             onOpenChange={setIsDeleteReadingDialogOpen} 
             onDeleteSuccess={() => {
               setIsDeleteReadingDialogOpen(false);
-              router.refresh(); // Refresh data after simulated deletion
+              handleDeleteSuccess();
             }}
           />
         </DialogContent>
