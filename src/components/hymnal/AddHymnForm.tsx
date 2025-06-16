@@ -101,17 +101,6 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
         <CardContent className={cardContentClassName}>
           <ScrollArea className={scrollAreaClassName}>
             <div className="space-y-6 pr-4 pb-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="pageNumber-dialog">Page Number (Optional)</Label>
-                  <Input id="pageNumber-dialog" value={pageNumber} onChange={(e) => setPageNumber(e.target.value)} placeholder="e.g., 123" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="keySignature-dialog">Key Signature (Optional)</Label>
-                  <Input id="keySignature-dialog" value={keySignature} onChange={(e) => setKeySignature(e.target.value)} placeholder="e.g., C Major" />
-                </div>
-              </div>
-
               <div className="space-y-2">
                 <Label htmlFor="titleEnglish-dialog">Title (English)</Label>
                 <Input id="titleEnglish-dialog" value={titleEnglish} onChange={(e) => setTitleEnglish(e.target.value)} placeholder="English Title" required />
@@ -123,6 +112,17 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
               <div className="space-y-2">
                 <Label htmlFor="titleHiligaynon-dialog">Title (Hiligaynon, Optional)</Label>
                 <Input id="titleHiligaynon-dialog" value={titleHiligaynon} onChange={(e) => setTitleHiligaynon(e.target.value)} placeholder="Hiligaynon Title" />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="pageNumber-dialog">Page Number (Optional)</Label>
+                  <Input id="pageNumber-dialog" value={pageNumber} onChange={(e) => setPageNumber(e.target.value)} placeholder="e.g., 123" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="keySignature-dialog">Key Signature (Optional)</Label>
+                  <Input id="keySignature-dialog" value={keySignature} onChange={(e) => setKeySignature(e.target.value)} placeholder="e.g., C Major" />
+                </div>
               </div>
               
               <div className="space-y-2">
