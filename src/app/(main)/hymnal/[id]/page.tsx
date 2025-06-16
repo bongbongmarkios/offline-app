@@ -36,7 +36,7 @@ export default async function HymnPage({ params }: HymnPageProps) {
   return (
     <>
       <AppHeader 
-        title={hymn.titleEnglish} // Display English title in header
+        title="Hymn Detail" 
         actions={
           <Button asChild variant="outline" size="sm">
             <Link href="/hymnal">
