@@ -5,15 +5,13 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, PlusCircle, Settings, HelpCircle, Info, Trash2, Music, ListOrdered, BookOpenText, Wand2, BookMarked, Database, Upload, FileUp, Loader2, X, FileText } from "lucide-react"
+import { PanelLeft, Info } from "lucide-react"
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+
 import {
   Sheet,
   SheetContent,
@@ -21,28 +19,13 @@ import {
   SheetTitle as UiSheetTitle
 } from "@/components/ui/sheet"
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton"
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useToast } from "@/hooks/use-toast";
-import { Checkbox } from "@/components/ui/checkbox";
-import { sampleHymns } from "@/data/hymns";
-import type { Hymn } from "@/types";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
+
+import { Skeleton } from "@/components/ui/skeleton"
 
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
@@ -51,19 +34,6 @@ const SIDEBAR_WIDTH = "16rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
-
-const PROCESSED_FILES_INDEX_KEY = "processedFilesIndex_v3";
-const FILE_CONTENT_PREFIX_KEY = "fileContent_v3_";
-
-interface StoredFileMetadata {
-  id: string;
-  name: string;
-  type: string;
-  size: number;
-  lastModified: number;
-  isTextContentStored: boolean;
-  fullContent?: string;
-}
 
 type SidebarContext = {
   state: "expanded" | "collapsed"
@@ -209,269 +179,7 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile, toggleSidebar } = useSidebar();
-    const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = React.useState(false);
-    const [hymnTitleHiligaynon, setHymnTitleHiligaynon] = React.useState('');
-    const [hymnTitleFilipino, setHymnTitleFilipino] = React.useState('');
-    const [hymnTitleEnglish, setHymnTitleEnglish] = React.useState('');
-    const [hymnKey, setHymnKey] = React.useState('');
-    const [hymnPageNumber, setHymnPageNumber] = React.useState('');
-    const [hymnLyricsHiligaynon, setHymnLyricsHiligaynon] = React.useState('');
-    const [hymnLyricsFilipino, setHymnLyricsFilipino] = React.useState('');
-    const [hymnLyricsEnglish, setHymnLyricsEnglish] = React.useState('');
-    const { toast } = useToast();
-
-    const [isDeleteHymnsDialogOpen, setIsDeleteHymnsDialogOpen] = React.useState(false);
-    const [selectedHymnIds, setSelectedHymnIds] = React.useState<string[]>([]);
-
-    const [isDataDialogOpen, setIsDataDialogOpen] = React.useState(false);
-    const [isUploadDialogOpen, setIsUploadDialogOpen] = React.useState(false);
-    const [selectedFilesList, setSelectedFilesList] = React.useState<File[]>([]);
-    const [uploadStatus, setUploadStatus] = React.useState<string | null>(null);
-    const [isProcessing, setIsProcessing] = React.useState(false);
-    const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-    const [processedFiles, setProcessedFiles] = React.useState<StoredFileMetadata[]>([]);
-
-    const [isViewFileDialogOpen, setIsViewFileDialogOpen] = React.useState(false);
-    const [viewFileContent, setViewFileContent] = React.useState<string | undefined>('');
-    const [viewFileName, setViewFileName] = React.useState('');
-
-    const [isSettingsDialogOpen, setIsSettingsDialogOpen] = React.useState(false);
-    const [isHelpDialogOpen, setIsHelpDialogOpen] = React.useState(false);
-
-
-    React.useEffect(() => {
-      if (typeof window !== "undefined") {
-        const storedIndex = localStorage.getItem(PROCESSED_FILES_INDEX_KEY);
-        if (storedIndex) {
-          try {
-            const parsedIndex: StoredFileMetadata[] = JSON.parse(storedIndex);
-            const filesWithPotentialContent = parsedIndex.map(fileMeta => {
-              if (fileMeta.isTextContentStored && !fileMeta.fullContent) {
-                const content = localStorage.getItem(`${FILE_CONTENT_PREFIX_KEY}${fileMeta.id}`);
-                return { ...fileMeta, fullContent: content || undefined };
-              }
-              return fileMeta;
-            });
-            setProcessedFiles(filesWithPotentialContent);
-          } catch (e) {
-            console.error("Error parsing processed files index from localStorage", e);
-            localStorage.removeItem(PROCESSED_FILES_INDEX_KEY);
-          }
-        }
-      }
-    }, []);
-
-    const saveProcessedFilesIndex = (updatedFiles: StoredFileMetadata[]) => {
-      if (typeof window !== "undefined") {
-        const metadataOnly = updatedFiles.map(({ fullContent, ...meta }) => meta);
-        localStorage.setItem(PROCESSED_FILES_INDEX_KEY, JSON.stringify(metadataOnly));
-      }
-    };
-
-
-    const handleAddHymnSubmit = (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!hymnTitleHiligaynon || !hymnLyricsHiligaynon) {
-        toast({
-          title: "Error",
-          description: "Hiligaynon Title and Lyrics are required.",
-          variant: "destructive",
-        });
-        return;
-      }
-      console.log('New Hymn (from dialog):', {
-        titleHiligaynon: hymnTitleHiligaynon,
-        titleFilipino: hymnTitleFilipino,
-        titleEnglish: hymnTitleEnglish,
-        key: hymnKey,
-        pageNumber: hymnPageNumber,
-        lyricsHiligaynon: hymnLyricsHiligaynon,
-        lyricsFilipino: hymnLyricsFilipino,
-        lyricsEnglish: hymnLyricsEnglish,
-      });
-      toast({
-        title: "Hymn Added (Simulated)",
-        description: `"${hymnTitleHiligaynon}" has been added to the list (not actually saved).`,
-      });
-      setHymnTitleHiligaynon('');
-      setHymnTitleFilipino('');
-      setHymnTitleEnglish('');
-      setHymnKey('');
-      setHymnPageNumber('');
-      setHymnLyricsHiligaynon('');
-      setHymnLyricsFilipino('');
-      setHymnLyricsEnglish('');
-      setIsAddHymnDialogOpen(false);
-      if (isMobile) {
-        setOpenMobile(false); // Close mobile sidebar after successful add
-      }
-    };
-
-    const handleHymnSelectionChange = (hymnId: string, checked: boolean) => {
-      setSelectedHymnIds(prevSelectedIds => {
-        if (checked) {
-          return [...prevSelectedIds, hymnId];
-        } else {
-          return prevSelectedIds.filter(id => id !== hymnId);
-        }
-      });
-    };
-
-    const handleDeleteSelectedHymns = () => {
-      if (selectedHymnIds.length === 0) {
-        toast({
-          title: "No Hymns Selected",
-          description: "Please select at least one hymn to delete.",
-          variant: "destructive",
-        });
-        return;
-      }
-      console.log("Deleting Hymns (Simulated):", selectedHymnIds);
-      toast({
-        title: "Hymns Deleted (Simulated)",
-        description: `${selectedHymnIds.length} hymn(s) have been "deleted". This is a simulation.`,
-      });
-      setSelectedHymnIds([]);
-      setIsDeleteHymnsDialogOpen(false);
-      if (isMobile) {
-        setOpenMobile(false);
-      }
-    };
-
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (event.target.files) {
-        let filesArray = Array.from(event.target.files);
-        if (filesArray.length > 10) {
-          toast({
-            title: "File Limit Exceeded",
-            description: "You can select up to 10 text files at a time.",
-            variant: "destructive",
-          });
-          filesArray = filesArray.slice(0, 10);
-        }
-        setSelectedFilesList(filesArray);
-        setUploadStatus(filesArray.length > 0 ? `${filesArray.length} file(s) selected.` : null);
-      } else {
-        setSelectedFilesList([]);
-        setUploadStatus(null);
-      }
-    };
-
-    const handleClearFile = () => {
-      setSelectedFilesList([]);
-      setUploadStatus(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    };
-
-    const handleProcessFile = async () => {
-      if (selectedFilesList.length === 0) {
-        setUploadStatus("No files selected.");
-        toast({ title: "Error", description: "No files selected.", variant: "destructive" });
-        return;
-      }
-
-      setIsProcessing(true);
-      setUploadStatus(`Processing ${selectedFilesList.length} file(s)...`);
-
-      let newlyAddedMetadataList: StoredFileMetadata[] = [];
-      let filesProcessedCount = 0;
-      let filesSkippedCount = 0;
-
-      for (const file of selectedFilesList) {
-        if (file.type !== "text/plain") {
-          toast({ title: "Unsupported File Type", description: `"${file.name}" is not a .txt file. Only .txt files are supported. Skipped.`, variant: "destructive" });
-          filesSkippedCount++;
-          continue;
-        }
-
-        const deterministicFileId = `${file.name}-${file.size}-${file.lastModified}`;
-
-        const isDuplicate = processedFiles.some(pf => pf.id === deterministicFileId);
-        if (isDuplicate) {
-          toast({
-            title: "File Skipped",
-            description: `"${file.name}" already exists and was not re-added.`,
-          });
-          filesSkippedCount++;
-          continue;
-        }
-
-
-        try {
-          const text = await file.text();
-          if (typeof window !== "undefined") {
-            localStorage.setItem(`${FILE_CONTENT_PREFIX_KEY}${deterministicFileId}`, text);
-          }
-          const newFileMetadata: StoredFileMetadata = {
-            id: deterministicFileId,
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            lastModified: file.lastModified,
-            isTextContentStored: true,
-            fullContent: text,
-          };
-          newlyAddedMetadataList.push(newFileMetadata);
-          filesProcessedCount++;
-        } catch (error) {
-          console.error(`Error reading text file "${file.name}":`, error);
-          toast({ title: "Error Reading File", description: `Could not read text file "${file.name}".`, variant: "destructive" });
-          continue;
-        }
-      }
-
-      if (newlyAddedMetadataList.length > 0) {
-        const updatedAllFiles = [...processedFiles, ...newlyAddedMetadataList];
-        setProcessedFiles(updatedAllFiles);
-        saveProcessedFilesIndex(updatedAllFiles);
-        toast({ title: "Files Processed", description: `${filesProcessedCount} new text file(s) stored successfully.` });
-      }
-
-      let finalStatus = `${filesProcessedCount} new file(s) processed.`;
-      if (filesSkippedCount > 0) {
-        finalStatus += ` ${filesSkippedCount} file(s) skipped (duplicates or unsupported).`
-      }
-      setUploadStatus(filesProcessedCount > 0 || filesSkippedCount > 0 ? finalStatus : "No new files were processed.");
-      setIsProcessing(false);
-      handleClearFile();
-      if (filesProcessedCount > 0 && isMobile) { // Close mobile sidebar if files were successfully processed
-          setIsUploadDialogOpen(false); // Also close the upload dialog
-          setOpenMobile(false);
-      } else if (filesProcessedCount > 0) {
-           setIsUploadDialogOpen(false); // Close dialog even on desktop
-      }
-    };
-
-    const handleViewTextFile = (file: StoredFileMetadata) => {
-      if (file.isTextContentStored && typeof window !== "undefined") {
-        const contentFromState = file.fullContent;
-        const contentFromStorage = localStorage.getItem(`${FILE_CONTENT_PREFIX_KEY}${file.id}`);
-
-        const displayContent = contentFromState || contentFromStorage;
-
-        if (displayContent !== null && displayContent !== undefined) {
-          setViewFileName(file.name);
-          setViewFileContent(displayContent);
-          setIsViewFileDialogOpen(true);
-        } else {
-          toast({ title: "Error", description: "Could not retrieve file content.", variant: "destructive" });
-        }
-      }
-    };
-    
-    const handleDialogAndSidebarClose = (
-      setDialogState: React.Dispatch<React.SetStateAction<boolean>>,
-      isOpening: boolean
-    ) => {
-      setDialogState(isOpening);
-      if (isOpening && isMobile) {
-        setOpenMobile(false);
-      }
-    };
+    const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
 
 
     if (collapsible === "none") {
@@ -511,254 +219,12 @@ const Sidebar = React.forwardRef<
                 </div>
               </UiSheetHeader>
 
-              <div className="p-4 border-b border-sidebar-border space-y-2">
-                <Dialog open={isAddHymnDialogOpen} onOpenChange={(isOpen) => handleDialogAndSidebarClose(setIsAddHymnDialogOpen, isOpen)}>
-                  <DialogTrigger asChild>
-                    <Button variant="default" size="lg" className="w-full flex items-center justify-center gap-2">
-                      <PlusCircle className="h-5 w-5" />
-                      Add New Hymn
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
-                    <DialogHeader>
-                      <DialogTitle className="font-headline text-2xl">Add New Hymn</DialogTitle>
-                      <DialogDescription>Fill in the details for the new hymn. Hiligaynon is the default language. Click save when you&apos;re done.</DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleAddHymnSubmit}>
-                      <ScrollArea className="h-[65vh] pr-3">
-                        <div className="space-y-4 py-4">
-                          <div>
-                            <Label htmlFor="dialog-hymn-title-hiligaynon" className="font-semibold">Title (Hiligaynon)</Label>
-                            <Input id="dialog-hymn-title-hiligaynon" value={hymnTitleHiligaynon} onChange={(e) => setHymnTitleHiligaynon(e.target.value)} placeholder="e.g., Daku Nga Kalipay" required className="border-muted-foreground mt-1" />
-                          </div>
-                          <div>
-                            <Label htmlFor="dialog-hymn-title-filipino">Title (Filipino) (Optional)</Label>
-                            <Input id="dialog-hymn-title-filipino" value={hymnTitleFilipino} onChange={(e) => setHymnTitleFilipino(e.target.value)} placeholder="e.g., Dakilang Kagalakan" className="border-muted-foreground mt-1" />
-                          </div>
-                          <div>
-                            <Label htmlFor="dialog-hymn-title-english">Title (English) (Optional)</Label>
-                            <Input id="dialog-hymn-title-english" value={hymnTitleEnglish} onChange={(e) => setHymnTitleEnglish(e.target.value)} placeholder="e.g., Amazing Grace" className="border-muted-foreground mt-1" />
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="dialog-hymn-key">Key (Optional)</Label>
-                              <Input id="dialog-hymn-key" value={hymnKey} onChange={(e) => setHymnKey(e.target.value)} placeholder="e.g., C Major" className="border-muted-foreground mt-1" />
-                            </div>
-                            <div>
-                              <Label htmlFor="dialog-hymn-page-number">Page Number (Optional)</Label>
-                              <Input id="dialog-hymn-page-number" value={hymnPageNumber} onChange={(e) => setHymnPageNumber(e.target.value)} placeholder="e.g., 101" className="border-muted-foreground mt-1" />
-                            </div>
-                          </div>
-
-                          <div>
-                            <Label htmlFor="dialog-hymn-lyrics-hiligaynon" className="font-semibold">Lyrics (Hiligaynon)</Label>
-                            <Textarea id="dialog-hymn-lyrics-hiligaynon" value={hymnLyricsHiligaynon} onChange={(e) => setHymnLyricsHiligaynon(e.target.value)} placeholder="Enter Hiligaynon lyrics here..." rows={10} required className="border-muted-foreground mt-1" />
-                          </div>
-                          <div>
-                            <Label htmlFor="dialog-hymn-lyrics-filipino">Lyrics (Filipino) (Optional)</Label>
-                            <Textarea id="dialog-hymn-lyrics-filipino" value={hymnLyricsFilipino} onChange={(e) => setHymnLyricsFilipino(e.target.value)} placeholder="Enter Filipino lyrics here..." rows={6} className="border-muted-foreground mt-1" />
-                          </div>
-                          <div>
-                            <Label htmlFor="dialog-hymn-lyrics-english">Lyrics (English) (Optional)</Label>
-                            <Textarea id="dialog-hymn-lyrics-english" value={hymnLyricsEnglish} onChange={(e) => setHymnLyricsEnglish(e.target.value)} placeholder="Enter English lyrics here..." rows={6} className="border-muted-foreground mt-1" />
-                          </div>
-                        </div>
-                      </ScrollArea>
-                      <DialogFooter className="pt-4 border-t">
-                        <DialogClose asChild>
-                          <Button type="button" variant="outline">Cancel</Button>
-                        </DialogClose>
-                        <Button type="submit">Save Hymn</Button>
-                      </DialogFooter>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-
-                <Dialog open={isDeleteHymnsDialogOpen} onOpenChange={(isOpen) => handleDialogAndSidebarClose(setIsDeleteHymnsDialogOpen, isOpen)}>
-                  <DialogTrigger asChild>
-                    <Button variant="destructive" size="lg" className="w-full flex items-center justify-center gap-2">
-                      <Trash2 className="mr-2 h-5 w-5" /> Delete Hymns
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
-                    <DialogHeader>
-                      <DialogTitle className="font-headline text-2xl">Delete Hymns</DialogTitle>
-                      <DialogDescription>Select hymns from the list to delete. This action is simulated and will not permanently alter the data.</DialogDescription>
-                    </DialogHeader>
-                    <ScrollArea className="h-[60vh] my-4 pr-3">
-                      <div className="space-y-2">
-                        {sampleHymns.map((hymn) => (
-                          <div key={hymn.id} className="flex items-center space-x-2 p-2 border rounded-md hover:bg-muted/50">
-                            <Checkbox
-                              id={`delete-hymn-${hymn.id}`}
-                              checked={selectedHymnIds.includes(hymn.id)}
-                              onCheckedChange={(checked) => handleHymnSelectionChange(hymn.id, !!checked)}
-                              aria-labelledby={`label-delete-hymn-${hymn.id}`}
-                            />
-                            <Label htmlFor={`delete-hymn-${hymn.id}`} id={`label-delete-hymn-${hymn.id}`} className="flex-grow cursor-pointer">
-                              {hymn.title} {hymn.number ? `(#${hymn.number})` : ''}
-                            </Label>
-                          </div>
-                        ))}
-                        {sampleHymns.length === 0 && (
-                          <p className="text-muted-foreground text-center py-4">No hymns available to delete.</p>
-                        )}
-                      </div>
-                    </ScrollArea>
-                    <DialogFooter className="pt-4 border-t">
-                      <DialogClose asChild>
-                        <Button type="button" variant="outline">Cancel</Button>
-                      </DialogClose>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        onClick={handleDeleteSelectedHymns}
-                        disabled={selectedHymnIds.length === 0}
-                      >
-                        Delete Selected ({selectedHymnIds.length})
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-
-                <Dialog open={isDataDialogOpen} onOpenChange={(isOpen) => handleDialogAndSidebarClose(setIsDataDialogOpen, isOpen)}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="lg" className="w-full flex items-center justify-center gap-2">
-                      <Database className="mr-2 h-5 w-5" /> Data
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
-                    <DialogHeader>
-                      <DialogTitle className="font-headline text-2xl">Processed Text Files</DialogTitle>
-                      <DialogDescription>
-                        List of text files processed and stored in your browser. Click on a file to view its content.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <ScrollArea className="h-[60vh] my-4 pr-3">
-                      {processedFiles.length === 0 ? (
-                        <p className="text-muted-foreground text-center py-4">No files processed yet.</p>
-                      ) : (
-                        <div className="space-y-2">
-                          {processedFiles.map((file) => (
-                            <Button
-                              key={file.id}
-                              variant="ghost"
-                              className="w-full justify-start h-auto p-3 border rounded-md bg-background hover:bg-muted/50"
-                              onClick={() => handleViewTextFile(file)}
-                              title={`View ${file.name}`}
-                              disabled={!file.isTextContentStored}
-                            >
-                              <div className="flex items-center gap-3 w-full">
-                                <FileText className="h-5 w-5 text-primary flex-shrink-0" />
-                                <div className="flex-grow text-left overflow-hidden">
-                                  <p className="font-medium truncate">{file.name}</p>
-                                  <div className="flex items-center gap-2 text-xs mt-1">
-                                    <Badge variant="secondary">{file.type}</Badge>
-                                    <Badge variant="outline">{(file.size / 1024).toFixed(2)} KB</Badge>
-                                  </div>
-                                </div>
-                              </div>
-                            </Button>
-                          ))}
-                        </div>
-                      )}
-                    </ScrollArea>
-                    <DialogFooter className="pt-4 border-t">
-                      <DialogClose asChild>
-                        <Button type="button" variant="outline">Close</Button>
-                      </DialogClose>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-
-                <Dialog open={isUploadDialogOpen} onOpenChange={(isOpen) => {
-                  handleDialogAndSidebarClose(setIsUploadDialogOpen, isOpen);
-                  if (!isOpen) { handleClearFile(); setIsProcessing(false); }
-                }}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="lg" className="w-full flex items-center justify-center gap-2">
-                      <Upload className="mr-2 h-5 w-5" /> Upload Text Files
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="p-4 max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-[25px]">
-                    <DialogHeader>
-                      <DialogTitle className="font-headline text-2xl flex items-center gap-2">
-                        <FileUp className="h-6 w-6 text-primary" /> Upload Text Files
-                      </DialogTitle>
-                      <DialogDescription>
-                        Select up to 10 .txt (text) files to upload. Text file content will be stored in your browser.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4 space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="file-upload">Choose .txt File(s)</Label>
-                        <div className="flex items-center gap-2">
-                          <Input
-                            ref={fileInputRef}
-                            id="file-upload"
-                            type="file"
-                            accept=".txt,text/plain"
-                            multiple
-                            onChange={handleFileChange}
-                            className="border-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 flex-grow"
-                          />
-                          {selectedFilesList.length > 0 && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={handleClearFile}
-                              aria-label="Remove selected files"
-                              className="text-destructive hover:bg-destructive/10"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                        {selectedFilesList.length > 0 && (
-                          <ScrollArea className="max-h-32 mt-2 border rounded-md p-2">
-                            <ul className="text-sm space-y-1">
-                              {selectedFilesList.map(file => (
-                                <li key={file.name + file.lastModified + file.size} className="truncate flex items-center justify-between">
-                                  <span>{file.name} ({(file.size / 1024).toFixed(2)} KB)</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </ScrollArea>
-                        )}
-                      </div>
-                      {uploadStatus && (
-                        <p className={cn("text-sm", uploadStatus.includes("Error") || uploadStatus.includes("Invalid") || uploadStatus.includes("Unsupported") ? "text-destructive" : "text-muted-foreground")}>
-                          {uploadStatus}
-                        </p>
-                      )}
-                    </div>
-                    <DialogFooter className="pt-4 border-t">
-                      <DialogClose asChild>
-                        <Button type="button" variant="outline">Close</Button>
-                      </DialogClose>
-                      <Button
-                        type="button"
-                        onClick={handleProcessFile}
-                        disabled={selectedFilesList.length === 0 || isProcessing}
-                      >
-                        {isProcessing ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <Upload className="mr-2 h-4 w-4" />
-                        )}
-                        {isProcessing ? "Processing..." : `Process ${selectedFilesList.length} File(s)`}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-
+              {/* Action buttons section removed */}
+              
+              {/* Empty ScrollArea for main nav items also removed as items were removed previously */}
+              <div className="flex-grow overflow-y-auto">
+                {/* This area is now empty as per previous requests to remove nav items */}
               </div>
-
-              <ScrollArea className="flex-grow p-4 overflow-y-auto">
-                {/* Navigation items were previously here, now removed */}
-              </ScrollArea>
-
 
               <div className="mt-auto p-4 border-t border-sidebar-border space-y-2">
                 <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => setOpenMobile(false)}>
@@ -766,30 +232,9 @@ const Sidebar = React.forwardRef<
                     <Info className="mr-2 h-5 w-5" /> About
                   </Link>
                 </Button>
-                 {/* Settings and Help Dialogs have been removed */}
               </div>
             </SheetContent>
           </Sheet>
-
-          <Dialog open={isViewFileDialogOpen} onOpenChange={setIsViewFileDialogOpen}>
-            <DialogContent className="p-4 max-w-lg sm:max-w-xl md:max-w-2xl max-h-[90vh] rounded-[25px]">
-              <DialogHeader>
-                <DialogTitle className="font-headline text-2xl flex items-center gap-2">
-                  <FileText className="h-6 w-6 text-primary" /> Viewing: {viewFileName}
-                </DialogTitle>
-              </DialogHeader>
-              <ScrollArea className="h-[65vh] my-4 pr-3 border rounded-md bg-muted/20">
-                <pre className="p-4 text-sm whitespace-pre-wrap break-words">
-                  {viewFileContent || "No content to display."}
-                </pre>
-              </ScrollArea>
-              <DialogFooter className="pt-4 border-t">
-                <DialogClose asChild>
-                  <Button type="button" variant="outline">Close</Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </>
       )
     }
@@ -913,15 +358,15 @@ const SidebarInset = React.forwardRef<
 SidebarInset.displayName = "SidebarInset"
 
 const SidebarInput = React.forwardRef<
-  React.ElementRef<typeof Input>,
-  React.ComponentProps<typeof Input>
+  React.ElementRef<typeof HTMLInputElement>, // Changed from Input to HTMLInputElement
+  React.ComponentProps<typeof HTMLInputElement> // Changed from Input to HTMLInputElement
 >(({ className, ...props }, ref) => {
   return (
-    <Input
+    <input // Changed from Input component to native input
       ref={ref}
       data-sidebar="input"
       className={cn(
-        "h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+        "h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring border rounded-md px-2 text-sm", // Added some basic input styling
         className
       )}
       {...props}
@@ -929,6 +374,7 @@ const SidebarInput = React.forwardRef<
   )
 })
 SidebarInput.displayName = "SidebarInput"
+
 
 const SidebarHeader = React.forwardRef<
   HTMLDivElement,
@@ -991,7 +437,7 @@ const SidebarContent = React.forwardRef<
     >
       {React.Children.map(children, child => {
         if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarNav' && setOpenMobile) {
-          return React.cloneElement(child, { setOpenMobile });
+          return React.cloneElement(child, { setOpenMobile }  as React.Attributes & { setOpenMobile?: (open: boolean) => void });
         }
         return child;
       })}
@@ -1083,7 +529,9 @@ const SidebarMenu = React.forwardRef<
   >
     {React.Children.map(children, child => {
       if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarMenuItem' && setOpenMobile) {
-        return React.cloneElement(child, { setOpenMobile });
+         return React.cloneElement(child as React.ReactElement<any>, {
+          setOpenMobile
+        });
       }
       return child;
     })}
@@ -1370,3 +818,4 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+
