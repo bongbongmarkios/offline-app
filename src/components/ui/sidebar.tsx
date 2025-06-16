@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, Info, PlusCircle, Trash2, Settings as SettingsIcon, HelpCircle as HelpCircleIcon, Database, Upload, FileUp, Loader2, X, FileText, Palette, Moon, Sun } from "lucide-react" 
+import { PanelLeft, Info, PlusCircle, Trash2 } from "lucide-react" 
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -20,6 +20,14 @@ import {
   SheetClose
 } from "@/components/ui/sheet"
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -28,7 +36,7 @@ import {
 
 import { Skeleton } from "@/components/ui/skeleton"
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useTheme, type PrimaryColor } from '@/context/ThemeContext';
+import AddHymnForm from "@/components/hymnal/AddHymnForm";
 
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
@@ -183,7 +191,8 @@ const Sidebar = React.forwardRef<
     ref
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
-    const { theme, setTheme, primaryColor, setPrimaryColor, isThemeReady } = useTheme();
+    const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = React.useState(false);
+
 
     if (collapsible === "none") {
       return (
@@ -201,6 +210,17 @@ const Sidebar = React.forwardRef<
     }
 
     if (isMobile) {
+      const handleAddHymnDialogSubmit = () => {
+        setIsAddHymnDialogOpen(false); 
+      };
+      
+      const handleAddHymnOpenChange = (isOpen: boolean) => {
+        setIsAddHymnDialogOpen(isOpen);
+        if (isOpen && isMobile) {
+          setOpenMobile(false); // Close mobile sidebar when dialog opens
+        }
+      };
+
       return (
         <>
           <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
@@ -229,9 +249,22 @@ const Sidebar = React.forwardRef<
               </UiSheetHeader>
 
               <div className="p-4 space-y-2 border-b border-sidebar-border">
-                <Button variant="ghost" className="w-full justify-start text-sm" onClick={() => { console.log("Add Hymn clicked"); setOpenMobile(false); }}>
-                  <PlusCircle className="mr-2 h-5 w-5" /> Add Hymn
-                </Button>
+                <Dialog open={isAddHymnDialogOpen} onOpenChange={handleAddHymnOpenChange}>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" className="w-full justify-start text-sm">
+                      <PlusCircle className="mr-2 h-5 w-5" /> Add Hymn
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[525px]">
+                    <DialogHeader>
+                      <DialogTitle className="font-headline text-xl">Add New Hymn</DialogTitle>
+                      <DialogDescription>
+                        Fill in the details for the new hymn below. Click "Add Hymn" when you're done.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <AddHymnForm onFormSubmit={handleAddHymnDialogSubmit} />
+                  </DialogContent>
+                </Dialog>
                 <Button variant="ghost" className="w-full justify-start text-sm" onClick={() => { console.log("Add Readings clicked"); setOpenMobile(false); }}>
                   <PlusCircle className="mr-2 h-5 w-5" /> Add Readings
                 </Button>
