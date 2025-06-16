@@ -4,14 +4,13 @@
  * @fileOverview A Genkit flow for basic chat with Gemini.
  *
  * - chatWithGemini - A function that takes a user prompt and returns Gemini's response.
- * - ChatInputSchema - The Zod schema for the input.
- * - ChatOutputSchema - The Zod schema for the output (though we'll return string directly for simplicity here).
+ * - ChatInput - The type for the input.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const ChatInputSchema = z.object({
+const ChatInputSchema = z.object({
   prompt: z.string().describe('The user message to send to the AI.'),
 });
 export type ChatInput = z.infer<typeof ChatInputSchema>;
