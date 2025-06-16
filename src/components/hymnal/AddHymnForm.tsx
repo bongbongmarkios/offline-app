@@ -34,24 +34,30 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!titleEnglish || !lyricsEnglish) {
+    if (!titleHiligaynon || !lyricsHiligaynon) {
       toast({
         title: "Error",
-        description: "English Title and English Lyrics are required.",
+        description: "Hiligaynon Title and Hiligaynon Lyrics are required.",
         variant: "destructive",
       });
       return;
     }
 
+    // Ensure English title and lyrics have default values if empty, as they are required in the type.
+    // The Hymn type expects them for consistency, even if not filled in the form.
+    const finalTitleEnglish = titleEnglish || titleHiligaynon; // Default to Hiligaynon if English is empty
+    const finalLyricsEnglish = lyricsEnglish || ""; // Default to empty string
+
+
     const newHymnData: Omit<Hymn, 'id'> = {
-      titleHiligaynon: titleHiligaynon || undefined, 
+      titleHiligaynon, 
       titleFilipino: titleFilipino || undefined,
-      titleEnglish,
+      titleEnglish: finalTitleEnglish,
       pageNumber: pageNumber || undefined,
       keySignature: keySignature || undefined,
-      lyricsHiligaynon: lyricsHiligaynon || undefined,
+      lyricsHiligaynon,
       lyricsFilipino: lyricsFilipino || undefined,
-      lyricsEnglish,
+      lyricsEnglish: finalLyricsEnglish,
     };
     
     const addedHymn = addSampleHymn(newHymnData);
@@ -75,7 +81,7 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
       onFormSubmit(); 
     } else {
       router.push('/hymnal'); 
-      router.refresh(); // To ensure the list updates on the hymnal page
+      router.refresh(); 
     }
   };
 
@@ -114,7 +120,7 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
       {onFormSubmit ? null : ( 
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Add New Hymn</CardTitle>
-          <CardDescription>Fill in the details for the new hymn.</CardDescription>
+          <CardDescription>Fill in the details for the new hymn. Hiligaynon title and lyrics are required.</CardDescription>
         </CardHeader>
       )}
       <form onSubmit={handleSubmit} className={formElementClassName}>
@@ -122,12 +128,13 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
           <ScrollArea className={scrollAreaClassName}>
             <div className="space-y-6 pr-4 pb-4">
               <div className="space-y-2">
-                <Label htmlFor="titleHiligaynon-dialog">Title (Hiligaynon, Optional)</Label>
+                <Label htmlFor="titleHiligaynon-dialog">Title (Hiligaynon)</Label>
                 <Input 
                   id="titleHiligaynon-dialog" 
                   value={titleHiligaynon} 
                   onChange={(e) => setTitleHiligaynon(e.target.value.toUpperCase())} 
-                  placeholder="Hiligaynon Title" 
+                  placeholder="Hiligaynon Title"
+                  required
                 />
               </div>
               <div className="space-y-2">
@@ -135,8 +142,8 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
                 <Input id="titleFilipino-dialog" value={titleFilipino} onChange={(e) => setTitleFilipino(e.target.value)} placeholder="Filipino Title" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="titleEnglish-dialog">Title (English)</Label>
-                <Input id="titleEnglish-dialog" value={titleEnglish} onChange={(e) => setTitleEnglish(e.target.value)} placeholder="English Title" required />
+                <Label htmlFor="titleEnglish-dialog">Title (English, Optional)</Label>
+                <Input id="titleEnglish-dialog" value={titleEnglish} onChange={(e) => setTitleEnglish(e.target.value)} placeholder="English Title" />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -151,16 +158,16 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="lyricsHiligaynon-dialog">Lyrics (Hiligaynon, Optional)</Label>
-                <Textarea id="lyricsHiligaynon-dialog" value={lyricsHiligaynon} onChange={(e) => setLyricsHiligaynon(e.target.value)} placeholder="Enter Hiligaynon lyrics..." rows={6} />
+                <Label htmlFor="lyricsHiligaynon-dialog">Lyrics (Hiligaynon)</Label>
+                <Textarea id="lyricsHiligaynon-dialog" value={lyricsHiligaynon} onChange={(e) => setLyricsHiligaynon(e.target.value)} placeholder="Enter Hiligaynon lyrics..." rows={6} required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lyricsFilipino-dialog">Lyrics (Filipino, Optional)</Label>
                 <Textarea id="lyricsFilipino-dialog" value={lyricsFilipino} onChange={(e) => setLyricsFilipino(e.target.value)} placeholder="Enter Filipino lyrics..." rows={6} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lyricsEnglish-dialog">Lyrics (English)</Label>
-                <Textarea id="lyricsEnglish-dialog" value={lyricsEnglish} onChange={(e) => setLyricsEnglish(e.target.value)} placeholder="Enter English lyrics..." rows={6} required />
+                <Label htmlFor="lyricsEnglish-dialog">Lyrics (English, Optional)</Label>
+                <Textarea id="lyricsEnglish-dialog" value={lyricsEnglish} onChange={(e) => setLyricsEnglish(e.target.value)} placeholder="Enter English lyrics..." rows={6} />
               </div>
             </div>
           </ScrollArea>

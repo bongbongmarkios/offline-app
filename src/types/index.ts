@@ -4,13 +4,13 @@ export interface Hymn {
   pageNumber?: string; // Replaces old 'number'
   keySignature?: string;
   
-  titleEnglish: string; // Required
+  titleEnglish: string; 
   titleFilipino?: string;
-  titleHiligaynon?: string;
+  titleHiligaynon: string; // Now required
   
-  lyricsEnglish: string; // Required
+  lyricsEnglish: string; 
   lyricsFilipino?: string;
-  lyricsHiligaynon?: string;
+  lyricsHiligaynon: string; // Now required
   
   composer?: string;
   author?: string;
@@ -64,3 +64,4 @@ export type UserActivity = {
   recentHymns: string[]; // Will store the English title of the hymn
   recentReadings: string[];
 };
+
