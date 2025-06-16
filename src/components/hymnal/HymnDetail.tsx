@@ -33,7 +33,7 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
             {hymn.pageNumber && <span className="text-lg font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full ml-4 flex-shrink-0">{hymn.pageNumber}</span>}
         </div>
         
-        <div className="text-md text-muted-foreground space-y-1">
+        <div className="text-md text-muted-foreground space-y-1 text-center">
             {hymn.keySignature && <p>Key: {hymn.keySignature}</p>}
             {hymn.composer && <p>Composer: {hymn.composer}</p>}
         </div>
@@ -56,7 +56,7 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
               <div>
                 <h3 className="text-xl font-semibold mb-2 text-primary/90">Filipino</h3>
                 <div className="whitespace-pre-line text-foreground leading-relaxed text-lg">
-                  {hymn.lyricsFilipino}
+                  {hymn.lyricsFilipino ? hymn.lyricsFilipino : <p className="text-muted-foreground italic">Sorry, lyrics unavailable this time.</p>}
                 </div>
               </div>
             )}
@@ -64,7 +64,7 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
               <div>
                 <h3 className="text-xl font-semibold mb-2 text-primary/90">English</h3>
                 <div className="whitespace-pre-line text-foreground leading-relaxed text-lg">
-                  {hymn.lyricsEnglish}
+                  {hymn.lyricsEnglish ? hymn.lyricsEnglish : <p className="text-muted-foreground italic">Sorry, lyrics unavailable this time.</p>}
                 </div>
               </div>
             )}
@@ -74,4 +74,3 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
     </Card>
   );
 }
-
