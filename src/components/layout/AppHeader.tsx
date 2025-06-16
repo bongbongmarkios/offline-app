@@ -122,7 +122,7 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
       </header>
 
       <Dialog open={isAddHymnDialogOpen} onOpenChange={setIsAddHymnDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] h-[85vh] flex flex-col">
+        <DialogContent className="sm:max-w-[600px] h-[85vh] flex flex-col sm:rounded-[25px]">
           <DialogHeader>
             <DialogTitle>Add New Hymn</DialogTitle>
             <DialogDescription>
