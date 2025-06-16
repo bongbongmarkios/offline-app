@@ -46,8 +46,8 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
     }
 
     console.log('New Hymn:', { 
-      pageNumber, keySignature,
       titleEnglish, titleFilipino, titleHiligaynon,
+      pageNumber, keySignature,
       lyricsEnglish, lyricsFilipino, lyricsHiligaynon,
       author, composer, category 
     });
@@ -57,11 +57,11 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
     });
 
     // Reset all fields
-    setPageNumber('');
-    setKeySignature('');
     setTitleEnglish('');
     setTitleFilipino('');
     setTitleHiligaynon('');
+    setPageNumber('');
+    setKeySignature('');
     setLyricsEnglish('');
     setLyricsFilipino('');
     setLyricsHiligaynon('');
@@ -76,6 +76,14 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
     }
   };
 
+  const handleCancel = () => {
+    if (onFormSubmit) {
+      onFormSubmit(); // This will typically close the dialog
+    } else {
+      router.push('/hymnal'); // Navigate if it's the standalone page
+    }
+  };
+
   const FormWrapper = onFormSubmit ? 'div' : Card;
   
   const formWrapperFinalClassName = onFormSubmit 
@@ -85,7 +93,7 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
   const formProps = { className: formWrapperFinalClassName };
 
   const formElementClassName = onFormSubmit ? "flex flex-col flex-1 min-h-0" : "";
-  const cardContentClassName = onFormSubmit ? "pt-4 flex-1 min-h-0 overflow-hidden" : "pt-4";
+  const cardContentClassName = onFormSubmit ? "pt-4 flex-1 min-h-0 overflow-hidden" : "pt-4"; // This is the element in user's prompt
   const scrollAreaClassName = onFormSubmit ? "h-full w-full" : "max-h-[60vh] w-full";
   const cardFooterClassName = `flex-shrink-0 ${onFormSubmit ? "pt-6" : "pt-6"}`;
 
@@ -100,7 +108,7 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
       <form onSubmit={handleSubmit} className={formElementClassName}>
         <CardContent className={cardContentClassName}>
           <ScrollArea className={scrollAreaClassName}>
-            <div className="space-y-6 pr-4 pb-4">
+            <div className="space-y-6 pr-4 pb-4"> {/* Added pb-4 and pr-4 here */}
               <div className="space-y-2">
                 <Label htmlFor="titleEnglish-dialog">Title (English)</Label>
                 <Input id="titleEnglish-dialog" value={titleEnglish} onChange={(e) => setTitleEnglish(e.target.value)} placeholder="English Title" required />
@@ -155,8 +163,11 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
             </div>
           </ScrollArea>
         </CardContent>
-        <CardFooter className={cardFooterClassName}>
-          <Button type="submit" className="w-full md:w-auto">Add Hymn</Button>
+        <CardFooter className={`${cardFooterClassName} flex-col items-stretch gap-2`}> {/* This is the element in user's prompt */}
+          <Button type="submit" className="w-full">Add Hymn</Button>
+          <Button type="button" variant="outline" onClick={handleCancel} className="w-full">
+            Cancel
+          </Button>
         </CardFooter>
       </form>
     </FormWrapper>
