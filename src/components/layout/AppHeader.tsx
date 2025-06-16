@@ -21,10 +21,10 @@ import {
 import { useState } from 'react';
 import AddHymnForm from '@/components/hymnal/AddHymnForm';
 import AddReadingForm from '@/components/readings/AddReadingForm';
-import DeleteHymnDialogContent from '@/components/hymnal/DeleteHymnDialogContent'; // New import
+import DeleteHymnDialogContent from '@/components/hymnal/DeleteHymnDialogContent';
+import DeleteReadingDialogContent from '@/components/readings/DeleteReadingDialogContent'; // New import
 import ChatInterface from '@/components/ai/ChatInterface';
 import { useRouter } from 'next/navigation';
-// import Link from 'next/link'; // No longer explicitly used for Wand2 button
 
 
 interface AppHeaderProps {
@@ -35,7 +35,8 @@ interface AppHeaderProps {
 export default function AppHeader({ title, actions }: AppHeaderProps) {
   const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = useState(false);
   const [isAddReadingDialogOpen, setIsAddReadingDialogOpen] = useState(false);
-  const [isDeleteHymnDialogOpen, setIsDeleteHymnDialogOpen] = useState(false); // New state
+  const [isDeleteHymnDialogOpen, setIsDeleteHymnDialogOpen] = useState(false);
+  const [isDeleteReadingDialogOpen, setIsDeleteReadingDialogOpen] = useState(false); // New state
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
   const router = useRouter();
 
@@ -91,16 +92,14 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onSelect={() => setIsDeleteHymnDialogOpen(true)} // Updated onSelect
+                  onSelect={() => setIsDeleteHymnDialogOpen(true)}
                   className="text-destructive focus:text-destructive focus:bg-destructive/10"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
                   <span>Delete Hymn</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onSelect={() => {
-                    console.log('Delete Reading clicked');
-                  }}
+                  onSelect={() => setIsDeleteReadingDialogOpen(true)} // Updated onSelect
                   className="text-destructive focus:text-destructive focus:bg-destructive/10"
                 >
                   <BookX className="mr-2 h-4 w-4" />
@@ -157,7 +156,23 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
             onOpenChange={setIsDeleteHymnDialogOpen} 
             onDeleteSuccess={() => {
               setIsDeleteHymnDialogOpen(false);
-              // Potentially trigger a re-fetch or update of hymn list if data was live
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDeleteReadingDialogOpen} onOpenChange={setIsDeleteReadingDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Readings</DialogTitle>
+            <DialogDescription>
+              Select the readings you want to delete. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DeleteReadingDialogContent 
+            onOpenChange={setIsDeleteReadingDialogOpen} 
+            onDeleteSuccess={() => {
+              setIsDeleteReadingDialogOpen(false);
             }}
           />
         </DialogContent>
