@@ -19,16 +19,16 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
     }
   }, [addHymnView, hymn.titleEnglish]);
 
-  const hasLyrics = hymn.lyricsHiligaynon || hymn.lyricsFilipino || hymn.lyricsEnglish;
+  const hasAnyLyrics = hymn.lyricsHiligaynon || hymn.lyricsFilipino || hymn.lyricsEnglish;
 
   return (
     <Card className="shadow-lg">
       <CardHeader>
         <div className="flex justify-between items-start mb-2">
             <div className="flex-grow text-center"> {/* Added text-center here */}
-                {hymn.titleHiligaynon && <CardTitle className="font-headline text-3xl text-primary">{hymn.titleHiligaynon} (Hiligaynon)</CardTitle>}
-                {hymn.titleFilipino && <p className={`text-lg ${hymn.titleHiligaynon ? 'text-muted-foreground' : 'font-headline text-3xl text-primary'}`}>{hymn.titleFilipino} (Filipino)</p>}
-                {hymn.titleEnglish && <p className={`text-lg ${(hymn.titleHiligaynon || hymn.titleFilipino) ? 'text-muted-foreground' : 'font-headline text-3xl text-primary'}`}>{hymn.titleEnglish} (English)</p>}
+                {hymn.titleHiligaynon && <CardTitle className="font-headline text-3xl text-primary">{hymn.titleHiligaynon}</CardTitle>}
+                {hymn.titleFilipino && <p className={`text-lg ${hymn.titleHiligaynon ? 'text-muted-foreground' : 'font-headline text-3xl text-primary'}`}>{hymn.titleFilipino}</p>}
+                {hymn.titleEnglish && <p className={`text-lg ${(hymn.titleHiligaynon || hymn.titleFilipino) ? 'text-muted-foreground' : 'font-headline text-3xl text-primary'}`}>{hymn.titleEnglish}</p>}
             </div>
             {hymn.pageNumber && <span className="text-lg font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full ml-4 flex-shrink-0">{hymn.pageNumber}</span>}
         </div>
@@ -42,8 +42,8 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
       </CardHeader>
       <Separator className="my-2"/>
       <CardContent className="pt-4 space-y-6">
-        {!hasLyrics && !hymn.lyricsHiligaynon && !hymn.lyricsFilipino && !hymn.lyricsEnglish ? (
-          <p className="text-muted-foreground italic">Sorry, lyrics unavailable this time.</p>
+        {!hasAnyLyrics ? (
+           <p className="text-muted-foreground italic text-center py-4">Sorry, lyrics unavailable this time.</p>
         ) : (
           <>
             {hymn.lyricsHiligaynon && (
@@ -58,7 +58,7 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
               <div>
                 <h3 className="text-xl font-semibold mb-2 text-primary/90">Filipino</h3>
                 <div className="whitespace-pre-line text-foreground leading-relaxed text-lg">
-                  {hymn.lyricsFilipino || "Sorry, lyrics unavailable this time."}
+                  {hymn.lyricsFilipino}
                 </div>
               </div>
             )}
@@ -66,12 +66,9 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
               <div>
                 <h3 className="text-xl font-semibold mb-2 text-primary/90">English</h3>
                 <div className="whitespace-pre-line text-foreground leading-relaxed text-lg">
-                  {hymn.lyricsEnglish || "Sorry, lyrics unavailable this time."}
+                  {hymn.lyricsEnglish}
                 </div>
               </div>
-            )}
-             {!hymn.lyricsHiligaynon && hymn.lyricsFilipino === undefined && hymn.lyricsEnglish === undefined && (
-                 <p className="text-muted-foreground italic">Sorry, lyrics unavailable this time.</p>
             )}
           </>
         )}
