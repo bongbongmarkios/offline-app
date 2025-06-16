@@ -42,24 +42,23 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
     }
 
     console.log('New Hymn:', { 
-      titleEnglish, titleFilipino, titleHiligaynon,
+      titleHiligaynon, titleFilipino, titleEnglish,
       pageNumber, keySignature,
-      lyricsEnglish, lyricsFilipino, lyricsHiligaynon,
+      lyricsHiligaynon, lyricsFilipino, lyricsEnglish,
     });
     toast({
       title: "Hymn Added (Simulated)",
       description: `"${titleEnglish}" has been added to the list (not actually saved).`,
     });
 
-    // Reset all fields
-    setTitleEnglish('');
-    setTitleFilipino('');
     setTitleHiligaynon('');
+    setTitleFilipino('');
+    setTitleEnglish('');
     setPageNumber('');
     setKeySignature('');
-    setLyricsEnglish('');
-    setLyricsFilipino('');
     setLyricsHiligaynon('');
+    setLyricsFilipino('');
+    setLyricsEnglish('');
 
     if (onFormSubmit) {
       onFormSubmit(); 
@@ -70,9 +69,9 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
 
   const handleCancel = () => {
     if (onFormSubmit) {
-      onFormSubmit(); // This will typically close the dialog
+      onFormSubmit(); 
     } else {
-      router.push('/hymnal'); // Navigate if it's the standalone page
+      router.push('/hymnal'); 
     }
   };
 
@@ -102,16 +101,16 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
           <ScrollArea className={scrollAreaClassName}>
             <div className="space-y-6 pr-4 pb-4">
               <div className="space-y-2">
-                <Label htmlFor="titleEnglish-dialog">Title (English)</Label>
-                <Input id="titleEnglish-dialog" value={titleEnglish} onChange={(e) => setTitleEnglish(e.target.value)} placeholder="English Title" required />
+                <Label htmlFor="titleHiligaynon-dialog">Title (Hiligaynon, Optional)</Label>
+                <Input id="titleHiligaynon-dialog" value={titleHiligaynon} onChange={(e) => setTitleHiligaynon(e.target.value)} placeholder="Hiligaynon Title" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="titleFilipino-dialog">Title (Filipino, Optional)</Label>
                 <Input id="titleFilipino-dialog" value={titleFilipino} onChange={(e) => setTitleFilipino(e.target.value)} placeholder="Filipino Title" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="titleHiligaynon-dialog">Title (Hiligaynon, Optional)</Label>
-                <Input id="titleHiligaynon-dialog" value={titleHiligaynon} onChange={(e) => setTitleHiligaynon(e.target.value)} placeholder="Hiligaynon Title" />
+                <Label htmlFor="titleEnglish-dialog">Title (English)</Label>
+                <Input id="titleEnglish-dialog" value={titleEnglish} onChange={(e) => setTitleEnglish(e.target.value)} placeholder="English Title" required />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -126,16 +125,16 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="lyricsEnglish-dialog">Lyrics (English)</Label>
-                <Textarea id="lyricsEnglish-dialog" value={lyricsEnglish} onChange={(e) => setLyricsEnglish(e.target.value)} placeholder="Enter English lyrics..." rows={6} required />
+                <Label htmlFor="lyricsHiligaynon-dialog">Lyrics (Hiligaynon, Optional)</Label>
+                <Textarea id="lyricsHiligaynon-dialog" value={lyricsHiligaynon} onChange={(e) => setLyricsHiligaynon(e.target.value)} placeholder="Enter Hiligaynon lyrics..." rows={6} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lyricsFilipino-dialog">Lyrics (Filipino, Optional)</Label>
                 <Textarea id="lyricsFilipino-dialog" value={lyricsFilipino} onChange={(e) => setLyricsFilipino(e.target.value)} placeholder="Enter Filipino lyrics..." rows={6} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lyricsHiligaynon-dialog">Lyrics (Hiligaynon, Optional)</Label>
-                <Textarea id="lyricsHiligaynon-dialog" value={lyricsHiligaynon} onChange={(e) => setLyricsHiligaynon(e.target.value)} placeholder="Enter Hiligaynon lyrics..." rows={6} />
+                <Label htmlFor="lyricsEnglish-dialog">Lyrics (English)</Label>
+                <Textarea id="lyricsEnglish-dialog" value={lyricsEnglish} onChange={(e) => setLyricsEnglish(e.target.value)} placeholder="Enter English lyrics..." rows={6} required />
               </div>
             </div>
           </ScrollArea>

@@ -16,20 +16,25 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
   const { addHymnView } = useActivity();
 
   useEffect(() => {
-    // Use English title for activity tracking for consistency
     addHymnView(hymn.titleEnglish);
   }, [addHymnView, hymn.titleEnglish]);
 
-  const hasMultipleLyrics = hymn.lyricsFilipino || hymn.lyricsHiligaynon;
+  const defaultTab = hymn.lyricsHiligaynon
+    ? "hiligaynon"
+    : hymn.lyricsFilipino
+    ? "filipino"
+    : "english";
+
+  const hasAnyLyrics = hymn.lyricsEnglish || hymn.lyricsFilipino || hymn.lyricsHiligaynon;
 
   return (
     <Card className="shadow-lg">
       <CardHeader>
         <div className="flex justify-between items-start mb-2">
             <div className="flex-grow">
-                <CardTitle className="font-headline text-3xl text-primary">{hymn.titleEnglish}</CardTitle>
-                {hymn.titleFilipino && <p className="text-lg text-muted-foreground">{hymn.titleFilipino} (Filipino)</p>}
-                {hymn.titleHiligaynon && <p className="text-lg text-muted-foreground">{hymn.titleHiligaynon} (Hiligaynon)</p>}
+                {hymn.titleHiligaynon && <CardTitle className="font-headline text-3xl text-primary">{hymn.titleHiligaynon} (Hiligaynon)</CardTitle>}
+                {hymn.titleFilipino && <p className={`text-lg ${hymn.titleHiligaynon ? 'text-muted-foreground' : 'font-headline text-3xl text-primary'}`}>{hymn.titleFilipino} (Filipino)</p>}
+                <p className={`text-lg ${hymn.titleHiligaynon || hymn.titleFilipino ? 'text-muted-foreground' : 'font-headline text-3xl text-primary'}`}>{hymn.titleEnglish} (English)</p>
             </div>
             {hymn.pageNumber && <span className="text-lg font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full ml-4">{hymn.pageNumber}</span>}
         </div>
@@ -43,25 +48,13 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
       </CardHeader>
       <Separator className="my-2"/>
       <CardContent className="pt-4">
-        {hasMultipleLyrics ? (
-          <Tabs defaultValue="english" className="w-full">
+        {hasAnyLyrics ? (
+          <Tabs defaultValue={defaultTab} className="w-full">
             <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 mb-4">
-              <TabsTrigger value="english" disabled={!hymn.lyricsEnglish}>English</TabsTrigger>
-              {hymn.lyricsFilipino && <TabsTrigger value="filipino">Filipino</TabsTrigger>}
               {hymn.lyricsHiligaynon && <TabsTrigger value="hiligaynon">Hiligaynon</TabsTrigger>}
+              {hymn.lyricsFilipino && <TabsTrigger value="filipino">Filipino</TabsTrigger>}
+              {hymn.lyricsEnglish && <TabsTrigger value="english">English</TabsTrigger>}
             </TabsList>
-            <TabsContent value="english">
-              <div className="whitespace-pre-line text-foreground leading-relaxed text-lg">
-                {hymn.lyricsEnglish}
-              </div>
-            </TabsContent>
-            {hymn.lyricsFilipino && (
-              <TabsContent value="filipino">
-                <div className="whitespace-pre-line text-foreground leading-relaxed text-lg">
-                  {hymn.lyricsFilipino}
-                </div>
-              </TabsContent>
-            )}
             {hymn.lyricsHiligaynon && (
               <TabsContent value="hiligaynon">
                 <div className="whitespace-pre-line text-foreground leading-relaxed text-lg">
@@ -69,11 +62,23 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
                 </div>
               </TabsContent>
             )}
+            {hymn.lyricsFilipino && (
+              <TabsContent value="filipino">
+                <div className="whitespace-pre-line text-foreground leading-relaxed text-lg">
+                  {hymn.lyricsFilipino}
+                </div>
+              </TabsContent>
+            )}
+             {hymn.lyricsEnglish && (
+              <TabsContent value="english">
+                <div className="whitespace-pre-line text-foreground leading-relaxed text-lg">
+                  {hymn.lyricsEnglish}
+                </div>
+              </TabsContent>
+            )}
           </Tabs>
         ) : (
-          <div className="whitespace-pre-line text-foreground leading-relaxed text-lg">
-            {hymn.lyricsEnglish} 
-          </div>
+          <p className="text-muted-foreground">No lyrics available for this hymn.</p>
         )}
       </CardContent>
     </Card>
