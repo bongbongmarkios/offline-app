@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, Info, PlusCircle, Trash2, Settings as SettingsIcon, HelpCircle as HelpCircleIcon } from "lucide-react" 
+import { PanelLeft, Info, PlusCircle, Trash2, Settings as SettingsIcon, HelpCircle as HelpCircleIcon, Database, Upload, FileUp, Loader2, X, FileText, Palette, Moon, Sun } from "lucide-react" 
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -20,15 +20,6 @@ import {
   SheetClose
 } from "@/components/ui/sheet"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -36,7 +27,8 @@ import {
 } from "@/components/ui/tooltip"
 
 import { Skeleton } from "@/components/ui/skeleton"
-import AddHymnForm from "@/components/hymnal/AddHymnForm";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTheme, type PrimaryColor } from '@/context/ThemeContext';
 
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
@@ -191,12 +183,7 @@ const Sidebar = React.forwardRef<
     ref
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
-    const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = React.useState(false);
-    // Add states for other dialogs if/when they are implemented
-    // const [isAddReadingsDialogOpen, setIsAddReadingsDialogOpen] = React.useState(false);
-    // const [isDeleteHymnDialogOpen, setIsDeleteHymnDialogOpen] = React.useState(false);
-    // const [isDeleteReadingsDialogOpen, setIsDeleteReadingsDialogOpen] = React.useState(false);
-
+    const { theme, setTheme, primaryColor, setPrimaryColor, isThemeReady } = useTheme();
 
     if (collapsible === "none") {
       return (
@@ -242,65 +229,33 @@ const Sidebar = React.forwardRef<
               </UiSheetHeader>
 
               <div className="p-4 space-y-2 border-b border-sidebar-border">
-                <Dialog open={isAddHymnDialogOpen} onOpenChange={(isOpen) => {
-                  setIsAddHymnDialogOpen(isOpen);
-                  if (isOpen && isMobile) {
-                    setOpenMobile(false);
-                  }
-                }}>
-                  <DialogTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-start text-sm">
-                      <PlusCircle className="mr-2 h-5 w-5" /> Add Hymn
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[625px]">
-                    <DialogHeader>
-                      <DialogTitle className="font-headline">Add New Hymn</DialogTitle>
-                      <DialogDescription>
-                        Fill in the details for the new hymn below. Click "Add Hymn" when you're done.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <AddHymnForm 
-                      onFormSubmit={() => setIsAddHymnDialogOpen(false)}
-                      className="py-4" 
-                    />
-                  </DialogContent>
-                </Dialog>
-
-                <Button variant="ghost" className="w-full justify-start text-sm" onClick={() => { console.log("Add Readings clicked"); setTimeout(() => setOpenMobile(false),0); }}>
+                <Button variant="ghost" className="w-full justify-start text-sm" onClick={() => { console.log("Add Hymn clicked"); setOpenMobile(false); }}>
+                  <PlusCircle className="mr-2 h-5 w-5" /> Add Hymn
+                </Button>
+                <Button variant="ghost" className="w-full justify-start text-sm" onClick={() => { console.log("Add Readings clicked"); setOpenMobile(false); }}>
                   <PlusCircle className="mr-2 h-5 w-5" /> Add Readings
                 </Button>
                 <Button 
                   variant="ghost" 
                   className="w-full justify-start text-sm text-destructive hover:bg-destructive hover:text-destructive-foreground" 
-                  onClick={() => { console.log("Delete Hymn clicked"); setTimeout(() => setOpenMobile(false),0); }}
+                  onClick={() => { console.log("Delete Hymn clicked"); setOpenMobile(false); }}
                 >
                   <Trash2 className="mr-2 h-5 w-5" /> Delete Hymn
                 </Button>
                 <Button 
                   variant="ghost" 
                   className="w-full justify-start text-sm text-destructive hover:bg-destructive hover:text-destructive-foreground" 
-                  onClick={() => { console.log("Delete Reading clicked"); setTimeout(() => setOpenMobile(false),0); }}
+                  onClick={() => { console.log("Delete Reading clicked"); setOpenMobile(false); }}
                 >
                   <Trash2 className="mr-2 h-5 w-5" /> Delete Reading
                 </Button>
               </div>
               
-              <div className="flex-grow overflow-y-auto">
-                {/* Main navigation items (like from SidebarNav) would go here if we re-add them to mobile */}
-                {/* For now, this area is empty as per previous request to remove them from mobile scroll area */}
-              </div>
+              <ScrollArea className="flex-grow p-4 overflow-y-auto">
+                {/* Main navigation items (like from SidebarNav) have been removed from mobile scroll area */}
+              </ScrollArea>
 
               <div className="mt-auto p-4 border-t border-sidebar-border space-y-2">
-                 {/* Settings Dialog (example, not fully functional yet) */}
-                <Button variant="ghost" className="w-full justify-start text-sm" onClick={() => {console.log("Settings clicked"); setTimeout(() => setOpenMobile(false),0); }}>
-                    <SettingsIcon className="mr-2 h-5 w-5" /> Settings
-                </Button>
-                {/* Help Dialog (example, not fully functional yet) */}
-                <Button variant="ghost" className="w-full justify-start text-sm" onClick={() => { console.log("Help clicked"); setTimeout(() => setOpenMobile(false),0); }}>
-                    <HelpCircleIcon className="mr-2 h-5 w-5" /> Help
-                </Button>
-
                 <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => setTimeout(() => setOpenMobile(false),0) }>
                   <Link href="/about">
                     <Info className="mr-2 h-5 w-5" /> About
@@ -892,3 +847,4 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+
