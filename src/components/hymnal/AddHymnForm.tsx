@@ -9,6 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { addSampleHymn } from '@/data/hymns'; // Import the new function
+import type { Hymn } from '@/types';
 
 interface AddHymnFormProps {
   onFormSubmit?: () => void;
@@ -41,16 +43,27 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
       return;
     }
 
-    console.log('New Hymn:', { 
-      titleHiligaynon, titleFilipino, titleEnglish,
-      pageNumber, keySignature,
-      lyricsHiligaynon, lyricsFilipino, lyricsEnglish,
-    });
+    const newHymnData: Omit<Hymn, 'id'> = {
+      titleHiligaynon: titleHiligaynon || undefined, // Ensure empty strings become undefined for optional fields
+      titleFilipino: titleFilipino || undefined,
+      titleEnglish,
+      pageNumber: pageNumber || undefined,
+      keySignature: keySignature || undefined,
+      lyricsHiligaynon: lyricsHiligaynon || undefined,
+      lyricsFilipino: lyricsFilipino || undefined,
+      lyricsEnglish,
+      // Author, Composer, Category are no longer collected by this form
+    };
+    
+    const addedHymn = addSampleHymn(newHymnData);
+    console.log('New Hymn Added:', addedHymn);
+
     toast({
-      title: "Hymn Added (Simulated)",
-      description: `"${titleEnglish}" has been added to the list (not actually saved).`,
+      title: "Hymn Added",
+      description: `"${addedHymn.titleEnglish}" has been added to the hymn data.`,
     });
 
+    // Reset form fields
     setTitleHiligaynon('');
     setTitleFilipino('');
     setTitleEnglish('');
@@ -68,6 +81,16 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
   };
 
   const handleCancel = () => {
+    // Reset form fields on cancel as well for a cleaner experience
+    setTitleHiligaynon('');
+    setTitleFilipino('');
+    setTitleEnglish('');
+    setPageNumber('');
+    setKeySignature('');
+    setLyricsHiligaynon('');
+    setLyricsFilipino('');
+    setLyricsEnglish('');
+    
     if (onFormSubmit) {
       onFormSubmit(); 
     } else {
@@ -85,7 +108,7 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
 
   const formElementClassName = onFormSubmit ? "flex flex-col flex-1 min-h-0" : "";
   const cardContentClassName = onFormSubmit ? "pt-4 flex-1 min-h-0 overflow-hidden" : "pt-4";
-  const scrollAreaClassName = onFormSubmit ? "h-full w-full" : "max-h-[60vh] w-full";
+  const scrollAreaClassName = onFormSubmit ? "h-full w-full" : "max-h-[60vh] w-full"; // Keep max-h for non-dialog
   const cardFooterClassName = `flex-shrink-0 ${onFormSubmit ? "pt-6" : "pt-6"}`;
 
   return (
@@ -99,7 +122,7 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
       <form onSubmit={handleSubmit} className={formElementClassName}>
         <CardContent className={cardContentClassName}>
           <ScrollArea className={scrollAreaClassName}>
-            <div className="space-y-6 pr-4 pb-4">
+            <div className="space-y-6 pr-4 pb-4"> {/* Added pb-4 and pr-4 for scrollbar */}
               <div className="space-y-2">
                 <Label htmlFor="titleHiligaynon-dialog">Title (Hiligaynon, Optional)</Label>
                 <Input id="titleHiligaynon-dialog" value={titleHiligaynon} onChange={(e) => setTitleHiligaynon(e.target.value)} placeholder="Hiligaynon Title" />

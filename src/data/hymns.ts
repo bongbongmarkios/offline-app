@@ -1,7 +1,8 @@
 
 import type { Hymn } from '@/types';
 
-export const sampleHymns: Hymn[] = [
+// Changed from const to let to allow adding new hymns
+export let sampleHymns: Hymn[] = [
   {
     id: '1',
     titleEnglish: 'Amazing Grace',
@@ -28,10 +29,10 @@ As long as life endures.`,
     category: 'Grace',
     pageNumber: '202',
     keySignature: 'G Major',
-    // titleFilipino: 'Kahanga-hangang Biyaya', // Example
-    // lyricsFilipino: '...', // Example
-    // titleHiligaynon: 'Makalilipay nga Grasya', // Example
-    // lyricsHiligaynon: '...', // Example
+    // titleFilipino: 'Kahanga-hangang Biyaya',
+    // lyricsFilipino: '...',
+    // titleHiligaynon: 'Makalilipay nga Grasya',
+    // lyricsHiligaynon: '...',
   },
   {
     id: '2',
@@ -95,3 +96,14 @@ And then proclaim: "My God, how great Thou art!"`,
     keySignature: 'Bb Major',
   }
 ];
+
+// Function to add a new hymn to the sample data
+export function addSampleHymn(hymnData: Omit<Hymn, 'id'>): Hymn {
+  const newId = 'hymn-' + Date.now().toString() + '-' + Math.floor(Math.random() * 1000);
+  const newHymn: Hymn = {
+    id: newId,
+    ...hymnData,
+  };
+  sampleHymns.push(newHymn);
+  return newHymn;
+}
