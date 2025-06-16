@@ -27,10 +27,6 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
   const [lyricsFilipino, setLyricsFilipino] = useState('');
   const [lyricsHiligaynon, setLyricsHiligaynon] = useState('');
   
-  const [author, setAuthor] = useState('');
-  const [composer, setComposer] = useState('');
-  const [category, setCategory] = useState('');
-  
   const { toast } = useToast();
   const router = useRouter();
 
@@ -49,7 +45,6 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
       titleEnglish, titleFilipino, titleHiligaynon,
       pageNumber, keySignature,
       lyricsEnglish, lyricsFilipino, lyricsHiligaynon,
-      author, composer, category 
     });
     toast({
       title: "Hymn Added (Simulated)",
@@ -65,9 +60,6 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
     setLyricsEnglish('');
     setLyricsFilipino('');
     setLyricsHiligaynon('');
-    setAuthor('');
-    setComposer('');
-    setCategory('');
 
     if (onFormSubmit) {
       onFormSubmit(); 
@@ -93,7 +85,7 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
   const formProps = { className: formWrapperFinalClassName };
 
   const formElementClassName = onFormSubmit ? "flex flex-col flex-1 min-h-0" : "";
-  const cardContentClassName = onFormSubmit ? "pt-4 flex-1 min-h-0 overflow-hidden" : "pt-4"; // This is the element in user's prompt
+  const cardContentClassName = onFormSubmit ? "pt-4 flex-1 min-h-0 overflow-hidden" : "pt-4";
   const scrollAreaClassName = onFormSubmit ? "h-full w-full" : "max-h-[60vh] w-full";
   const cardFooterClassName = `flex-shrink-0 ${onFormSubmit ? "pt-6" : "pt-6"}`;
 
@@ -108,7 +100,7 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
       <form onSubmit={handleSubmit} className={formElementClassName}>
         <CardContent className={cardContentClassName}>
           <ScrollArea className={scrollAreaClassName}>
-            <div className="space-y-6 pr-4 pb-4"> {/* Added pb-4 and pr-4 here */}
+            <div className="space-y-6 pr-4 pb-4">
               <div className="space-y-2">
                 <Label htmlFor="titleEnglish-dialog">Title (English)</Label>
                 <Input id="titleEnglish-dialog" value={titleEnglish} onChange={(e) => setTitleEnglish(e.target.value)} placeholder="English Title" required />
@@ -145,25 +137,10 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
                 <Label htmlFor="lyricsHiligaynon-dialog">Lyrics (Hiligaynon, Optional)</Label>
                 <Textarea id="lyricsHiligaynon-dialog" value={lyricsHiligaynon} onChange={(e) => setLyricsHiligaynon(e.target.value)} placeholder="Enter Hiligaynon lyrics..." rows={6} />
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="author-dialog">Author (Optional)</Label>
-                  <Input id="author-dialog" value={author} onChange={(e) => setAuthor(e.target.value)} placeholder="e.g., John Newton" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="composer-dialog">Composer (Optional)</Label>
-                  <Input id="composer-dialog" value={composer} onChange={(e) => setComposer(e.target.value)} placeholder="e.g., Traditional" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="category-dialog">Category (Optional)</Label>
-                  <Input id="category-dialog" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g., Worship" />
-                </div>
-              </div>
             </div>
           </ScrollArea>
         </CardContent>
-        <CardFooter className={`${cardFooterClassName} flex-col items-stretch gap-2`}> {/* This is the element in user's prompt */}
+        <CardFooter className={`${cardFooterClassName} flex-col items-stretch gap-2`}>
           <Button type="submit" className="w-full">Add Hymn</Button>
           <Button type="button" variant="outline" onClick={handleCancel} className="w-full">
             Cancel
