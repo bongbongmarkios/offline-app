@@ -1,5 +1,7 @@
 
 import type { ReactNode } from 'react';
+import { Menu } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface AppHeaderProps {
   title: string;
@@ -13,7 +15,12 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-headline font-semibold text-primary sm:text-3xl">{title}</h1>
         </div>
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
+        <div className="flex items-center gap-2">
+          {actions}
+          <Button variant="ghost" size="icon" aria-label="Open menu">
+            <Menu className="h-6 w-6" />
+          </Button>
+        </div>
       </div>
     </header>
   );
