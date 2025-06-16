@@ -12,27 +12,27 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
 
-    /* Default Primary Color (Deep Purple) */
-    --primary-purple-hsl: 261 51% 54%;
-    --primary-purple-foreground-hsl: 0 0% 100%;
+    /* Deep Purple (Default) */
+    --primary-purple-hsl: 261 51% 54%; /* #673AB7 */
+    --primary-purple-foreground-hsl: 0 0% 100%; /* White */
     --ring-purple-hsl: 261 51% 54%;
 
     /* Sky Blue */
-    --primary-sky-blue-hsl: 199 89% 49%;
-    --primary-sky-blue-foreground-hsl: 0 0% 100%;
-    --ring-sky-blue-hsl: 199 89% 49%;
+    --primary-skyBlue-hsl: 207 90% 54%; /* #2196F3 */
+    --primary-skyBlue-foreground-hsl: 0 0% 100%; /* White */
+    --ring-skyBlue-hsl: 207 90% 54%;
 
     /* Avocado Green */
-    --primary-avocado-green-hsl: 81 34% 44%;
-    --primary-avocado-green-foreground-hsl: 0 0% 100%;
-    --ring-avocado-green-hsl: 81 34% 44%;
+    --primary-avocadoGreen-hsl: 76 25% 52%; /* Adjusted from #8F9A6D for better vibrancy */
+    --primary-avocadoGreen-foreground-hsl: 0 0% 10%; /* Darker text for better contrast */
+    --ring-avocadoGreen-hsl: 76 25% 52%;
 
     /* Maroon */
-    --primary-maroon-hsl: 0 100% 25%;
-    --primary-maroon-foreground-hsl: 0 0% 100%;
+    --primary-maroon-hsl: 0 100% 25%; /* #800000 */
+    --primary-maroon-foreground-hsl: 0 0% 100%; /* White */
     --ring-maroon-hsl: 0 100% 25%;
 
-    /* Dynamically set based on selection */
+    /* Dynamically set based on selection via ThemeContext */
     --primary: var(--primary-purple-hsl);
     --primary-foreground: var(--primary-purple-foreground-hsl);
     --ring: var(--ring-purple-hsl);
@@ -62,46 +62,43 @@
   }
 
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --background: 0 0% 10%; /* Darker gray for dark mode background */
+    --foreground: 0 0% 95%; /* Lighter gray for text on dark background */
+    --card: 0 0% 15%; /* Slightly lighter than background for cards */
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 15%;
+    --popover-foreground: 0 0% 95%;
     
-    /* Default Primary Color (Deep Purple) - Dark Mode */
-    --primary-purple-hsl-dark: 261 51% 60%;
-    --ring-purple-hsl-dark: 261 51% 60%;
+    /* Deep Purple - Dark Mode */
+    --primary-purple-hsl-dark: 261 51% 65%; /* Lighter purple */
+    --ring-purple-hsl-dark: 261 51% 65%;
 
     /* Sky Blue - Dark Mode */
-    --primary-sky-blue-hsl-dark: 199 80% 55%;
-    --ring-sky-blue-hsl-dark: 199 80% 55%;
+    --primary-skyBlue-hsl-dark: 207 80% 60%; /* Lighter blue */
+    --ring-skyBlue-hsl-dark: 207 80% 60%;
 
     /* Avocado Green - Dark Mode */
-    --primary-avocado-green-hsl-dark: 81 30% 50%;
-    --ring-avocado-green-hsl-dark: 81 30% 50%;
+    --primary-avocadoGreen-hsl-dark: 76 25% 60%; /* Lighter green */
+    --ring-avocadoGreen-hsl-dark: 76 25% 60%;
     
     /* Maroon - Dark Mode */
-    --primary-maroon-hsl-dark: 0 70% 35%;
-    --ring-maroon-hsl-dark: 0 70% 35%;
+    --primary-maroon-hsl-dark: 0 70% 40%; /* Lighter maroon */
+    --ring-maroon-hsl-dark: 0 70% 40%;
 
-    /* Dynamically set based on selection for dark mode */
     /* --primary, --primary-foreground, --ring will be updated by JS */
-    /* For initial setup, they'll inherit from non-dark, then JS applies dark versions */
-
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
+    
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 0 0% 20%;
     --muted-foreground: 0 0% 63.9%;
 
     --accent: 232 38% 72%; /* Slightly lighter blue for dark mode */
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 70% 45%; /* Adjusted destructive for dark */
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    /* --ring is now dynamic */
+    --border: 0 0% 25%;
+    --input: 0 0% 25%;
     
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;

@@ -11,21 +11,21 @@ interface ThemeContextValue {
   setTheme: (theme: Theme) => void;
   primaryColor: PrimaryColor;
   setPrimaryColor: (color: PrimaryColor) => void;
-  isThemeReady: boolean; // New flag
+  isThemeReady: boolean;
 }
 
-// Define a default context value that won't cause an immediate error
 const defaultThemeContextValue: ThemeContextValue = {
-  theme: 'light', // Sensible default
+  theme: 'light',
   setTheme: () => console.warn('ThemeProvider not yet ready or mounted'),
-  primaryColor: 'purple', // Sensible default
+  primaryColor: 'purple',
   setPrimaryColor: () => console.warn('ThemeProvider not yet ready or mounted'),
-  isThemeReady: false, // Default to not ready
+  isThemeReady: false,
 };
 
 const ThemeContext = createContext<ThemeContextValue>(defaultThemeContextValue);
 
-const colorVariables: Record<PrimaryColor, { light: string; dark: string; foreground: string; ringLight: string; ringDark: string }> = {
+// Maps PrimaryColor names to their CSS variable names defined in globals.css
+const colorVarMap: Record<PrimaryColor, { light: string; dark: string; foreground: string; ringLight: string; ringDark: string }> = {
   purple: { 
     light: 'var(--primary-purple-hsl)', 
     dark: 'var(--primary-purple-hsl-dark)', 
@@ -34,18 +34,18 @@ const colorVariables: Record<PrimaryColor, { light: string; dark: string; foregr
     ringDark: 'var(--ring-purple-hsl-dark)'
   },
   skyBlue: { 
-    light: 'var(--primary-sky-blue-hsl)', 
-    dark: 'var(--primary-sky-blue-hsl-dark)', 
-    foreground: 'var(--primary-sky-blue-foreground-hsl)',
-    ringLight: 'var(--ring-sky-blue-hsl)',
-    ringDark: 'var(--ring-sky-blue-hsl-dark)'
+    light: 'var(--primary-skyBlue-hsl)', 
+    dark: 'var(--primary-skyBlue-hsl-dark)', 
+    foreground: 'var(--primary-skyBlue-foreground-hsl)',
+    ringLight: 'var(--ring-skyBlue-hsl)',
+    ringDark: 'var(--ring-skyBlue-hsl-dark)'
   },
   avocadoGreen: { 
-    light: 'var(--primary-avocado-green-hsl)', 
-    dark: 'var(--primary-avocado-green-hsl-dark)', 
-    foreground: 'var(--primary-avocado-green-foreground-hsl)',
-    ringLight: 'var(--ring-avocado-green-hsl)',
-    ringDark: 'var(--ring-avocado-green-hsl-dark)'
+    light: 'var(--primary-avocadoGreen-hsl)', 
+    dark: 'var(--primary-avocadoGreen-hsl-dark)', 
+    foreground: 'var(--primary-avocadoGreen-foreground-hsl)',
+    ringLight: 'var(--ring-avocadoGreen-hsl)',
+    ringDark: 'var(--ring-avocadoGreen-hsl-dark)'
   },
   maroon: { 
     light: 'var(--primary-maroon-hsl)', 
@@ -59,17 +59,18 @@ const colorVariables: Record<PrimaryColor, { light: string; dark: string; foregr
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setThemeState] = useState<Theme>('light');
   const [primaryColor, setPrimaryColorState] = useState<PrimaryColor>('purple');
-  const [isMounted, setIsMounted] = useState(false);
+  const [isThemeReady, setIsThemeReady] = useState(false); // Changed from isMounted
 
   const applyThemeStyles = useCallback((currentTheme: Theme, currentColor: PrimaryColor) => {
     if (typeof window === 'undefined') return;
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
     root.classList.add(currentTheme);
-    const selectedColorVars = colorVariables[currentColor];
-    root.style.setProperty('--primary', currentTheme === 'light' ? selectedColorVars.light : selectedColorVars.dark);
-    root.style.setProperty('--primary-foreground', selectedColorVars.foreground);
-    root.style.setProperty('--ring', currentTheme === 'light' ? selectedColorVars.ringLight : selectedColorVars.ringDark);
+
+    const selectedColorSet = colorVarMap[currentColor];
+    root.style.setProperty('--primary', currentTheme === 'light' ? selectedColorSet.light : selectedColorSet.dark);
+    root.style.setProperty('--primary-foreground', selectedColorSet.foreground);
+    root.style.setProperty('--ring', currentTheme === 'light' ? selectedColorSet.ringLight : selectedColorSet.ringDark);
   }, []);
 
   useEffect(() => {
@@ -81,14 +82,14 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     setThemeState(initialTheme);
     setPrimaryColorState(initialColor);
     applyThemeStyles(initialTheme, initialColor);
-    setIsMounted(true);
+    setIsThemeReady(true); // Set ready after initial application
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [applyThemeStyles]);
+  }, [applyThemeStyles]); // applyThemeStyles is stable due to useCallback
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem('app-theme', newTheme);
-    if (isMounted) {
+    if (isThemeReady) { // Apply only if initial setup is done
       applyThemeStyles(newTheme, primaryColor);
     }
   };
@@ -96,14 +97,18 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const setPrimaryColor = (newColor: PrimaryColor) => {
     setPrimaryColorState(newColor);
     localStorage.setItem('app-primary-color', newColor);
-    if (isMounted) {
+    if (isThemeReady) { // Apply only if initial setup is done
       applyThemeStyles(theme, newColor);
     }
   };
   
-  const contextValue = isMounted
-    ? { theme, setTheme, primaryColor, setPrimaryColor, isThemeReady: true }
-    : defaultThemeContextValue;
+  const contextValue = { 
+    theme, 
+    setTheme, 
+    primaryColor, 
+    setPrimaryColor, 
+    isThemeReady 
+  };
 
   return (
     <ThemeContext.Provider value={contextValue}>
@@ -113,5 +118,9 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 };
 
 export const useTheme = () => {
-  return useContext(ThemeContext);
+  const context = useContext(ThemeContext);
+   if (context === undefined) { // Check for undefined instead of comparing to default
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
 };
