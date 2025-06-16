@@ -42,10 +42,12 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
 
   const handleAddHymnSubmit = () => {
     setIsAddHymnDialogOpen(false);
+    router.refresh(); // Refresh data on the current route
   };
 
   const handleAddReadingSubmit = () => {
     setIsAddReadingDialogOpen(false);
+    // Consider adding router.refresh() here if AddReadingForm modifies global data
   };
 
   return (
@@ -156,6 +158,7 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
             onOpenChange={setIsDeleteHymnDialogOpen} 
             onDeleteSuccess={() => {
               setIsDeleteHymnDialogOpen(false);
+              router.refresh(); // Refresh data after simulated deletion
             }}
           />
         </DialogContent>
@@ -173,6 +176,7 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
             onOpenChange={setIsDeleteReadingDialogOpen} 
             onDeleteSuccess={() => {
               setIsDeleteReadingDialogOpen(false);
+              router.refresh(); // Refresh data after simulated deletion
             }}
           />
         </DialogContent>
