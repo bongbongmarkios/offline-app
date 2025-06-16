@@ -70,9 +70,9 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
         </CardHeader>
       )}
       <form onSubmit={handleSubmit}>
-        <CardContent className={onFormSubmit ? "pt-4" : ""}> {/* Removed space-y-6, CardContent's default p-6 and pt-4/pt-0 logic handles padding */}
+        <CardContent className={onFormSubmit ? "pt-4" : ""}>
           <ScrollArea className="max-h-[60vh] w-full">
-            <div className="space-y-6 pr-1"> {/* Added space-y-6 here for field groups, pr-1 to ensure scrollbar doesn't clip content edge */}
+            <div className="space-y-6 pr-4 pb-4"> {/* Adjusted pr-1 to pr-4, added pb-4 */}
               <div className="space-y-2">
                 <Label htmlFor="title-dialog">Title</Label>
                 <Input id="title-dialog" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., Amazing Grace" required />
@@ -104,7 +104,7 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
             </div>
           </ScrollArea>
         </CardContent>
-        <CardFooter className={onFormSubmit ? "pt-6" : "pt-6"}> {/* Ensured footer padding is consistent or suitable after scroll area */}
+        <CardFooter className={onFormSubmit ? "pt-6" : "pt-6"}>
           <Button type="submit" className="w-full md:w-auto">Add Hymn</Button>
         </CardFooter>
       </form>
