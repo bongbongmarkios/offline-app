@@ -44,7 +44,7 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
     }
 
     const newHymnData: Omit<Hymn, 'id'> = {
-      titleHiligaynon: titleHiligaynon || undefined, // Ensure empty strings become undefined for optional fields
+      titleHiligaynon: titleHiligaynon || undefined, 
       titleFilipino: titleFilipino || undefined,
       titleEnglish,
       pageNumber: pageNumber || undefined,
@@ -52,7 +52,6 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
       lyricsHiligaynon: lyricsHiligaynon || undefined,
       lyricsFilipino: lyricsFilipino || undefined,
       lyricsEnglish,
-      // Author, Composer, Category are no longer collected by this form
     };
     
     const addedHymn = addSampleHymn(newHymnData);
@@ -63,7 +62,6 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
       description: `"${addedHymn.titleEnglish}" has been added to the hymn data.`,
     });
 
-    // Reset form fields
     setTitleHiligaynon('');
     setTitleFilipino('');
     setTitleEnglish('');
@@ -77,11 +75,11 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
       onFormSubmit(); 
     } else {
       router.push('/hymnal'); 
+      router.refresh(); // To ensure the list updates on the hymnal page
     }
   };
 
   const handleCancel = () => {
-    // Reset form fields on cancel as well for a cleaner experience
     setTitleHiligaynon('');
     setTitleFilipino('');
     setTitleEnglish('');
@@ -108,7 +106,7 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
 
   const formElementClassName = onFormSubmit ? "flex flex-col flex-1 min-h-0" : "";
   const cardContentClassName = onFormSubmit ? "pt-4 flex-1 min-h-0 overflow-hidden" : "pt-4";
-  const scrollAreaClassName = onFormSubmit ? "h-full w-full" : "max-h-[60vh] w-full"; // Keep max-h for non-dialog
+  const scrollAreaClassName = onFormSubmit ? "h-full w-full" : "max-h-[60vh] w-full"; 
   const cardFooterClassName = `flex-shrink-0 ${onFormSubmit ? "pt-6" : "pt-6"}`;
 
   return (
@@ -122,10 +120,15 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
       <form onSubmit={handleSubmit} className={formElementClassName}>
         <CardContent className={cardContentClassName}>
           <ScrollArea className={scrollAreaClassName}>
-            <div className="space-y-6 pr-4 pb-4"> {/* Added pb-4 and pr-4 for scrollbar */}
+            <div className="space-y-6 pr-4 pb-4">
               <div className="space-y-2">
                 <Label htmlFor="titleHiligaynon-dialog">Title (Hiligaynon, Optional)</Label>
-                <Input id="titleHiligaynon-dialog" value={titleHiligaynon} onChange={(e) => setTitleHiligaynon(e.target.value)} placeholder="Hiligaynon Title" />
+                <Input 
+                  id="titleHiligaynon-dialog" 
+                  value={titleHiligaynon} 
+                  onChange={(e) => setTitleHiligaynon(e.target.value.toUpperCase())} 
+                  placeholder="Hiligaynon Title" 
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="titleFilipino-dialog">Title (Filipino, Optional)</Label>
