@@ -35,16 +35,6 @@ export default function HymnList({ hymns }: HymnListProps) {
                   {hymn.titleHiligaynon && <span>Hiligaynon: {hymn.titleHiligaynon}</span>}
                 </CardDescription>
               )}
-              {hymn.author && (
-                <CardDescription className="text-sm text-muted-foreground pt-1 mt-1">
-                  Author: {hymn.author}
-                </CardDescription>
-              )}
-               {hymn.category && (
-                <CardDescription className="text-xs text-muted-foreground italic pt-1">
-                  Category: {hymn.category}
-                </CardDescription>
-              )}
             </CardHeader>
           </Card>
         </Link>
