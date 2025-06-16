@@ -25,7 +25,7 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
     <Card className="shadow-lg">
       <CardHeader>
         <div className="flex justify-between items-start mb-2">
-            <div className="flex-grow text-center"> {/* Added text-center here */}
+            <div className="flex-grow text-center">
                 {hymn.titleHiligaynon && <CardTitle className="font-headline text-3xl text-primary">{hymn.titleHiligaynon}</CardTitle>}
                 {hymn.titleFilipino && <p className={`text-lg ${hymn.titleHiligaynon ? 'text-muted-foreground' : 'font-headline text-3xl text-primary'}`}>{hymn.titleFilipino}</p>}
                 {hymn.titleEnglish && <p className={`text-lg ${(hymn.titleHiligaynon || hymn.titleFilipino) ? 'text-muted-foreground' : 'font-headline text-3xl text-primary'}`}>{hymn.titleEnglish}</p>}
@@ -35,9 +35,7 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
         
         <div className="text-md text-muted-foreground space-y-1">
             {hymn.keySignature && <p>Key: {hymn.keySignature}</p>}
-            {hymn.author && <p>Author: {hymn.author}</p>}
             {hymn.composer && <p>Composer: {hymn.composer}</p>}
-            {hymn.category && <p className="italic">Category: {hymn.category}</p>}
         </div>
       </CardHeader>
       <Separator className="my-2"/>
@@ -76,3 +74,4 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
     </Card>
   );
 }
+
