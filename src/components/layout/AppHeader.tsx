@@ -16,13 +16,15 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  // DialogTrigger, // Not needed if triggered from DropdownMenuItem onSelect
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { useState } from 'react';
 import AddHymnForm from '@/components/hymnal/AddHymnForm';
 import AddReadingForm from '@/components/readings/AddReadingForm'; 
+import ChatInterface from '@/components/ai/ChatInterface'; // New import
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+
 
 interface AppHeaderProps {
   title: string;
@@ -32,16 +34,15 @@ interface AppHeaderProps {
 export default function AppHeader({ title, actions }: AppHeaderProps) {
   const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = useState(false);
   const [isAddReadingDialogOpen, setIsAddReadingDialogOpen] = useState(false);
+  const [isChatDialogOpen, setIsChatDialogOpen] = useState(false); // New state for chat dialog
   const router = useRouter();
 
   const handleAddHymnSubmit = () => {
     setIsAddHymnDialogOpen(false);
-    // Potentially refresh data or navigate if needed, but AddHymnForm handles navigation for now
   };
 
   const handleAddReadingSubmit = () => {
     setIsAddReadingDialogOpen(false);
-    // Potentially refresh data or navigate
   };
 
   return (
@@ -53,11 +54,24 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
           </div>
           <div className="flex items-center gap-2">
             {actions}
-            <Button asChild variant="ghost" size="icon" aria-label="AI Suggestions">
-              <Link href="/suggestions">
-                <Wand2 className="h-6 w-6" />
-              </Link>
-            </Button>
+            
+            <Dialog open={isChatDialogOpen} onOpenChange={setIsChatDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Open AI Chat">
+                  <Wand2 className="h-6 w-6" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px] h-[70vh] flex flex-col">
+                <DialogHeader>
+                  <DialogTitle>Chat with GraceNotes AI</DialogTitle>
+                  <DialogDescription>
+                    Ask questions or get help.
+                  </DialogDescription>
+                </DialogHeader>
+                <ChatInterface />
+              </DialogContent>
+            </Dialog>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" aria-label="Open menu">
@@ -77,7 +91,6 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
                 <DropdownMenuItem
                   onSelect={() => {
                     console.log('Delete Hymn clicked');
-                    // Potentially open a confirmation dialog or navigate to a delete page
                   }}
                   className="text-destructive focus:text-destructive focus:bg-destructive/10"
                 >
@@ -87,7 +100,6 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
                 <DropdownMenuItem
                   onSelect={() => {
                     console.log('Delete Reading clicked');
-                     // Potentially open a confirmation dialog or navigate to a delete page
                   }}
                   className="text-destructive focus:text-destructive focus:bg-destructive/10"
                 >
@@ -109,7 +121,6 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
         </div>
       </header>
 
-      {/* Add Hymn Dialog */}
       <Dialog open={isAddHymnDialogOpen} onOpenChange={setIsAddHymnDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
@@ -122,7 +133,6 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Add Reading Dialog */}
       <Dialog open={isAddReadingDialogOpen} onOpenChange={setIsAddReadingDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
