@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -26,7 +27,7 @@ export default function AISuggestionDisplay() {
         return;
       }
       const result = await suggestRelatedContent({
-        recentHymns: activity.recentHymns,
+        recentHymns: activity.recentHymns, // These are English titles from useActivity
         recentReadings: activity.recentReadings,
         recentProgramItems: activity.recentProgramItems,
       });
@@ -44,9 +45,10 @@ export default function AISuggestionDisplay() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activity.recentHymns, activity.recentReadings, activity.recentProgramItems]); // Re-fetch when activity changes
 
+  // Finds item by English title for hymns, or original title for readings
   const findItemId = (title: string, type: 'hymn' | 'reading') => {
     if (type === 'hymn') {
-      const hymn = sampleHymns.find(h => h.title === title);
+      const hymn = sampleHymns.find(h => h.titleEnglish === title);
       return hymn ? `/hymnal/${hymn.id}` : null;
     }
     const reading = sampleReadings.find(r => r.title === title);
@@ -121,7 +123,7 @@ export default function AISuggestionDisplay() {
           <div>
             <h3 className="text-xl font-semibold mb-3 text-primary/90">Suggested Hymns</h3>
             <ul className="space-y-2">
-              {suggestions.suggestedHymns.map((hymnTitle) => {
+              {suggestions.suggestedHymns.map((hymnTitle) => { // This title is expected to be English
                 const path = findItemId(hymnTitle, 'hymn');
                 return (
                   <li key={hymnTitle} className="p-3 bg-primary/5 rounded-md hover:bg-primary/10 transition-colors">

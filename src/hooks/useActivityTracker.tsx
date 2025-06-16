@@ -1,13 +1,14 @@
+
 // src/hooks/useActivityTracker.tsx
 'use client';
 
-import type { UserActivity } from '@/types';
+import type { UserActivity, Hymn } from '@/types'; // Import Hymn type
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 
 const MAX_RECENT_ITEMS = 10; // Keep a rolling window of 10 items for each category
 
 interface ActivityContextType extends UserActivity {
-  addHymnView: (title: string) => void;
+  addHymnView: (hymnTitleEnglish: string) => void; // Parameter is now explicitly English title
   addReadingView: (title: string) => void;
   addProgramItemView: (title: string) => void;
   clearActivity: () => void;
@@ -55,10 +56,11 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
     return newArr.slice(0, MAX_RECENT_ITEMS);
   }, []);
 
-  const addHymnView = useCallback((title: string) => {
+  // Updated to accept English title for consistency in tracking
+  const addHymnView = useCallback((hymnTitleEnglish: string) => {
     setActivity(prev => ({
       ...prev,
-      recentHymns: addToRollingArray(prev.recentHymns, title),
+      recentHymns: addToRollingArray(prev.recentHymns, hymnTitleEnglish),
     }));
   }, [addToRollingArray]);
 

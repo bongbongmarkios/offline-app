@@ -1,3 +1,4 @@
+
 import AppHeader from '@/components/layout/AppHeader';
 import HymnDetail from '@/components/hymnal/HymnDetail';
 import { sampleHymns } from '@/data/hymns';
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: HymnPageProps) {
   if (!hymn) {
     return { title: 'Hymn Not Found' };
   }
-  return { title: hymn.title };
+  return { title: hymn.titleEnglish }; // Use English title for metadata
 }
 
 export default async function HymnPage({ params }: HymnPageProps) {
@@ -35,7 +36,7 @@ export default async function HymnPage({ params }: HymnPageProps) {
   return (
     <>
       <AppHeader 
-        title={hymn.title}
+        title={hymn.titleEnglish} // Display English title in header
         actions={
           <Button asChild variant="outline" size="sm">
             <Link href="/hymnal">

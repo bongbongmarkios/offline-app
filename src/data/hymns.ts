@@ -1,11 +1,11 @@
+
 import type { Hymn } from '@/types';
 
 export const sampleHymns: Hymn[] = [
   {
     id: '1',
-    title: 'Amazing Grace',
-    number: '202',
-    lyrics: `Amazing grace! How sweet the sound
+    titleEnglish: 'Amazing Grace',
+    lyricsEnglish: `Amazing grace! How sweet the sound
 That saved a wretch like me!
 I once was lost, but now am found;
 Was blind, but now I see.
@@ -26,12 +26,17 @@ He will my Shield and Portion be,
 As long as life endures.`,
     author: 'John Newton',
     category: 'Grace',
+    pageNumber: '202',
+    keySignature: 'G Major',
+    // titleFilipino: 'Kahanga-hangang Biyaya', // Example
+    // lyricsFilipino: '...', // Example
+    // titleHiligaynon: 'Makalilipay nga Grasya', // Example
+    // lyricsHiligaynon: '...', // Example
   },
   {
     id: '2',
-    title: 'Great Is Thy Faithfulness',
-    number: '100',
-    lyrics: `Great is Thy faithfulness, O God my Father;
+    titleEnglish: 'Great Is Thy Faithfulness',
+    lyricsEnglish: `Great is Thy faithfulness, O God my Father;
 There is no shadow of turning with Thee;
 Thou changest not, Thy compassions, they fail not;
 As Thou hast been Thou forever wilt be.
@@ -53,12 +58,13 @@ Strength for today and bright hope for tomorrow,
 Blessings all mine, with ten thousand beside!`,
     author: 'Thomas O. Chisholm',
     category: 'Faithfulness',
+    pageNumber: '100',
+    keySignature: 'Eb Major',
   },
   {
     id: '3',
-    title: 'How Great Thou Art',
-    number: '77',
-    lyrics: `O Lord my God, when I in awesome wonder
+    titleEnglish: 'How Great Thou Art',
+    lyricsEnglish: `O Lord my God, when I in awesome wonder
 Consider all the worlds Thy Hands have made;
 I see the stars, I hear the rolling thunder,
 Thy power throughout the universe displayed.
@@ -85,5 +91,7 @@ Then I shall bow, in humble adoration,
 And then proclaim: "My God, how great Thou art!"`,
     author: 'Carl Boberg, Stuart K. Hine (Translator)',
     category: 'Praise',
+    pageNumber: '77',
+    keySignature: 'Bb Major',
   }
 ];

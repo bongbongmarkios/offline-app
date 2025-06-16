@@ -1,11 +1,20 @@
+
 export interface Hymn {
   id: string;
-  title: string;
-  number?: string;
-  lyrics: string; 
+  pageNumber?: string; // Replaces old 'number'
+  keySignature?: string;
+  
+  titleEnglish: string; // Required
+  titleFilipino?: string;
+  titleHiligaynon?: string;
+  
+  lyricsEnglish: string; // Required
+  lyricsFilipino?: string;
+  lyricsHiligaynon?: string;
+  
   composer?: string;
   author?: string;
-  category?: string; // e.g. Worship, Thanksgiving, etc.
+  category?: string;
 }
 
 export const programItemTitles = [
@@ -52,6 +61,6 @@ export interface Reading {
 // For AI suggestions
 export type UserActivity = {
   recentProgramItems: string[];
-  recentHymns: string[];
+  recentHymns: string[]; // Will store the English title of the hymn
   recentReadings: string[];
 };
