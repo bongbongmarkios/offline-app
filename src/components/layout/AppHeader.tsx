@@ -1,7 +1,7 @@
 
 'use client';
 import type { ReactNode } from 'react';
-import { Menu, PlusCircle, Trash2, Info, Settings as SettingsIcon, BookPlus, BookX } from 'lucide-react';
+import { Menu, PlusCircle, Trash2, Info, Settings as SettingsIcon, BookPlus, BookX, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -20,8 +20,9 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from 'react';
 import AddHymnForm from '@/components/hymnal/AddHymnForm';
-import AddReadingForm from '@/components/readings/AddReadingForm'; // Placeholder
+import AddReadingForm from '@/components/readings/AddReadingForm'; 
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface AppHeaderProps {
   title: string;
@@ -52,6 +53,11 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
           </div>
           <div className="flex items-center gap-2">
             {actions}
+            <Button asChild variant="ghost" size="icon" aria-label="AI Suggestions">
+              <Link href="/suggestions">
+                <Wand2 className="h-6 w-6" />
+              </Link>
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" aria-label="Open menu">
@@ -69,14 +75,20 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onSelect={() => console.log('Delete Hymn clicked')}
+                  onSelect={() => {
+                    console.log('Delete Hymn clicked');
+                    // Potentially open a confirmation dialog or navigate to a delete page
+                  }}
                   className="text-destructive focus:text-destructive focus:bg-destructive/10"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
                   <span>Delete Hymn</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onSelect={() => console.log('Delete Reading clicked')}
+                  onSelect={() => {
+                    console.log('Delete Reading clicked');
+                     // Potentially open a confirmation dialog or navigate to a delete page
+                  }}
                   className="text-destructive focus:text-destructive focus:bg-destructive/10"
                 >
                   <BookX className="mr-2 h-4 w-4" />
@@ -110,7 +122,7 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Add Reading Dialog (Placeholder) */}
+      {/* Add Reading Dialog */}
       <Dialog open={isAddReadingDialogOpen} onOpenChange={setIsAddReadingDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
