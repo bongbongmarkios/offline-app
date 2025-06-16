@@ -21,7 +21,7 @@ import {
 import { useState } from 'react';
 import AddHymnForm from '@/components/hymnal/AddHymnForm';
 import AddReadingForm from '@/components/readings/AddReadingForm'; 
-import ChatInterface from '@/components/ai/ChatInterface'; // New import
+import ChatInterface from '@/components/ai/ChatInterface';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -34,7 +34,7 @@ interface AppHeaderProps {
 export default function AppHeader({ title, actions }: AppHeaderProps) {
   const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = useState(false);
   const [isAddReadingDialogOpen, setIsAddReadingDialogOpen] = useState(false);
-  const [isChatDialogOpen, setIsChatDialogOpen] = useState(false); // New state for chat dialog
+  const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
   const router = useRouter();
 
   const handleAddHymnSubmit = () => {
@@ -122,14 +122,14 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
       </header>
 
       <Dialog open={isAddHymnDialogOpen} onOpenChange={setIsAddHymnDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] h-[85vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Add New Hymn</DialogTitle>
             <DialogDescription>
               Fill in the details for the new hymn. Click save when you're done.
             </DialogDescription>
           </DialogHeader>
-          <AddHymnForm onFormSubmit={handleAddHymnSubmit} className="pt-0" />
+          <AddHymnForm onFormSubmit={handleAddHymnSubmit} className="pt-0 flex-1 min-h-0" />
         </DialogContent>
       </Dialog>
 
