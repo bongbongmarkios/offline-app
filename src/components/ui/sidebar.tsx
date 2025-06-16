@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, Info } from "lucide-react"
+import { PanelLeft, Info, PlusCircle, Trash2 } from "lucide-react" // Added PlusCircle, Trash2
 import Image from "next/image";
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -219,15 +219,37 @@ const Sidebar = React.forwardRef<
                 </div>
               </UiSheetHeader>
 
-              {/* Action buttons section removed */}
+              {/* Action buttons section */}
+              <div className="p-4 space-y-2 border-b border-sidebar-border">
+                <Button variant="ghost" className="w-full justify-start text-sm" onClick={() => { /* Placeholder for Add Hymn */ setTimeout(() => setOpenMobile(false),0); }}>
+                  <PlusCircle className="mr-2 h-5 w-5" /> Add Hymn
+                </Button>
+                <Button variant="ghost" className="w-full justify-start text-sm" onClick={() => { /* Placeholder for Add Readings */ setTimeout(() => setOpenMobile(false),0); }}>
+                  <PlusCircle className="mr-2 h-5 w-5" /> Add Readings
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start text-sm text-destructive hover:bg-destructive hover:text-destructive-foreground" 
+                  onClick={() => { /* Placeholder for Delete Hymn */ setTimeout(() => setOpenMobile(false),0); }}
+                >
+                  <Trash2 className="mr-2 h-5 w-5" /> Delete Hymn
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start text-sm text-destructive hover:bg-destructive hover:text-destructive-foreground" 
+                  onClick={() => { /* Placeholder for Delete Reading */ setTimeout(() => setOpenMobile(false),0); }}
+                >
+                  <Trash2 className="mr-2 h-5 w-5" /> Delete Reading
+                </Button>
+              </div>
               
-              {/* Empty ScrollArea for main nav items also removed as items were removed previously */}
+              {/* Main content area for future scrollable items - currently empty */}
               <div className="flex-grow overflow-y-auto">
-                {/* This area is now empty as per previous requests to remove nav items */}
               </div>
 
+              {/* Footer section */}
               <div className="mt-auto p-4 border-t border-sidebar-border space-y-2">
-                <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => setOpenMobile(false)}>
+                <Button asChild variant="ghost" className="w-full justify-start text-sm" onClick={() => setTimeout(() => setOpenMobile(false),0) }>
                   <Link href="/about">
                     <Info className="mr-2 h-5 w-5" /> About
                   </Link>
@@ -358,15 +380,15 @@ const SidebarInset = React.forwardRef<
 SidebarInset.displayName = "SidebarInset"
 
 const SidebarInput = React.forwardRef<
-  React.ElementRef<typeof HTMLInputElement>, // Changed from Input to HTMLInputElement
-  React.ComponentProps<typeof HTMLInputElement> // Changed from Input to HTMLInputElement
+  React.ElementRef<typeof HTMLInputElement>, 
+  React.ComponentProps<typeof HTMLInputElement> 
 >(({ className, ...props }, ref) => {
   return (
-    <input // Changed from Input component to native input
+    <input 
       ref={ref}
       data-sidebar="input"
       className={cn(
-        "h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring border rounded-md px-2 text-sm", // Added some basic input styling
+        "h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring border rounded-md px-2 text-sm", 
         className
       )}
       {...props}
