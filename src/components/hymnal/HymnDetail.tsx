@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useActivity } from '@/hooks/useActivityTracker';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Globe } from 'lucide-react'; // Imported Globe icon
 
 interface HymnDetailProps {
   hymn: Hymn;
@@ -23,21 +24,26 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
 
   return (
     <Card className="shadow-lg">
-      <CardHeader>
-        <div className="relative mb-2"> {/* Relative container for potential absolute elements if needed later */}
-            <div className="text-center">
+      <CardHeader className="relative"> {/* Added relative for absolute positioning of the Globe icon */}
+        <div className="relative mb-2"> {/* Container for titles */}
+            <div className="text-center"> {/* Centers the titles */}
                 {hymn.titleHiligaynon && <CardTitle className="font-headline text-3xl text-primary">{hymn.titleHiligaynon}</CardTitle>}
                 {hymn.titleFilipino && <p className={`text-lg ${hymn.titleHiligaynon ? 'text-muted-foreground' : 'font-headline text-3xl text-primary'}`}>{hymn.titleFilipino}</p>}
                 {hymn.titleEnglish && <p className={`text-lg ${(hymn.titleHiligaynon || hymn.titleFilipino) ? 'text-muted-foreground' : 'font-headline text-3xl text-primary'}`}>{hymn.titleEnglish}</p>}
             </div>
-            {/* Page number removed from here */}
         </div>
         
         <div className="text-md text-muted-foreground space-y-1 text-center">
             {hymn.keySignature && <p>Key: {hymn.keySignature}</p>}
             {hymn.composer && <p>Composer: {hymn.composer}</p>}
-            {hymn.pageNumber && <p>Page: {hymn.pageNumber}</p>} {/* Page number added here */}
+            {hymn.pageNumber && <p>Page: {hymn.pageNumber}</p>}
         </div>
+
+        {/* Globe icon, positioned absolutely to the bottom-right of the CardHeader */}
+        {/* It will only appear if hymn.pageNumber exists */}
+        {hymn.pageNumber && (
+          <Globe className="absolute right-6 bottom-6 h-5 w-5 text-muted-foreground" />
+        )}
       </CardHeader>
       <Separator className="my-2"/>
       <CardContent className="pt-4 space-y-6">
