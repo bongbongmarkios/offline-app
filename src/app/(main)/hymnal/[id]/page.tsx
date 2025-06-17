@@ -1,20 +1,22 @@
+
 // This is now a Server Component
-import { sampleHymns } from '@/data/hymns';
+import { initialSampleHymns } from '@/data/hymns'; // Use initialSampleHymns
 import HymnInteractiveView from '@/components/hymnal/HymnInteractiveView';
 import { notFound } from 'next/navigation';
 import type { Hymn } from '@/types';
 import type { Metadata } from 'next';
 
 export async function generateStaticParams() {
-  return sampleHymns.map(hymn => ({
+  // generateStaticParams should use the initial set of hymns known at build time
+  return initialSampleHymns.map(hymn => ({
     id: hymn.id,
   }));
 }
 
 async function getHymn(id: string): Promise<Hymn | undefined> {
-  // In a real app, this would fetch from a database
-  // Simulating async fetch
-  return sampleHymns.find((h) => h.id === id);
+  // This server-side fetch uses the initialSampleHymns.
+  // The client component (HymnInteractiveView) will handle localStorage.
+  return initialSampleHymns.find((h) => h.id === id);
 }
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
@@ -38,6 +40,7 @@ export default async function HymnPageServerWrapper({ params }: { params: { id: 
     notFound();
   }
 
-  // Pass hymn as initialHymn to the client component
+  // Pass hymn as initialHymn to the client component.
+  // HymnInteractiveView will then check localStorage for any updates to this hymn.
   return <HymnInteractiveView initialHymn={hymn} />;
 }

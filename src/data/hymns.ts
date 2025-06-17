@@ -1,8 +1,8 @@
 
 import type { Hymn } from '@/types';
 
-// Changed from const to let to allow adding new hymns
-export let sampleHymns: Hymn[] = [
+// Renamed from sampleHymns to initialSampleHymns to clarify its role as default/initial data
+export let initialSampleHymns: Hymn[] = [
   {
     id: '1',
     titleEnglish: 'Amazing Grace',
@@ -293,35 +293,31 @@ Ang ating pagkamangha, ang ating kagalakan, kapag si Hesus ay ating makita.`,
     pageNumber: '79',
     keySignature: 'G Major',
     author: 'Fanny Crosby',
-    composer: 'William H. Doane',
     category: 'Praise and Adoration',
   }
 ];
 
-// Function to add a new hymn to the sample data
+// Function to add a new hymn to the in-memory sample data
 export function addSampleHymn(hymnData: Omit<Hymn, 'id'>): Hymn {
   const newId = 'hymn-' + Date.now().toString() + '-' + Math.floor(Math.random() * 1000);
   const newHymn: Hymn = {
     id: newId,
     ...hymnData,
   };
-  sampleHymns.push(newHymn);
+  initialSampleHymns.push(newHymn);
   return newHymn;
 }
 
-// Function to update an existing hymn in the sample data
+// Function to update an existing hymn in the in-memory sample data
 export function updateSampleHymn(hymnId: string, updatedData: Partial<Omit<Hymn, 'id'>>): Hymn | null {
-  const hymnIndex = sampleHymns.findIndex(h => h.id === hymnId);
+  const hymnIndex = initialSampleHymns.findIndex(h => h.id === hymnId);
   if (hymnIndex === -1) {
     return null;
   }
-  const currentHymn = sampleHymns[hymnIndex];
-
-  // Directly merge updatedData, as it's already correctly structured by EditHymnForm
-  // to include all necessary fields and handle optional ones appropriately (e.g., setting to undefined if empty).
-  sampleHymns[hymnIndex] = {
-    ...currentHymn,
+  
+  initialSampleHymns[hymnIndex] = {
+    ...initialSampleHymns[hymnIndex],
     ...updatedData
   };
-  return sampleHymns[hymnIndex];
+  return initialSampleHymns[hymnIndex];
 }

@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import type { Hymn } from '@/types';
-import { sampleHymns } from '@/data/hymns';
+import { initialSampleHymns } from '@/data/hymns'; // Changed from sampleHymns
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -24,7 +24,8 @@ export default function DeleteHymnDialogContent({
   const { toast } = useToast();
 
   // In a real app, hymns might be passed as props or fetched.
-  const hymns: Hymn[] = sampleHymns;
+  // For now, it uses the initial set. Ideally, this would also interact with localStorage.
+  const hymns: Hymn[] = initialSampleHymns; // Changed from sampleHymns
 
   const handleCheckboxChange = (hymnId: string, checked: boolean | 'indeterminate') => {
     if (typeof checked === 'boolean') {
@@ -46,14 +47,28 @@ export default function DeleteHymnDialogContent({
       return;
     }
 
-    // Simulate deletion
+    // Simulate deletion for now.
+    // TODO: Integrate with localStorage for persistent deletion.
     console.log('Deleting hymns with IDs:', selectedHymnIds);
-    // In a real app, you would make an API call here to delete the hymns
-    // and then potentially update the local state or re-fetch the hymn list.
+    // Example of what localStorage deletion might look like (to be implemented fully later):
+    // try {
+    //   const storedHymnsString = localStorage.getItem('graceNotesHymns');
+    //   if (storedHymnsString) {
+    //     let storedHymns: Hymn[] = JSON.parse(storedHymnsString);
+    //     storedHymns = storedHymns.filter(h => !selectedHymnIds.includes(h.id));
+    //     localStorage.setItem('graceNotesHymns', JSON.stringify(storedHymns));
+    //   }
+      // Also update the in-memory initialSampleHymns for server-side consistency (if needed)
+      // This part is tricky as initialSampleHymns is not directly mutable from client components in a clean way
+      // without more complex state management or server actions.
+    // } catch (error) {
+    //   console.error("Error deleting hymns from localStorage:", error);
+    // }
+
 
     toast({
       title: 'Hymns Deleted (Simulated)',
-      description: `${selectedHymnIds.length} hymn(s) have been "deleted".`,
+      description: `${selectedHymnIds.length} hymn(s) have been "deleted". This is not yet persistent.`,
     });
 
     setSelectedHymnIds([]); // Clear selection
