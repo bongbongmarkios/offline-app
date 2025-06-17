@@ -10,9 +10,9 @@ import EditHymnForm from '@/components/hymnal/EditHymnForm';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import Link from 'next/link';
-import { ArrowLeft, FilePenLine } from 'lucide-react';
+import { ArrowLeft, FilePenLine, StickyNote } from 'lucide-react'; // Added StickyNote
 import { useRouter } from 'next/navigation';
-import { updateSampleHymn, initialSampleHymns } from '@/data/hymns'; // Import updateSampleHymn
+import { updateSampleHymn, initialSampleHymns } from '@/data/hymns'; 
 
 type LanguageOption = 'hiligaynon' | 'filipino' | 'english';
 const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
@@ -29,7 +29,6 @@ export default function HymnInteractiveView({ initialHymn }: HymnInteractiveView
   const router = useRouter();
 
   useEffect(() => {
-    // Load hymn from localStorage on mount if available
     try {
       const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
       if (storedHymnsString) {
@@ -38,20 +37,15 @@ export default function HymnInteractiveView({ initialHymn }: HymnInteractiveView
         if (hymnFromStorage) {
           setHymn(hymnFromStorage);
         } else {
-          // If not in storage, use initialHymn (from server) and potentially add it to storage
-          // For simplicity now, we'll just use initialHymn. A more robust solution might sync.
           setHymn(initialHymn);
         }
       } else {
-        // No hymns in localStorage, use initialHymn and consider saving all initialSampleHymns
-        // For now, just set the current hymn.
         setHymn(initialHymn);
-        // Optionally prime localStorage with default hymns if it's empty
-        // localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(initialSampleHymns));
+        localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(initialSampleHymns));
       }
     } catch (error) {
       console.error("Error loading hymns from localStorage:", error);
-      setHymn(initialHymn); // Fallback to initial prop if localStorage fails
+      setHymn(initialHymn); 
     }
   }, [initialHymn.id, initialHymn]);
 
@@ -79,46 +73,32 @@ export default function HymnInteractiveView({ initialHymn }: HymnInteractiveView
   };
 
   const handleEditSuccess = (updatedHymnData: Hymn) => {
-    setHymn(updatedHymnData); // 1. Optimistically update local state for immediate UI feedback
+    setHymn(updatedHymnData); 
     setIsEditDialogOpen(false);
 
     try {
-      // 2. Load all hymns from localStorage
       let allStoredHymns: Hymn[] = [];
       const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
       if (storedHymnsString) {
         allStoredHymns = JSON.parse(storedHymnsString);
+      } else {
+        allStoredHymns = [...initialSampleHymns]; 
       }
 
-      // 3. Find and replace the hymn in the array
       const hymnIndex = allStoredHymns.findIndex(h => h.id === updatedHymnData.id);
       if (hymnIndex > -1) {
         allStoredHymns[hymnIndex] = updatedHymnData;
       } else {
-        // Should not happen for an edit, but as a fallback, add it.
-        // Or, if localStorage was empty, initialize with initialSampleHymns and then update.
-        // For simplicity, if not found, we'll just use the current hymn or ensure initialSampleHymns are there.
-        // A more robust approach might be to ensure localStorage is always primed.
-        // For now, if it wasn't there, we'll add the updated one. If it means it's a new list:
-        if(allStoredHymns.length === 0 && initialSampleHymns.find(h => h.id === updatedHymnData.id)){
-            // If local storage was empty, but this hymn was part of initial load,
-            // it's better to re-initialize local storage with initial data and then update.
-            // This is complex. For now, just add/replace.
-             allStoredHymns.push(updatedHymnData); // Fallback: add if not found
-        } else if (hymnIndex === -1) {
-             allStoredHymns.push(updatedHymnData);
-        }
+         allStoredHymns.push(updatedHymnData); 
       }
-      // 4. Save the entire modified array back to localStorage
       localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allStoredHymns));
+      
+      updateSampleHymn(updatedHymnData.id, updatedHymnData); 
+
     } catch (error) {
         console.error("Error saving hymn to localStorage:", error);
     }
     
-    // 5. Also update the in-memory store for server-side consistency during the session
-    updateSampleHymn(updatedHymnData.id, updatedHymnData); 
-
-    // 6. Refresh server components if needed, though client state is primary for this view now
     router.refresh(); 
   };
 
@@ -138,6 +118,9 @@ export default function HymnInteractiveView({ initialHymn }: HymnInteractiveView
 
   const headerActions = (
     <>
+      <Button variant="ghost" size="icon" aria-label="Add note to hymn"> {/* New Note button */}
+        <StickyNote className="h-6 w-6 text-muted-foreground" />
+      </Button>
       <Button variant="ghost" size="icon" aria-label="Edit hymn" onClick={() => setIsEditDialogOpen(true)}>
         <FilePenLine className="h-6 w-6 text-muted-foreground" />
       </Button>
