@@ -20,18 +20,33 @@ const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
 type SignalStrength = 'strong' | 'average' | 'weak' | 'none';
 
 interface HymnInteractiveViewProps {
-  hymnFromServer?: Hymn; // Optional: hymn data from server (might be undefined)
-  params: { id: string };   // Route params to get the ID
+  hymnFromServer?: Hymn; 
+  params: { id: string };   
 }
 
 export default function HymnInteractiveView({ hymnFromServer, params }: HymnInteractiveViewProps) {
-  const [hymn, setHymn] = useState<Hymn | null>(null); // Allow null for not found state
-  const [isLoading, setIsLoading] = useState(true); // Start with loading true
+  const [hymn, setHymn] = useState<Hymn | null>(null); 
+  const [isLoading, setIsLoading] = useState(true); 
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption>('hiligaynon');
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const router = useRouter();
   const [signalStrength, setSignalStrength] = useState<SignalStrength>('strong');
+
+  // Refined languageIsAvailable for HymnInteractiveView
+  const languageIsAvailable = (lang: LanguageOption, currentHymn: Hymn | null): boolean => {
+    if (!currentHymn) return false;
+    switch (lang) {
+      case 'hiligaynon': // Hiligaynon title is required for the hymn to be valid
+        return !!currentHymn.titleHiligaynon; // Lyrics are also required by type, so title check is enough
+      case 'filipino':   // Filipino is optional
+        return !!currentHymn.titleFilipino && !!currentHymn.lyricsFilipino; // Both title and actual lyrics must exist and be non-empty
+      case 'english':    // English title is required for the hymn to be valid
+        return !!currentHymn.titleEnglish; // lyricsEnglish is a string, can be empty, still "available" if title exists
+      default:
+        return false;
+    }
+  };
 
   useEffect(() => {
     setIsLoading(true);
@@ -43,21 +58,16 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
         const storedHymns: Hymn[] = JSON.parse(storedHymnsString);
         const hymnFromStorage = storedHymns.find(h => h.id === params.id);
         if (hymnFromStorage) {
-          resolvedHymn = hymnFromStorage; // Prioritize localStorage
-        } else if (hymnFromServer) { // Not in localStorage, but was passed from server
+          resolvedHymn = hymnFromStorage; 
+        } else if (hymnFromServer) { 
           resolvedHymn = hymnFromServer;
         }
-        // If not in storage and not from server, resolvedHymn remains null
       } else {
-        // localStorage is empty.
-        // Use hymnFromServer if available, otherwise it's not found for this ID.
         resolvedHymn = hymnFromServer || null;
-        // Initialize localStorage with the base set.
         localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(initialSampleHymns));
       }
     } catch (error) {
       console.error("Error loading hymn:", error);
-      // On error, fallback to hymnFromServer if it exists, otherwise null.
       resolvedHymn = hymnFromServer || null;
     }
 
@@ -68,6 +78,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
 
   useEffect(() => {
     if (hymn) {
+      // Set initial language based on availability, preferring Hiligaynon, then English
       if (languageIsAvailable('hiligaynon', hymn)) {
         setSelectedLanguage('hiligaynon');
       } else if (languageIsAvailable('english', hymn)) {
@@ -75,11 +86,12 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       } else if (languageIsAvailable('filipino', hymn)) {
         setSelectedLanguage('filipino');
       } else {
-        setSelectedLanguage('hiligaynon');
+        setSelectedLanguage('hiligaynon'); // Default fallback
       }
     }
-    setShowLanguageSelector(false);
-  }, [hymn]);
+    setShowLanguageSelector(false); // Reset selector visibility when hymn changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hymn]); // Removed languageIsAvailable from deps as it's stable if hymn is its only external dep
 
   useEffect(() => {
     const signalLevels: SignalStrength[] = ['strong', 'average', 'weak', 'none'];
@@ -160,19 +172,6 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
     router.refresh(); 
   };
 
-  const languageIsAvailable = (lang: LanguageOption, currentHymn: Hymn | null): boolean => {
-    if (!currentHymn) return false;
-    switch (lang) {
-      case 'hiligaynon':
-        return !!currentHymn.titleHiligaynon && !!currentHymn.lyricsHiligaynon;
-      case 'filipino':
-        return !!currentHymn.titleFilipino && !!currentHymn.lyricsFilipino;
-      case 'english':
-        return !!currentHymn.titleEnglish && !!currentHymn.lyricsEnglish;
-      default:
-        return false;
-    }
-  };
 
   if (isLoading) {
     return (
@@ -216,7 +215,6 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
     );
   }
 
-  // Hymn is loaded and not null at this point
   const headerActions = (
     <>
       <Button variant="ghost" size="icon" aria-label={getMusicIconAriaLabel()}>
