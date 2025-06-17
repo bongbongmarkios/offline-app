@@ -93,7 +93,7 @@ Pardon for sin and a peace that endureth,
 Thine own dear presence to cheer and to guide;
 Strength for today and bright hope for tomorrow,
 Blessings all mine, with ten thousand beside!`,
-    titleHiligaynon: 'DAKU ANG IMO KATUTUM', 
+    titleHiligaynon: 'DAKU ANG IMO KATUTUM',
     lyricsHiligaynon: `Daku ang Imo katutum, O Dios ko nga Amay;
 Wala sing landong sang pagbag-o sa Imo;
 Wala Ka nagabag-o, ang Imo kaluoy, wala nagakapaslaw;
@@ -113,7 +113,7 @@ Sa Imo daku nga katutum, kaluoy kag gugma.
 Kapatawaran sa sala kag paghidaet nga nagapadayon,
 Ang Imo mismo presensya sa paglipay kag paggiya;
 Kusog para sa karon kag masanag nga paglaum para sa buas,
-Mga bugay tanan akon, upod ang napulo ka libo pa!`, 
+Mga bugay tanan akon, upod ang napulo ka libo pa!`,
     titleFilipino: 'DAKILA ANG IYONG KATAPATAN',
     lyricsFilipino: `Dakila ang Iyong katapatan, O Diyos Amang aking mahal;
 Walang anumang pagbabago Sa'yo;
@@ -168,7 +168,7 @@ When Christ shall come, with shout of acclamation,
 And take me home, what joy shall fill my heart.
 Then I shall bow, in humble adoration,
 And then proclaim: "My God, how great Thou art!"`,
-    titleHiligaynon: 'DAW ANO KA GAMHANAN', 
+    titleHiligaynon: 'DAW ANO KA GAMHANAN',
     lyricsHiligaynon: `O Ginoo ko nga Dios, kon ako sa makahalawhaw nga katingala
 Ginahunahuna ang tanan nga kalibutan nga ginhimo sang Imo mga Kamot;
 Makita ko ang mga bituon, mabatian ko ang nagadaguob nga daguob,
@@ -193,7 +193,7 @@ Nagtulo ang Iya dugo kag namatay agud kuhaon ang akon sala.
 Kon si Kristo mag-abot, nga may singgit sang pagdayaw,
 Kag dalhon ako pauli, ano nga kalipay ang magapuno sang akon tagipusuon.
 Dayon ako magayaub, sa mapainubuson nga pagsimba,
-Kag dayon magproklamar: "Dios ko, daw ano Ka gamhanan!"`, 
+Kag dayon magproklamar: "Dios ko, daw ano Ka gamhanan!"`,
     titleFilipino: 'O DIYOS, KAY DAKILA KA',
     lyricsFilipino: `O Panginoon kong Diyos, sa 'king pagkamangha
 Pinagmamasdan lahat ng gawa ng Iyong Kamay;
@@ -309,4 +309,28 @@ export function addSampleHymn(hymnData: Omit<Hymn, 'id'>): Hymn {
   return newHymn;
 }
 
-    
+// Function to update an existing hymn in the sample data
+export function updateSampleHymn(hymnId: string, updatedData: Partial<Omit<Hymn, 'id'>>): Hymn | null {
+  const hymnIndex = sampleHymns.findIndex(h => h.id === hymnId);
+  if (hymnIndex === -1) {
+    return null;
+  }
+  // Ensure required fields (titleHiligaynon, lyricsHiligaynon, titleEnglish, lyricsEnglish) have fallbacks if cleared
+  const currentHymn = sampleHymns[hymnIndex];
+  
+  const newHymnData = {
+    ...currentHymn,
+    ...updatedData,
+    titleHiligaynon: updatedData.titleHiligaynon || currentHymn.titleHiligaynon,
+    lyricsHiligaynon: updatedData.lyricsHiligaynon || currentHymn.lyricsHiligaynon,
+    // English title defaults to Hiligaynon if English is removed and was the only one
+    titleEnglish: updatedData.titleEnglish || currentHymn.titleEnglish || updatedData.titleHiligaynon || currentHymn.titleHiligaynon,
+    lyricsEnglish: updatedData.lyricsEnglish || currentHymn.lyricsEnglish || "", // Default to empty string if removed
+  };
+
+  sampleHymns[hymnIndex] = {
+    ...currentHymn,
+    ...newHymnData
+  };
+  return sampleHymns[hymnIndex];
+}
