@@ -41,7 +41,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       case 'hiligaynon':
         return !!currentHymn.titleHiligaynon;
       case 'filipino':
-        return !!currentHymn.titleFilipino; // Show if title exists, lyrics handling is separate
+        return !!currentHymn.titleFilipino; 
       case 'english':
         return !!currentHymn.titleEnglish;
       default:
@@ -61,16 +61,13 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
         if (hymnFromStorage) {
           resolvedHymn = hymnFromStorage;
         } else {
-          // If not in localStorage, try hymnFromServer (initial data)
           resolvedHymn = hymnFromServer || null;
         }
       } else {
-        // localStorage key doesn't exist, rely on hymnFromServer
         resolvedHymn = hymnFromServer || null;
       }
     } catch (error) {
       console.error("Error loading hymn for interactive view:", error);
-      // On error, fallback to hymnFromServer
       resolvedHymn = hymnFromServer || null;
     }
 
@@ -81,7 +78,6 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
 
   useEffect(() => {
     if (hymn) {
-      // Set initial language preference
       if (languageTitleIsAvailable('hiligaynon', hymn)) {
         setSelectedLanguage('hiligaynon');
       } else if (languageTitleIsAvailable('english', hymn)) {
@@ -89,14 +85,12 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       } else if (languageTitleIsAvailable('filipino', hymn)) {
         setSelectedLanguage('filipino');
       } else {
-        // Default fallback if no titles are explicitly available (should be rare with validation)
         setSelectedLanguage('hiligaynon');
       }
     }
-    // Always reset language selector visibility when hymn changes
     setShowLanguageSelector(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hymn]); // Re-evaluate when 'hymn' object changes
+  }, [hymn]);
 
 
   useEffect(() => {
@@ -104,11 +98,11 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       if (typeof navigator !== 'undefined' && navigator.onLine !== undefined) {
         setIsOnline(navigator.onLine);
       } else {
-        setIsOnline(true); // Fallback for environments without navigator.onLine
+        setIsOnline(true); 
       }
     };
 
-    updateOnlineStatus(); // Initial check
+    updateOnlineStatus(); 
 
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
@@ -138,7 +132,6 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       if (storedHymnsString) {
         allStoredHymns = JSON.parse(storedHymnsString);
       } else {
-        // If local storage was empty, initialize with current initialSampleHymns (which should include edits if any)
         allStoredHymns = [...initialSampleHymns];
       }
 
@@ -146,16 +139,13 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       if (hymnIndex > -1) {
         allStoredHymns[hymnIndex] = updatedHymnData;
       } else {
-         // This case should ideally not happen if editing an existing hymn,
-         // but as a fallback, add it.
          allStoredHymns.push(updatedHymnData);
       }
       localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allStoredHymns));
     } catch (error) {
         console.error("Error saving edited hymn to localStorage:", error);
-        // toast is available if useToast hook is used here, or pass as prop
     }
-    router.refresh(); // Refresh to ensure list pages reflect changes if needed
+    router.refresh(); 
   };
 
 
@@ -203,12 +193,17 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
 
   const headerActions = (
     <>
-      <Link href={`https://example.com/add-note-for-hymn/${hymn.id}`} passHref target="_blank" rel="noopener noreferrer">
-        <Button asChild variant="ghost" size="icon" aria-label="Add note to hymn (opens in new tab)">
-          {/* The Button, with asChild, will render as an anchor tag */}
-          <Music className={cn("h-6 w-6", isOnline ? "text-primary" : "text-muted-foreground")} />
+      {hymn.externalUrl && hymn.externalUrl.trim() !== '' ? (
+        <Link href={hymn.externalUrl} passHref target="_blank" rel="noopener noreferrer">
+          <Button asChild variant="ghost" size="icon" aria-label="Open hymn URL (opens in new tab)">
+            <Music className={cn("h-6 w-6", isOnline ? "text-primary" : "text-muted-foreground")} />
+          </Button>
+        </Link>
+      ) : (
+        <Button variant="ghost" size="icon" aria-label="No external URL set" disabled>
+          <Music className={cn("h-6 w-6", "text-muted-foreground")} />
         </Button>
-      </Link>
+      )}
       <Button variant="ghost" size="icon" aria-label="Edit hymn" onClick={() => setIsEditDialogOpen(true)}>
         <FilePenLine className="h-6 w-6 text-muted-foreground" />
       </Button>
