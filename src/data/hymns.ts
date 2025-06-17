@@ -1,369 +1,42 @@
 
 import type { Hymn } from '@/types';
 
-// Renamed from sampleHymns to initialSampleHymns to clarify its role as default/initial data
+// initialSampleHymns now contains only one hymn.
 export let initialSampleHymns: Hymn[] = [
   {
     id: '1',
-    titleEnglish: 'Amazing Grace',
-    lyricsEnglish: `Amazing grace! How sweet the sound
-That saved a wretch like me!
-I once was lost, but now am found;
-Was blind, but now I see.
+    titleEnglish: 'New Sample Hymn Title (English)',
+    lyricsEnglish: `This is the first verse of the new sample English lyrics.
+This is the second verse of the new sample English lyrics.
 
-’Twas grace that taught my heart to fear,
-And grace my fears relieved;
-How precious did that grace appear
-The hour I first believed.
+This is the chorus.
+Glory to the new hymn!
 
-Through many dangers, toils, and snares,
-I have already come;
-’Tis grace hath brought me safe thus far,
-And grace will lead me home.
+This is the third verse, full of praise.
+And a final line to conclude.`,
+    titleHiligaynon: 'BAG-O NGA HALIMBAWA NGA AMBAHANON (Hiligaynon)',
+    lyricsHiligaynon: `Amo ini ang nahauna nga berso sang bag-o nga halimbawa nga Hiligaynon nga liriko.
+Amo ini ang ikaduha nga berso sang bag-o nga halimbawa nga Hiligaynon nga liriko.
 
-The Lord has promised good to me,
-His Word my hope secures;
-He will my Shield and Portion be,
-As long as life endures.`,
-    titleHiligaynon: 'MAKAHALAHALAWAT NGA GRASYA',
-    lyricsHiligaynon: `Makahalahalawat nga grasya! Daw ano katam-is
-Nga nagluwas sa akon nga makaluluoy!
-Sadto nadula ako, apang karon nakita na;
-Bulag, apang karon makakita na.
+Amo ini ang koro.
+Himaya sa bag-o nga ambahanon!
 
-Grasya ang nagtudlo sa akon tagipusuon sa kahadlok,
-Kag grasya ang nagpakanay sang akon mga kahadlok;
-Daw ano ka hamili sadtong grasya
-Sang tion nga una ako nagtuo.
+Amo ini ang ikatlo nga berso, puno sang pagdayaw.
+Kag isa ka katapusan nga linya sa pagtapos.`,
+    titleFilipino: 'BAGONG HALIMBAWANG AWIT (Filipino)',
+    lyricsFilipino: `Ito ang unang taludtod ng bagong halimbawang liriko sa Filipino.
+Ito ang ikalawang taludtod ng bagong halimbawang liriko sa Filipino.
 
-Sa madamo nga katalagman, kabudlayan, kag siod,
-Ako nakaagi na;
-Grasya ang nagdala sa akon nga luwas tubtob diri,
-Kag grasya ang magadala sa akon pauli.
+Ito ang koro.
+Luwalhati sa bagong awit!
 
-Ang Ginoo nagpromisa sing maayo sa akon,
-Ang Iya Pulong nagapasalig sang akon paglaum;
-Sia mangin akon Taming kag Bahin,
-Samtang ang kabuhi nagapadayon.`,
-    titleFilipino: 'BIYAYANG KAHANGA-HANGA',
-    lyricsFilipino: `Biyayang kahanga-hanga! Anong tamis ng tunog
-Na nagligtas sa tulad kong hamak!
-Dati'y nawala, ngayo'y natagpuan;
-Naging bulag, ngayo'y nakakakita na.
-
-Biyaya ang nagturo sa puso kong matakot,
-At biyaya ang pawi sa aking takot;
-Kay mahalaga ng biyayang iyon
-Nang oras na una akong naniwala.
-
-Sa maraming panganib, hirap, at patibong,
-Ako'y nakarating na;
-Biyaya ang nagdala sa akin hanggang dito,
-At biyaya ang maghahatid sa akin pauwi.
-
-Panginoo'y nangako ng mabuti sa akin,
-Salita Niya'y pag-asa kong matibay;
-Siya'y magiging Kalasag at Bahagi ko,
-Habang buhay ay nagpapatuloy.`,
-    author: 'John Newton',
-    category: 'Grace',
-    pageNumber: '202',
-    keySignature: 'G Major',
-  },
-  {
-    id: '2',
-    titleEnglish: 'Great Is Thy Faithfulness',
-    lyricsEnglish: `Great is Thy faithfulness, O God my Father;
-There is no shadow of turning with Thee;
-Thou changest not, Thy compassions, they fail not;
-As Thou hast been Thou forever wilt be.
-
-Refrain:
-Great is Thy faithfulness! Great is Thy faithfulness!
-Morning by morning new mercies I see;
-All I have needed Thy hand hath provided;
-Great is Thy faithfulness, Lord, unto me!
-
-Summer and winter, and springtime and harvest,
-Sun, moon and stars in their courses above,
-Join with all nature in manifold witness
-To Thy great faithfulness, mercy and love.
-
-Pardon for sin and a peace that endureth,
-Thine own dear presence to cheer and to guide;
-Strength for today and bright hope for tomorrow,
-Blessings all mine, with ten thousand beside!`,
-    titleHiligaynon: 'DAKU ANG IMO KATUTUM',
-    lyricsHiligaynon: `Daku ang Imo katutum, O Dios ko nga Amay;
-Wala sing landong sang pagbag-o sa Imo;
-Wala Ka nagabag-o, ang Imo kaluoy, wala nagakapaslaw;
-Subong nga Ikaw sadto, Ikaw mangin sa gihapon.
-
-Koro:
-Daku ang Imo katutum! Daku ang Imo katutum!
-Kada aga bag-o nga kaluoy ang akon makita;
-Ang tanan nga akon kinahanglan gin-aman sang Imo kamot;
-Daku ang Imo katutum, Ginoo, sa akon!
-
-Tig-ilinit kag tig-ululan, kag tigpamulak kag tig-ani,
-Adlaw, bulan kag mga bituon sa ila alagyan sa ibabaw,
-Mag-upod sa bug-os nga kinaiya sa nanuhaytuhay nga pagpamatuod
-Sa Imo daku nga katutum, kaluoy kag gugma.
-
-Kapatawaran sa sala kag paghidaet nga nagapadayon,
-Ang Imo mismo presensya sa paglipay kag paggiya;
-Kusog para sa karon kag masanag nga paglaum para sa buas,
-Mga bugay tanan akon, upod ang napulo ka libo pa!`,
-    titleFilipino: 'DAKILA ANG IYONG KATAPATAN',
-    lyricsFilipino: `Dakila ang Iyong katapatan, O Diyos Amang aking mahal;
-Walang anumang pagbabago Sa'yo;
-Hindi Ka nagbabago, ang Iyong habag, hindi nagkukulang;
-Kung ano Ka noon, Ikaw ay magpakailanman.
-
-Koro:
-Dakila ang Iyong katapatan! Dakila ang Iyong katapatan!
-Tuwing umaga, bagong awa'y nakikita;
-Lahat ng kailangan ko, Iyong kamay ang naglaan;
-Dakila ang Iyong katapatan, Panginoon, sa akin!
-
-Tag-araw at taglamig, tagsibol at tag-ani,
-Araw, buwan, at mga bituin sa kanilang landas sa itaas,
-Sumasama sa buong kalikasan sa iba't ibang patotoo
-Sa Iyong dakilang katapatan, awa, at pag-ibig.
-
-Kapatawaran sa kasalanan at kapayapaang nagtatagal,
-Ang Iyong sariling presensya upang magpasigla at gumabay;
-Lakas para sa ngayon at maliwanag na pag-asa para sa bukas,
-Mga biyaya lahat ay akin, kasama ang sampung libo pa!`,
-    author: 'Thomas O. Chisholm',
-    category: 'Faithfulness',
-    pageNumber: '100',
-    keySignature: 'Eb Major',
-  },
-  {
-    id: '3',
-    titleEnglish: 'How Great Thou Art',
-    lyricsEnglish: `O Lord my God, when I in awesome wonder
-Consider all the worlds Thy Hands have made;
-I see the stars, I hear the rolling thunder,
-Thy power throughout the universe displayed.
-
-Refrain:
-Then sings my soul, my Saviour God, to Thee,
-How great Thou art, how great Thou art.
-Then sings my soul, my Saviour God, to Thee,
-How great Thou art, how great Thou art!
-
-When through the woods, and forest glades I wander,
-And hear the birds sing sweetly in the trees.
-When I look down, from lofty mountain grandeur
-And see the brook, and feel the gentle breeze.
-
-And when I think, that God, His Son not sparing;
-Sent Him to die, I scarce can take it in;
-That on the Cross, my burden gladly bearing,
-He bled and died to take away my sin.
-
-When Christ shall come, with shout of acclamation,
-And take me home, what joy shall fill my heart.
-Then I shall bow, in humble adoration,
-And then proclaim: "My God, how great Thou art!"`,
-    titleHiligaynon: 'DAW ANO KA GAMHANAN',
-    lyricsHiligaynon: `O Ginoo ko nga Dios, kon ako sa makahalawhaw nga katingala
-Ginahunahuna ang tanan nga kalibutan nga ginhimo sang Imo mga Kamot;
-Makita ko ang mga bituon, mabatian ko ang nagadaguob nga daguob,
-Ang Imo gahum sa bug-os nga uniberso ginpakita.
-
-Koro:
-Dayon nagaamba ang akon kalag, Manluluwas ko nga Dios, sa Imo,
-Daw ano Ka gamhanan, daw ano Ka gamhanan.
-Dayon nagaamba ang akon kalag, Manluluwas ko nga Dios, sa Imo,
-Daw ano Ka gamhanan, daw ano Ka gamhanan!
-
-Kon sa mga kakahuyan, kag mga latagon sa kagulangan ako nagalakat,
-Kag mabatian ang mga pispis nga nagaamba sing matam-is sa mga kahoy.
-Kon ako maglantaw sa idalom, gikan sa mataas nga bukid
-Kag makita ang sapa, kag mabatyagan ang mahinay nga huyop sang hangin.
-
-Kag kon ako maghunahuna, nga ang Dios, ang Iya Anak wala ginpunggan;
-Ginpadala Sia sa pagkamatay, halos indi ko mabaton;
-Nga sa Krus, ang akon lulan malipayon nga ginpas-an,
-Nagtulo ang Iya dugo kag namatay agud kuhaon ang akon sala.
-
-Kon si Kristo mag-abot, nga may singgit sang pagdayaw,
-Kag dalhon ako pauli, ano nga kalipay ang magapuno sang akon tagipusuon.
-Dayon ako magayaub, sa mapainubuson nga pagsimba,
-Kag dayon magproklamar: "Dios ko, daw ano Ka gamhanan!"`,
-    titleFilipino: 'O DIYOS, KAY DAKILA KA',
-    lyricsFilipino: `O Panginoon kong Diyos, sa 'king pagkamangha
-Pinagmamasdan lahat ng gawa ng Iyong Kamay;
-Nakikita ko ang mga bituin, naririnig ang kulog na dumadagundong,
-Ang Iyong kapangyarihan sa buong sansinukob ay nahahayag.
-
-Koro:
-Kaya't umaawit ang kaluluwa ko, Tagapagligtas kong Diyos, Sa'yo,
-Kay dakila Ka, kay dakila Ka.
-Kaya't umaawit ang kaluluwa ko, Tagapagligtas kong Diyos, Sa'yo,
-Kay dakila Ka, kay dakila Ka!
-
-Sa paglakad ko sa kakahuyan at mga landas sa gubat,
-At naririnig ang mga ibong matamis na umaawit sa mga puno.
-Kapag ako'y tumingin sa ibaba, mula sa taas ng bundok
-At nakikita ang batis, at nararamdaman ang banayad na simoy.
-
-At kapag naiisip ko, na ang Diyos, ang Kanyang Anak ay di ipinagkait;
-Ipinadala Siya upang mamatay, halos di ko matanggap;
-Na sa Krus, ang aking pasanin ay buong galak Niyang dinala,
-Siya'y nagdugo at namatay upang alisin ang aking sala.
-
-Kapag si Kristo'y dumating, na may sigaw ng pagpupuri,
-At iuuwi ako, anong galak ang pupuno sa aking puso.
-Pagkatapos ay yuyukod ako, sa mapagkumbabang pagsamba,
-At pagkatapos ay ipahahayag: "Diyos ko, kay dakila Ka!"`,
-    author: 'Carl Boberg, Stuart K. Hine (Translator)',
-    category: 'Praise',
-    pageNumber: '77',
-    keySignature: 'Bb Major',
-  },
-  {
-    id: '4',
-    titleEnglish: 'To God Be The Glory',
-    lyricsEnglish: `To God be the glory, great things He hath done,
-So loved He the world that He gave us His Son,
-Who yielded His life an atonement for sin,
-And opened the life gate that all may go in.
-
-Refrain:
-Praise the Lord, praise the Lord, let the earth hear His voice!
-Praise the Lord, praise the Lord, let the people rejoice!
-O come to the Father, through Jesus the Son,
-And give Him the glory, great things He hath done.
-
-O perfect redemption, the purchase of blood,
-To every believer the promise of God;
-The vilest offender who truly believes,
-That moment from Jesus a pardon receives.
-
-Great things He hath taught us, great things He hath done,
-And great our rejoicing through Jesus the Son;
-But purer, and higher, and greater will be
-Our wonder, our transport, when Jesus we see.`,
-    titleHiligaynon: 'SA DIOS ANG HIMAYA',
-    lyricsHiligaynon: `SA DIOS ANG HIMAYA, DAKU GID ANG NAHIMO NIYA,
-GINHIGUGMA NIYA ANG KALIBUTAN NGA GINHATAG NIYA ANG IYA ANAK,
-NGA NAGHALAD SANG IYA KABUHI PARA SA KATUBUSAN SANG SALA,
-KAG GIN-ABRIHAN ANG GANHAAN SANG KABUHI AGUD ANG TANAN MAKASULOD.
-
-Koro:
-Dayawa ang Ginoo, dayawa ang Ginoo, pamatia sang duta ang Iya tingog!
-Dayawa ang Ginoo, dayawa ang Ginoo, magkalipay ang mga tawo!
-Oh kari sa Amay, paagi kay Jesus nga Anak,
-Kag ihatag sa Iya ang himaya, daku gid ang nahimo Niya.
-
-O himpit nga katubusan, ang bili sang dugo,
-Sa tagsa ka tumuluo ang saad sang Dios;
-Ang labing makasasala nga matuod nga nagatuo,
-Sa sadto nga tion gikan kay Jesus makabaton sang kapatawaran.
-
-Daku nga mga butang ang Iya gintudlo sa aton, daku nga mga butang ang Iya nahimo,
-Kag daku ang aton kalipay paagi kay Jesus nga Anak;
-Apang mas putli, kag mas mataas, kag mas daku pa
-Ang aton katingala, ang aton kalipay, kon si Jesus aton makita.`,
-    titleFilipino: 'SA DIYOS ANG KALUWALHATIAN',
-    lyricsFilipino: `Sa Diyos ang kaluwalhatian, dakilang mga bagay ang nagawa Niya,
-Gayon na lamang ang pag-ibig Niya sa sanlibutan na ibinigay Niya ang Kanyang Anak,
-Na nag-alay ng Kanyang buhay bilang pantubos sa kasalanan,
-At binuksan ang pintuan ng buhay upang lahat ay makapasok.
-
-Koro:
-Purihin ang Panginoon, purihin ang Panginoon, hayaang marinig ng lupa ang Kanyang tinig!
-Purihin ang Panginoon, purihin ang Panginoon, hayaang magalak ang mga tao!
-O lumapit sa Ama, sa pamamagitan ni Hesus na Anak,
-At ibigay sa Kanya ang kaluwalhatian, dakilang mga bagay ang nagawa Niya.
-
-O ganap na katubusan, ang halaga ng dugo,
-Sa bawat mananampalataya ang pangako ng Diyos;
-Ang pinakamasamang nagkasala na tunay na naniniwala,
-Sa sandaling iyon mula kay Hesus ay tatanggap ng kapatawaran.
-
-Dakilang mga bagay ang itinuro Niya sa atin, dakilang mga bagay ang nagawa Niya,
-At dakila ang ating kagalakan sa pamamagitan ni Hesus na Anak;
-Ngunit mas dalisay, at mas mataas, at mas dakila pa
-Ang ating pagkamangha, ang ating kagalakan, kapag si Hesus ay ating makita.`,
-    pageNumber: '79',
-    keySignature: 'G Major',
-    author: 'Fanny Crosby',
-    category: 'Praise and Adoration',
-  },
-  {
-    id: '5',
-    titleEnglish: 'Blessed Assurance',
-    lyricsEnglish: `Blessed assurance, Jesus is mine!
-O what a foretaste of glory divine!
-Heir of salvation, purchase of God,
-Born of His Spirit, washed in His blood.
-
-Refrain:
-This is my story, this is my song,
-Praising my Savior all the day long;
-This is my story, this is my song,
-Praising my Savior all the day long.
-
-Perfect submission, perfect delight,
-Visions of rapture now burst on my sight;
-Angels descending, bring from above
-Echoes of mercy, whispers of love.
-
-Perfect submission, all is at rest,
-I in my Savior am happy and blest;
-Watching and waiting, looking above,
-Filled with His goodness, lost in His love.`,
-    titleHiligaynon: 'BULAHAN NGA KASIGURUHAN',
-    lyricsHiligaynon: `Bulahan nga kasiguruhan, si Jesus akon!
-O daw ano nga pagtilaw sang himaya nga diosnon!
-Manunubli sang kaluwasan, binakal sang Dios,
-Natawo sa Iya Espiritu, nahugasan sa Iya dugo.
-
-Koro:
-Ini ang akon istorya, ini ang akon ambahanon,
-Nagadayaw sa akon Manluluwas sa bug-os nga adlaw;
-Ini ang akon istorya, ini ang akon ambahanon,
-Nagadayaw sa akon Manluluwas sa bug-os nga adlaw.
-
-Himpit nga pagpasakop, himpit nga kalipay,
-Mga palanan-awon sang kalipay karon nagabutwa sa akon panulok;
-Mga anghel nagapadulhog, nagadala gikan sa ibabaw
-Mga lanog sang kaluoy, mga hutik sang gugma.
-
-Himpit nga pagpasakop, tanan nagapahimuyong,
-Ako sa akon Manluluwas malipayon kag bulahan;
-Nagabantay kag nagahulat, nagalantaw sa ibabaw,
-Napuno sang Iya kaayo, nadula sa Iya gugma.`,
-    titleFilipino: 'TIYAK NA KALIGTASAN',
-    lyricsFilipino: `Tiyak na kaligtasan, si Hesus ay akin!
-O anong paunang lasap ng luwalhating banal!
-Tagapagmana ng kaligtasan, binili ng Diyos,
-Ipinanganak ng Kanyang Espiritu, hinugasan sa Kanyang dugo.
-
-Koro:
-Ito ang aking kwento, ito ang aking awit,
-Pinupuri ang aking Tagapagligtas buong araw;
-Ito ang aking kwento, ito ang aking awit,
-Pinupuri ang aking Tagapagligtas buong araw.
-
-Ganap na pagsuko, ganap na galak,
-Mga pangitain ng kaluguran ngayo'y sumisilay sa akin;
-Mga anghel na bumababa, dala mula sa itaas
-Mga alingawngaw ng awa, mga bulong ng pag-ibig.
-
-Ganap na pagsuko, lahat ay payapa,
-Ako sa aking Tagapagligtas ay masaya at pinagpala;
-Nagbabantay at naghihintay, nakatingin sa itaas,
-Napuspos ng Kanyang kabutihan, nalulunod sa Kanyang pag-ibig.`,
-    author: 'Fanny J. Crosby',
-    category: 'Assurance',
-    pageNumber: '334',
-    keySignature: 'D Major',
+Ito ang ikatlong taludtod, puno ng papuri.
+At isang huling linya upang magtapos.`,
+    author: 'App Prototyper',
+    category: 'General',
+    pageNumber: '1',
+    keySignature: 'C Major',
+    externalUrl: undefined,
   }
 ];
 
@@ -371,6 +44,13 @@ Napuspos ng Kanyang kabutihan, nalulunod sa Kanyang pag-ibig.`,
 export function updateSampleHymn(hymnId: string, updatedData: Partial<Omit<Hymn, 'id'>>): Hymn | null {
   const hymnIndex = initialSampleHymns.findIndex(h => h.id === hymnId);
   if (hymnIndex === -1) {
+    // If hymn not found, and we are aiming for a single-hymn scenario after this reset,
+    // it might be an error to try to update something that doesn't exist.
+    // However, to keep functionality, if the ID matches the new single hymn, update it.
+    if (initialSampleHymns.length === 1 && initialSampleHymns[0].id === hymnId) {
+      initialSampleHymns[0] = { ...initialSampleHymns[0], ...updatedData };
+      return initialSampleHymns[0];
+    }
     return null;
   }
   initialSampleHymns[hymnIndex] = {
@@ -386,10 +66,23 @@ export function deleteSampleHymnsByIds(hymnIds: string[]): void {
 }
 
 // Function to add a new hymn to the in-memory sample data
-// This function is no longer directly used by the UI components after removing add hymn functionality.
-// It's kept here for potential programmatic use or future re-integration.
+// Kept for potential programmatic use or future re-integration.
 export function addSampleHymn(hymnData: Omit<Hymn, 'id'>): Hymn {
-  const newId = (Math.max(0, ...initialSampleHymns.map(h => parseInt(h.id, 10) || 0)) + 1).toString();
+  // If the goal is to re-add to a list that might have been cleared,
+  // this ID generation needs to be robust.
+  // For now, if initialSampleHymns is empty, it will start from '1'.
+  // If it's not empty, it tries to find the max existing ID.
+  let newIdNumber = 1;
+  if (initialSampleHymns.length > 0) {
+    newIdNumber = Math.max(0, ...initialSampleHymns.map(h => parseInt(h.id, 10) || 0)) + 1;
+  } else {
+    // If the list was completely cleared and this is the first add,
+    // check if the incoming hymnData implies an ID (e.g. if pageNumber should be ID)
+    // For simplicity, we use a numeric sequence.
+  }
+
+  const newId = newIdNumber.toString();
+  
   const newHymn: Hymn = {
     id: newId,
     ...hymnData,
@@ -397,3 +90,4 @@ export function addSampleHymn(hymnData: Omit<Hymn, 'id'>): Hymn {
   initialSampleHymns.push(newHymn);
   return newHymn;
 }
+
