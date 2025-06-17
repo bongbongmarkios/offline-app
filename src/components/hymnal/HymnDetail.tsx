@@ -42,7 +42,7 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
         {/* Globe icon, positioned absolutely to the bottom-right of the CardHeader */}
         {/* It will only appear if hymn.pageNumber exists */}
         {hymn.pageNumber && (
-          <Globe className="absolute right-6 bottom-6 h-5 w-5 text-muted-foreground" />
+          <Globe className="absolute right-6 bottom-6 h-6 w-6 text-muted-foreground" />
         )}
       </CardHeader>
       <Separator className="my-2"/>
