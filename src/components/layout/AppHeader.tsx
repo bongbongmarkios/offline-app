@@ -1,7 +1,7 @@
 
 'use client';
 import type { ReactNode } from 'react';
-import { Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, Wand2, ListChecks } from 'lucide-react';
+import { Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, Wand2, ListChecks, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -260,6 +260,13 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                     >
                       <BookX className="mr-2 h-4 w-4" />
                       <span>Delete Reading</span>
+                    </DropdownMenuItem>
+                     <DropdownMenuItem
+                      onSelect={() => router.push('/trash')}
+                      className="" 
+                    >
+                      <Trash className="mr-2 h-4 w-4" />
+                      <span>Trash</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onSelect={() => router.push('/settings')}>
