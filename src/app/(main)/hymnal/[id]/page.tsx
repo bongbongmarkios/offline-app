@@ -7,15 +7,13 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import {notFound} from 'next/navigation';
-import HymnMultiLanguageDialog from '@/components/hymnal/HymnMultiLanguageDialog'; // New Import
+import HymnMultiLanguageDialog from '@/components/hymnal/HymnMultiLanguageDialog';
 
 interface HymnPageProps {
   params: { id: string };
 }
 
-// This function can be a server component
 async function getHymn(id: string): Promise<Hymn | undefined> {
-  // In a real app, fetch from DB/API
   return sampleHymns.find((h) => h.id === id);
 }
 
@@ -24,7 +22,7 @@ export async function generateMetadata({ params }: HymnPageProps) {
   if (!hymn) {
     return { title: 'Hymn Not Found' };
   }
-  return { title: hymn.titleEnglish || hymn.titleHiligaynon }; // Use English or Hiligaynon title for metadata
+  return { title: hymn.titleEnglish || hymn.titleHiligaynon };
 }
 
 export default async function HymnPage({ params }: HymnPageProps) {
@@ -34,7 +32,9 @@ export default async function HymnPage({ params }: HymnPageProps) {
     notFound();
   }
 
-  const headerActions = <HymnMultiLanguageDialog hymn={hymn} pageNumberExists={!!hymn.pageNumber} />;
+  const headerActions = (
+    <HymnMultiLanguageDialog hymn={hymn} pageNumberExists={!!hymn.pageNumber} />
+  );
 
   return (
     <>
