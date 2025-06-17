@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { useActivity } from '@/hooks/useActivityTracker';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Globe } from 'lucide-react'; // Imported Globe icon
+// Globe icon import removed as it's no longer used here
 
 interface HymnDetailProps {
   hymn: Hymn;
@@ -24,7 +24,7 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
 
   return (
     <Card className="shadow-lg">
-      <CardHeader className="relative"> {/* Added relative for absolute positioning of the Globe icon */}
+      <CardHeader className="relative">
         <div className="relative mb-2"> {/* Container for titles */}
             <div className="text-center"> {/* Centers the titles */}
                 {hymn.titleHiligaynon && <CardTitle className="font-headline text-3xl text-primary">{hymn.titleHiligaynon}</CardTitle>}
@@ -39,11 +39,7 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
             {hymn.pageNumber && <p>Page: {hymn.pageNumber}</p>}
         </div>
 
-        {/* Globe icon, positioned absolutely to the bottom-right of the CardHeader */}
-        {/* It will only appear if hymn.pageNumber exists */}
-        {hymn.pageNumber && (
-          <Globe className="absolute right-6 bottom-6 h-6 w-6 text-muted-foreground" />
-        )}
+        {/* Globe icon removed from here */}
       </CardHeader>
       <Separator className="my-2"/>
       <CardContent className="pt-4 space-y-6">

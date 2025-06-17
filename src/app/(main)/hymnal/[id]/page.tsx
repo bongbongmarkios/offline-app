@@ -5,7 +5,7 @@ import { sampleHymns } from '@/data/hymns';
 import type { Hymn } from '@/types';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Globe } from 'lucide-react'; // Imported Globe
 import {notFound} from 'next/navigation';
 
 interface HymnPageProps {
@@ -33,6 +33,10 @@ export default async function HymnPage({ params }: HymnPageProps) {
     notFound();
   }
 
+  const headerActions = hymn.pageNumber ? (
+    <Globe className="h-6 w-6 text-muted-foreground" />
+  ) : null;
+
   return (
     <>
       <AppHeader 
@@ -43,7 +47,7 @@ export default async function HymnPage({ params }: HymnPageProps) {
             </Link>
           </Button>
         } 
-        actions={null}
+        actions={headerActions} // Pass Globe icon as action
         hideDefaultActions={true} // Hide chat and menu icons
       />
       <div className="container mx-auto px-4 pb-8">
