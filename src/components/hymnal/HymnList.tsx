@@ -17,32 +17,39 @@ export default function HymnList({ initialHymns }: HymnListProps) {
   const [isLoading, setIsLoading] = useState(true); // To manage loading state
 
   useEffect(() => {
+    let loadedHymns: Hymn[] = [];
     try {
       const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
       if (storedHymnsString) {
-        const storedHymnsFromStorage: Hymn[] = JSON.parse(storedHymnsString);
-        // Sort here as well, similar to the server page
-        const sortedHymns = [...storedHymnsFromStorage].sort((a, b) => {
-            const pageNumA = a.pageNumber ? parseInt(a.pageNumber, 10) : Infinity;
-            const pageNumB = b.pageNumber ? parseInt(b.pageNumber, 10) : Infinity;
-            if (isNaN(pageNumA) && isNaN(pageNumB)) return 0;
-            if (isNaN(pageNumA)) return 1;
-            if (isNaN(pageNumB)) return -1;
-            return pageNumA - pageNumB;
-        });
-        setHymns(sortedHymns);
+        const parsedHymns: Hymn[] = JSON.parse(storedHymnsString);
+        // Filter for valid hymns before setting state
+        loadedHymns = parsedHymns.filter(h => h && h.id && typeof h.id === 'string' && h.id.trim() !== "");
       } else {
-        // If nothing in localStorage, use initialHymns (already sorted by server)
-        // And potentially prime localStorage with the initial set
-        localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(initialSampleHymns));
-        setHymns(initialHymns); 
+        // If nothing in localStorage, use initialHymns prop (already filtered by server or should be valid)
+        // And prime localStorage with valid hymns from the prop
+        const validInitialHymns = initialHymns.filter(h => h && h.id && typeof h.id === 'string' && h.id.trim() !== "");
+        localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(validInitialHymns));
+        loadedHymns = validInitialHymns;
       }
     } catch (error) {
-      console.error("Error loading hymns from localStorage for list:", error);
-      setHymns(initialHymns); // Fallback to initial props on error
+      console.error("Error loading or parsing hymns from localStorage for list:", error);
+      // Fallback to initial props, ensuring they are also filtered for validity
+      loadedHymns = initialHymns.filter(h => h && h.id && typeof h.id === 'string' && h.id.trim() !== "");
     }
+    
+    // Sort the loaded (and filtered) hymns
+    const sortedHymns = [...loadedHymns].sort((a, b) => {
+        const pageNumA = a.pageNumber ? parseInt(a.pageNumber, 10) : Infinity;
+        const pageNumB = b.pageNumber ? parseInt(b.pageNumber, 10) : Infinity;
+        if (isNaN(pageNumA) && isNaN(pageNumB)) return 0;
+        if (isNaN(pageNumA)) return 1;
+        if (isNaN(pageNumB)) return -1;
+        return pageNumA - pageNumB;
+    });
+
+    setHymns(sortedHymns);
     setIsLoading(false);
-  }, [initialHymns]); // Rerun if initialHymns prop changes, though it shouldn't frequently
+  }, [initialHymns]); // Rerun if initialHymns prop changes
 
   if (isLoading) {
     return <p className="text-muted-foreground">Loading hymns...</p>;
@@ -66,7 +73,7 @@ export default function HymnList({ initialHymns }: HymnListProps) {
                 )}
                 <div className="flex-grow">
                   <CardTitle className="font-headline text-xl group-hover:text-primary">
-                    {hymn.titleHiligaynon.toUpperCase()}
+                    {hymn.titleHiligaynon ? hymn.titleHiligaynon.toUpperCase() : 'Untitled Hymn'}
                   </CardTitle>
                   {hymn.titleEnglish && (
                     <p className="text-sm text-muted-foreground mt-0.5">
