@@ -45,7 +45,7 @@ Ang Ginoo nagpromisa sing maayo sa akon,
 Ang Iya Pulong nagapasalig sang akon paglaum;
 Sia mangin akon Taming kag Bahin,
 Samtang ang kabuhi nagapadayon.`,
-    titleFilipino: 'BIYAYANG KAHANGA-HANGA', // Added Filipino Title
+    titleFilipino: 'BIYAYANG KAHANGA-HANGA',
     lyricsFilipino: `Biyayang kahanga-hanga! Anong tamis ng tunog
 Na nagligtas sa tulad kong hamak!
 Dati'y nawala, ngayo'y natagpuan;
@@ -64,7 +64,7 @@ At biyaya ang maghahatid sa akin pauwi.
 Panginoo'y nangako ng mabuti sa akin,
 Salita Niya'y pag-asa kong matibay;
 Siya'y magiging Kalasag at Bahagi ko,
-Habang buhay ay nagpapatuloy.`, // Added Filipino Lyrics
+Habang buhay ay nagpapatuloy.`,
     author: 'John Newton',
     category: 'Grace',
     pageNumber: '202',
@@ -114,6 +114,27 @@ Kapatawaran sa sala kag paghidaet nga nagapadayon,
 Ang Imo mismo presensya sa paglipay kag paggiya;
 Kusog para sa karon kag masanag nga paglaum para sa buas,
 Mga bugay tanan akon, upod ang napulo ka libo pa!`, 
+    titleFilipino: 'DAKILA ANG IYONG KATAPATAN',
+    lyricsFilipino: `Dakila ang Iyong katapatan, O Diyos Amang aking mahal;
+Walang anumang pagbabago Sa'yo;
+Hindi Ka nagbabago, ang Iyong habag, hindi nagkukulang;
+Kung ano Ka noon, Ikaw ay magpakailanman.
+
+Koro:
+Dakila ang Iyong katapatan! Dakila ang Iyong katapatan!
+Tuwing umaga, bagong awa'y nakikita;
+Lahat ng kailangan ko, Iyong kamay ang naglaan;
+Dakila ang Iyong katapatan, Panginoon, sa akin!
+
+Tag-araw at taglamig, tagsibol at tag-ani,
+Araw, buwan, at mga bituin sa kanilang landas sa itaas,
+Sumasama sa buong kalikasan sa iba't ibang patotoo
+Sa Iyong dakilang katapatan, awa, at pag-ibig.
+
+Kapatawaran sa kasalanan at kapayapaang nagtatagal,
+Ang Iyong sariling presensya upang magpasigla at gumabay;
+Lakas para sa ngayon at maliwanag na pag-asa para sa bukas,
+Mga biyaya lahat ay akin, kasama ang sampung libo pa!`,
     author: 'Thomas O. Chisholm',
     category: 'Faithfulness',
     pageNumber: '100',
@@ -173,6 +194,32 @@ Kon si Kristo mag-abot, nga may singgit sang pagdayaw,
 Kag dalhon ako pauli, ano nga kalipay ang magapuno sang akon tagipusuon.
 Dayon ako magayaub, sa mapainubuson nga pagsimba,
 Kag dayon magproklamar: "Dios ko, daw ano Ka gamhanan!"`, 
+    titleFilipino: 'O DIYOS, KAY DAKILA KA',
+    lyricsFilipino: `O Panginoon kong Diyos, sa 'king pagkamangha
+Pinagmamasdan lahat ng gawa ng Iyong Kamay;
+Nakikita ko ang mga bituin, naririnig ang kulog na dumadagundong,
+Ang Iyong kapangyarihan sa buong sansinukob ay nahahayag.
+
+Koro:
+Kaya't umaawit ang kaluluwa ko, Tagapagligtas kong Diyos, Sa'yo,
+Kay dakila Ka, kay dakila Ka.
+Kaya't umaawit ang kaluluwa ko, Tagapagligtas kong Diyos, Sa'yo,
+Kay dakila Ka, kay dakila Ka!
+
+Sa paglakad ko sa kakahuyan at mga landas sa gubat,
+At naririnig ang mga ibong matamis na umaawit sa mga puno.
+Kapag ako'y tumingin sa ibaba, mula sa taas ng bundok
+At nakikita ang batis, at nararamdaman ang banayad na simoy.
+
+At kapag naiisip ko, na ang Diyos, ang Kanyang Anak ay di ipinagkait;
+Ipinadala Siya upang mamatay, halos di ko matanggap;
+Na sa Krus, ang aking pasanin ay buong galak Niyang dinala,
+Siya'y nagdugo at namatay upang alisin ang aking sala.
+
+Kapag si Kristo'y dumating, na may sigaw ng pagpupuri,
+At iuuwi ako, anong galak ang pupuno sa aking puso.
+Pagkatapos ay yuyukod ako, sa mapagkumbabang pagsamba,
+At pagkatapos ay ipahahayag: "Diyos ko, kay dakila Ka!"`,
     author: 'Carl Boberg, Stuart K. Hine (Translator)',
     category: 'Praise',
     pageNumber: '77',
@@ -222,6 +269,27 @@ Daku nga mga butang ang Iya gintudlo sa aton, daku nga mga butang ang Iya nahimo
 Kag daku ang aton kalipay paagi kay Jesus nga Anak;
 Apang mas putli, kag mas mataas, kag mas daku pa
 Ang aton katingala, ang aton kalipay, kon si Jesus aton makita.`,
+    titleFilipino: 'SA DIYOS ANG KALUWALHATIAN',
+    lyricsFilipino: `Sa Diyos ang kaluwalhatian, dakilang mga bagay ang nagawa Niya,
+Gayon na lamang ang pag-ibig Niya sa sanlibutan na ibinigay Niya ang Kanyang Anak,
+Na nag-alay ng Kanyang buhay bilang pantubos sa kasalanan,
+At binuksan ang pintuan ng buhay upang lahat ay makapasok.
+
+Koro:
+Purihin ang Panginoon, purihin ang Panginoon, hayaang marinig ng lupa ang Kanyang tinig!
+Purihin ang Panginoon, purihin ang Panginoon, hayaang magalak ang mga tao!
+O lumapit sa Ama, sa pamamagitan ni Hesus na Anak,
+At ibigay sa Kanya ang kaluwalhatian, dakilang mga bagay ang nagawa Niya.
+
+O ganap na katubusan, ang halaga ng dugo,
+Sa bawat mananampalataya ang pangako ng Diyos;
+Ang pinakamasamang nagkasala na tunay na naniniwala,
+Sa sandaling iyon mula kay Hesus ay tatanggap ng kapatawaran.
+
+Dakilang mga bagay ang itinuro Niya sa atin, dakilang mga bagay ang nagawa Niya,
+At dakila ang ating kagalakan sa pamamagitan ni Hesus na Anak;
+Ngunit mas dalisay, at mas mataas, at mas dakila pa
+Ang ating pagkamangha, ang ating kagalakan, kapag si Hesus ay ating makita.`,
     pageNumber: '79',
     keySignature: 'G Major',
     author: 'Fanny Crosby',
