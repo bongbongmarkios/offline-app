@@ -7,16 +7,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { updateSampleHymn } from '@/data/hymns';
+import { updateSampleHymn, initialSampleHymns } from '@/data/hymns'; // Import initialSampleHymns
 import type { Hymn } from '@/types';
 import { CardContent, CardFooter } from '@/components/ui/card';
 
 interface EditHymnFormProps {
   hymnToEdit: Hymn;
-  onEditSuccess: (updatedHymn: Hymn) => void; // Changed signature
+  onEditSuccess: (updatedHymn: Hymn) => void; 
   onCancel: () => void;
   className?: string;
 }
+
+const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
 
 export default function EditHymnForm({ hymnToEdit, onEditSuccess, onCancel, className }: EditHymnFormProps) {
   const [pageNumber, setPageNumber] = useState(hymnToEdit.pageNumber || '');
@@ -57,7 +59,7 @@ export default function EditHymnForm({ hymnToEdit, onEditSuccess, onCancel, clas
     const finalTitleEnglish = titleEnglish || titleHiligaynon;
     const finalLyricsEnglish = lyricsEnglish || "";
 
-    const updatedHymnData: Partial<Omit<Hymn, 'id'>> = {
+    const updatedHymnPartialData: Partial<Omit<Hymn, 'id'>> = {
       titleHiligaynon, 
       titleFilipino: titleFilipino || undefined,
       titleEnglish: finalTitleEnglish,
@@ -68,19 +70,50 @@ export default function EditHymnForm({ hymnToEdit, onEditSuccess, onCancel, clas
       lyricsEnglish: finalLyricsEnglish,
     };
     
-    const updatedHymn = updateSampleHymn(hymnToEdit.id, updatedHymnData);
+    // This call updates the in-memory initialSampleHymns array
+    const updatedHymnFullData = updateSampleHymn(hymnToEdit.id, updatedHymnPartialData);
 
-    if (updatedHymn) {
+    if (updatedHymnFullData) {
+      // Now, update localStorage
+      try {
+        const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
+        let allHymnsForStorage: Hymn[];
+
+        if (storedHymnsString) {
+          allHymnsForStorage = JSON.parse(storedHymnsString);
+        } else {
+          // localStorage is empty, initialize with initialSampleHymns (which includes the edited hymn)
+          allHymnsForStorage = [...initialSampleHymns]; 
+        }
+        
+        const hymnIndex = allHymnsForStorage.findIndex(h => h.id === updatedHymnFullData.id);
+        if (hymnIndex > -1) {
+          allHymnsForStorage[hymnIndex] = updatedHymnFullData;
+        } else {
+          // Should not happen if editing an existing hymn, but as a fallback, add it.
+          allHymnsForStorage.push(updatedHymnFullData);
+        }
+        localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allHymnsForStorage));
+        
+      } catch (error) {
+        console.error("Error saving edited hymn to localStorage:", error);
+        toast({
+          title: 'Storage Error',
+          description: 'Could not save edited hymn to local storage. Changes are for this session only.',
+          variant: 'destructive',
+        });
+      }
+
       toast({
         title: "Hymn Updated",
-        description: `"${updatedHymn.titleEnglish || updatedHymn.titleHiligaynon}" has been updated.`,
-        duration: 1000, // Auto-hide after 1 second
+        description: `"${updatedHymnFullData.titleEnglish || updatedHymnFullData.titleHiligaynon}" has been updated.`,
+        duration: 1000, 
       });
-      onEditSuccess(updatedHymn); // Pass the updated hymn object
+      onEditSuccess(updatedHymnFullData); 
     } else {
       toast({
         title: "Error",
-        description: "Failed to update hymn.",
+        description: "Failed to update hymn. Hymn ID might not exist.",
         variant: "destructive",
       });
     }

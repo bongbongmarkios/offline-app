@@ -59,15 +59,20 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
         const hymnFromStorage = storedHymns.find(h => h.id === params.id);
         if (hymnFromStorage) {
           resolvedHymn = hymnFromStorage; 
-        } else if (hymnFromServer) { 
-          resolvedHymn = hymnFromServer;
+        } else {
+          // Hymn ID not in localStorage, try hymnFromServer (from initial data)
+          resolvedHymn = hymnFromServer || null;
         }
       } else {
+        // localStorage key doesn't exist. This means no hymns have been saved by the app via Add/Edit/Delete operations yet.
+        // Try hymnFromServer (which would come from the initialSampleHymns at build/server time).
+        // DO NOT write to localStorage here, as it could overwrite localStorage if it was cleared by other means
+        // or if this page is loaded before HymnList (which does prime localStorage if empty).
         resolvedHymn = hymnFromServer || null;
-        localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(initialSampleHymns));
       }
     } catch (error) {
       console.error("Error loading hymn:", error);
+      // Fallback to hymnFromServer in case of parsing errors or other issues
       resolvedHymn = hymnFromServer || null;
     }
 
@@ -91,7 +96,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
     }
     setShowLanguageSelector(false); // Reset selector visibility when hymn changes
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hymn]); // Removed languageIsAvailable from deps as it's stable if hymn is its only external dep
+  }, [hymn]); 
 
   useEffect(() => {
     const signalLevels: SignalStrength[] = ['strong', 'average', 'weak', 'none'];
@@ -155,6 +160,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       if (storedHymnsString) {
         allStoredHymns = JSON.parse(storedHymnsString);
       } else {
+        // If localStorage was empty, base it on (now modified by updateSampleHymn) initialSampleHymns
         allStoredHymns = [...initialSampleHymns]; 
       }
 
@@ -162,12 +168,15 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       if (hymnIndex > -1) {
         allStoredHymns[hymnIndex] = updatedHymnData;
       } else {
+         // Hymn wasn't in localStorage, add it. This can happen if localStorage was cleared
+         // but the hymn existed in initialSampleHymns.
          allStoredHymns.push(updatedHymnData); 
       }
       localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allStoredHymns));
-      updateSampleHymn(updatedHymnData.id, updatedHymnData); 
+      // The in-memory initialSampleHymns was already updated by the updateSampleHymn call
+      // that produced updatedHymnData before this handler was called.
     } catch (error) {
-        console.error("Error saving hymn to localStorage:", error);
+        console.error("Error saving edited hymn to localStorage:", error);
     }
     router.refresh(); 
   };
@@ -206,7 +215,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
         />
         <div className="container mx-auto px-4 pb-8 text-center py-10">
           <h2 className="text-2xl font-semibold mb-4 text-destructive">Hymn Not Found</h2>
-          <p className="text-muted-foreground mb-6">The hymn with ID "{params.id}" could not be found in your local data.</p>
+          <p className="text-muted-foreground mb-6">The hymn with ID "{params.id}" could not be found in your local data or initial set.</p>
           <Button asChild>
             <Link href="/hymnal">Return to Hymnal List</Link>
           </Button>
