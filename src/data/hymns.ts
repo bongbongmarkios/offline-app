@@ -294,6 +294,76 @@ Ang ating pagkamangha, ang ating kagalakan, kapag si Hesus ay ating makita.`,
     keySignature: 'G Major',
     author: 'Fanny Crosby',
     category: 'Praise and Adoration',
+  },
+  {
+    id: '5',
+    titleEnglish: 'Blessed Assurance',
+    lyricsEnglish: `Blessed assurance, Jesus is mine!
+O what a foretaste of glory divine!
+Heir of salvation, purchase of God,
+Born of His Spirit, washed in His blood.
+
+Refrain:
+This is my story, this is my song,
+Praising my Savior all the day long;
+This is my story, this is my song,
+Praising my Savior all the day long.
+
+Perfect submission, perfect delight,
+Visions of rapture now burst on my sight;
+Angels descending, bring from above
+Echoes of mercy, whispers of love.
+
+Perfect submission, all is at rest,
+I in my Savior am happy and blest;
+Watching and waiting, looking above,
+Filled with His goodness, lost in His love.`,
+    titleHiligaynon: 'BULAHAN NGA KASIGURUHAN',
+    lyricsHiligaynon: `Bulahan nga kasiguruhan, si Jesus akon!
+O daw ano nga pagtilaw sang himaya nga diosnon!
+Manunubli sang kaluwasan, binakal sang Dios,
+Natawo sa Iya Espiritu, nahugasan sa Iya dugo.
+
+Koro:
+Ini ang akon istorya, ini ang akon ambahanon,
+Nagadayaw sa akon Manluluwas sa bug-os nga adlaw;
+Ini ang akon istorya, ini ang akon ambahanon,
+Nagadayaw sa akon Manluluwas sa bug-os nga adlaw.
+
+Himpit nga pagpasakop, himpit nga kalipay,
+Mga palanan-awon sang kalipay karon nagabutwa sa akon panulok;
+Mga anghel nagapadulhog, nagadala gikan sa ibabaw
+Mga lanog sang kaluoy, mga hutik sang gugma.
+
+Himpit nga pagpasakop, tanan nagapahimuyong,
+Ako sa akon Manluluwas malipayon kag bulahan;
+Nagabantay kag nagahulat, nagalantaw sa ibabaw,
+Napuno sang Iya kaayo, nadula sa Iya gugma.`,
+    titleFilipino: 'TIYAK NA KALIGTASAN',
+    lyricsFilipino: `Tiyak na kaligtasan, si Hesus ay akin!
+O anong paunang lasap ng luwalhating banal!
+Tagapagmana ng kaligtasan, binili ng Diyos,
+Ipinanganak ng Kanyang Espiritu, hinugasan sa Kanyang dugo.
+
+Koro:
+Ito ang aking kwento, ito ang aking awit,
+Pinupuri ang aking Tagapagligtas buong araw;
+Ito ang aking kwento, ito ang aking awit,
+Pinupuri ang aking Tagapagligtas buong araw.
+
+Ganap na pagsuko, ganap na galak,
+Mga pangitain ng kaluguran ngayo'y sumisilay sa akin;
+Mga anghel na bumababa, dala mula sa itaas
+Mga alingawngaw ng awa, mga bulong ng pag-ibig.
+
+Ganap na pagsuko, lahat ay payapa,
+Ako sa aking Tagapagligtas ay masaya at pinagpala;
+Nagbabantay at naghihintay, nakatingin sa itaas,
+Napuspos ng Kanyang kabutihan, nalulunod sa Kanyang pag-ibig.`,
+    author: 'Fanny J. Crosby',
+    category: 'Assurance',
+    pageNumber: '334',
+    keySignature: 'D Major',
   }
 ];
 
@@ -313,4 +383,17 @@ export function updateSampleHymn(hymnId: string, updatedData: Partial<Omit<Hymn,
 // Function to delete hymns by their IDs from the in-memory sample data
 export function deleteSampleHymnsByIds(hymnIds: string[]): void {
   initialSampleHymns = initialSampleHymns.filter(hymn => !hymnIds.includes(hymn.id));
+}
+
+// Function to add a new hymn to the in-memory sample data
+// This function is no longer directly used by the UI components after removing add hymn functionality.
+// It's kept here for potential programmatic use or future re-integration.
+export function addSampleHymn(hymnData: Omit<Hymn, 'id'>): Hymn {
+  const newId = (Math.max(0, ...initialSampleHymns.map(h => parseInt(h.id, 10) || 0)) + 1).toString();
+  const newHymn: Hymn = {
+    id: newId,
+    ...hymnData,
+  };
+  initialSampleHymns.push(newHymn);
+  return newHymn;
 }
