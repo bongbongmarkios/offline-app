@@ -74,6 +74,7 @@ export default function EditHymnForm({ hymnToEdit, onEditSuccess, onCancel, clas
       toast({
         title: "Hymn Updated",
         description: `"${updatedHymn.titleEnglish || updatedHymn.titleHiligaynon}" has been updated.`,
+        duration: 1000, // Auto-hide after 1 second
       });
       onEditSuccess(updatedHymn); // Pass the updated hymn object
     } else {
