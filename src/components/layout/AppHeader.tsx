@@ -265,9 +265,13 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                       <BookPlus className="mr-2 h-4 w-4" />
                       <span>Add Reading</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => router.push('/hymn-index')}>
+                    <DropdownMenuItem onSelect={() => router.push('/blank')}>
                       <ListChecks className="mr-2 h-4 w-4" />
                       <span>Hymn Page Index</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => { console.log("URL button clicked"); router.push('/hymnal'); }}>
+                      <LinkIcon className="mr-2 h-4 w-4" />
+                      <span>URL</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
