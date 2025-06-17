@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { addSampleHymn, initialSampleHymns } from '@/data/hymns'; // Import initialSampleHymns for fallback
+import { addSampleHymn, initialSampleHymns } from '@/data/hymns'; 
 import type { Hymn } from '@/types';
 
 interface AddHymnFormProps {
@@ -36,39 +36,31 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!titleHiligaynon || !lyricsHiligaynon) {
+    if (!titleHiligaynon.trim() || !lyricsHiligaynon.trim()) {
       toast({
         title: "Error",
-        description: "Hiligaynon Title and Hiligaynon Lyrics are required.",
+        description: "Hiligaynon Title and Hiligaynon Lyrics are required and cannot be empty.",
         variant: "destructive",
       });
       return;
     }
 
-    const finalTitleEnglish = titleEnglish || titleHiligaynon; // Fallback for English title
-    const finalLyricsEnglish = lyricsEnglish || ""; // English lyrics default to empty string if not provided
-
-    // For Filipino, lyrics are only set if the Filipino title is also provided.
-    // If titleFilipino is set, lyricsFilipino will be its value or undefined if lyrics field is empty.
-    // If titleFilipino is not set, lyricsFilipino will be undefined.
-    const finalLyricsFilipino = (titleFilipino && lyricsFilipino) ? lyricsFilipino : undefined;
-    const finalTitleFilipino = titleFilipino || undefined;
-
-
     const newHymnData: Omit<Hymn, 'id'> = {
-      titleHiligaynon, 
-      titleFilipino: finalTitleFilipino,
-      titleEnglish: finalTitleEnglish,
-      pageNumber: pageNumber || undefined,
-      keySignature: keySignature || undefined,
-      lyricsHiligaynon, // This comes directly from state, will be "" if form field is empty
-      lyricsFilipino: finalLyricsFilipino,
-      lyricsEnglish: finalLyricsEnglish,
+      titleHiligaynon: titleHiligaynon.trim(),
+      titleFilipino: titleFilipino.trim() || undefined,
+      titleEnglish: titleEnglish.trim() || titleHiligaynon.trim(), // Fallback to Hiligaynon title if English is empty
+      
+      lyricsHiligaynon: lyricsHiligaynon, // Preserve original spacing, required to be non-empty by check above
+      lyricsFilipino: titleFilipino.trim() ? lyricsFilipino : undefined, // Save lyricsFilipino (can be "") if titleFilipino exists
+      lyricsEnglish: lyricsEnglish, // Save as is (can be "" if lyricsEnglish field is empty)
+
+      pageNumber: pageNumber.trim() || undefined,
+      keySignature: keySignature.trim() || undefined,
+      externalUrl: undefined, // Not editable in this form
     };
     
-    const addedHymn = addSampleHymn(newHymnData); // This adds to in-memory initialSampleHymns
+    const addedHymn = addSampleHymn(newHymnData);
 
-    // Now, update localStorage
     try {
       const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
       let allHymnsForStorage: Hymn[];
@@ -130,7 +122,6 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
   };
 
   const handleCancel = () => {
-    // Reset form fields
     setTitleHiligaynon('');
     setTitleFilipino('');
     setTitleEnglish('');

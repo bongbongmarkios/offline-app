@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { updateSampleHymn, initialSampleHymns } from '@/data/hymns'; // Import initialSampleHymns
+import { updateSampleHymn, initialSampleHymns } from '@/data/hymns';
 import type { Hymn } from '@/types';
 import { CardContent, CardFooter } from '@/components/ui/card';
 
@@ -47,32 +47,28 @@ export default function EditHymnForm({ hymnToEdit, onEditSuccess, onCancel, clas
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!titleHiligaynon || !lyricsHiligaynon) {
+    if (!titleHiligaynon.trim() || !lyricsHiligaynon.trim()) {
       toast({
         title: "Error",
-        description: "Hiligaynon Title and Hiligaynon Lyrics are required.",
+        description: "Hiligaynon Title and Hiligaynon Lyrics are required and cannot be empty.",
         variant: "destructive",
       });
       return;
     }
 
-    const finalTitleEnglish = titleEnglish || titleHiligaynon;
-    const finalLyricsEnglish = lyricsEnglish || "";
-
-    // For Filipino, lyrics are only set if the Filipino title is also provided.
-    const finalLyricsFilipino = (titleFilipino && lyricsFilipino) ? lyricsFilipino : undefined;
-    const finalTitleFilipino = titleFilipino || undefined;
-
-
     const updatedHymnPartialData: Partial<Omit<Hymn, 'id'>> = {
-      titleHiligaynon, 
-      titleFilipino: finalTitleFilipino,
-      titleEnglish: finalTitleEnglish,
-      pageNumber: pageNumber || undefined,
-      keySignature: keySignature || undefined,
-      lyricsHiligaynon, // Will be "" from state if form field is empty
-      lyricsFilipino: finalLyricsFilipino,
-      lyricsEnglish: finalLyricsEnglish,
+      titleHiligaynon: titleHiligaynon.trim(),
+      titleFilipino: titleFilipino.trim() || undefined,
+      titleEnglish: titleEnglish.trim() || titleHiligaynon.trim(), // Fallback to Hiligaynon
+      
+      lyricsHiligaynon: lyricsHiligaynon, // Preserve original spacing
+      lyricsFilipino: titleFilipino.trim() ? lyricsFilipino : undefined, // Save lyrics (can be "") if title exists
+      lyricsEnglish: lyricsEnglish, // Save as is (can be "")
+
+      pageNumber: pageNumber.trim() || undefined,
+      keySignature: keySignature.trim() || undefined,
+      // externalUrl is not edited in this form, so it's not included in updatedHymnPartialData
+      // updateSampleHymn will merge, preserving existing externalUrl
     };
     
     const updatedHymnFullData = updateSampleHymn(hymnToEdit.id, updatedHymnPartialData);
@@ -92,6 +88,7 @@ export default function EditHymnForm({ hymnToEdit, onEditSuccess, onCancel, clas
         if (hymnIndex > -1) {
           allHymnsForStorage[hymnIndex] = updatedHymnFullData;
         } else {
+          // This case should ideally not happen in an edit form context if ID is valid
           allHymnsForStorage.push(updatedHymnFullData);
         }
         localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allHymnsForStorage));
