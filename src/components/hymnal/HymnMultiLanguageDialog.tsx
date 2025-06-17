@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import type { Hymn } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Globe } from 'lucide-react';
@@ -136,4 +136,3 @@ export default function HymnMultiLanguageDialog({ hymn, pageNumberExists }: Hymn
     </Dialog>
   );
 }
-
