@@ -4,14 +4,65 @@
 import type { Hymn } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import Link from 'next/link';
-import { ExternalLink, Link2 } from 'lucide-react';
+import { ExternalLink, Link2, Save, XCircle } from 'lucide-react';
+import { useState } from 'react';
+import { updateSampleHymn, initialSampleHymns } from '@/data/hymns'; // Import for updating in-memory fallback
+import { useToast } from '@/hooks/use-toast';
+
+const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
 
 interface StaticHymnListDisplayProps {
   hymns: Hymn[];
+  onUrlUpdated: () => void; // Callback to notify parent of update
 }
 
-export default function StaticHymnListDisplay({ hymns }: StaticHymnListDisplayProps) {
+export default function StaticHymnListDisplay({ hymns, onUrlUpdated }: StaticHymnListDisplayProps) {
+  const [editingHymnId, setEditingHymnId] = useState<string | null>(null);
+  const [urlInputValue, setUrlInputValue] = useState('');
+  const { toast } = useToast();
+
+  const handleEditClick = (hymn: Hymn) => {
+    setEditingHymnId(hymn.id);
+    setUrlInputValue(hymn.externalUrl || '');
+  };
+
+  const handleCancelClick = () => {
+    setEditingHymnId(null);
+    setUrlInputValue('');
+  };
+
+  const handleSaveClick = (hymnId: string) => {
+    if (!hymns) return;
+
+    const hymnIndex = hymns.findIndex(h => h.id === hymnId);
+    if (hymnIndex === -1) {
+      toast({ title: "Error", description: "Hymn not found for saving URL.", variant: "destructive" });
+      return;
+    }
+
+    const updatedHymns = hymns.map(h =>
+      h.id === hymnId ? { ...h, externalUrl: urlInputValue.trim() || undefined } : h
+    );
+
+    try {
+      // Update localStorage
+      localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(updatedHymns));
+      
+      // Update in-memory initialSampleHymns (fallback data)
+      updateSampleHymn(hymnId, { externalUrl: urlInputValue.trim() || undefined });
+
+      toast({ title: "URL Saved", description: "The external URL has been updated." });
+      setEditingHymnId(null);
+      setUrlInputValue('');
+      onUrlUpdated(); // Notify parent to refresh its hymn list from localStorage
+    } catch (error) {
+      console.error("Error saving URL to localStorage:", error);
+      toast({ title: "Storage Error", description: "Could not save URL.", variant: "destructive" });
+    }
+  };
+
   if (!hymns || hymns.length === 0) {
     return <p className="text-muted-foreground text-center py-4">No hymns to display.</p>;
   }
@@ -36,36 +87,56 @@ export default function StaticHymnListDisplay({ hymns }: StaticHymnListDisplayPr
                 <span>Page: {hymn.pageNumber}</span>
               )}
             </div>
-            <div className="space-y-2">
-              {hymn.externalUrl ? (
-                <div className="flex items-center justify-between gap-2">
+            
+            {editingHymnId === hymn.id ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
                   <Link2 className="h-4 w-4 text-muted-foreground flex-shrink-0"/>
-                  <a 
-                    href={hymn.externalUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-xs text-accent hover:underline truncate flex-grow min-w-0"
-                    title={hymn.externalUrl}
-                  >
-                    {hymn.externalUrl}
-                  </a>
-                  <Button asChild variant="outline" size="sm" className="flex-shrink-0">
-                    <Link href={`/hymn-url-editor?hymnId=${hymn.id}`}>
+                  <Input 
+                    type="url"
+                    placeholder="Enter URL (e.g., https://example.com)"
+                    value={urlInputValue}
+                    onChange={(e) => setUrlInputValue(e.target.value)}
+                    className="h-8 text-xs flex-grow"
+                  />
+                </div>
+                <div className="flex justify-end gap-2 mt-1">
+                  <Button variant="ghost" size="sm" onClick={handleCancelClick} className="text-xs">
+                    <XCircle className="mr-1 h-3 w-3" /> Cancel
+                  </Button>
+                  <Button size="sm" onClick={() => handleSaveClick(hymn.id)} className="text-xs">
+                    <Save className="mr-1 h-3 w-3" /> Save URL
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {hymn.externalUrl ? (
+                  <div className="flex items-center justify-between gap-2">
+                    <Link2 className="h-4 w-4 text-muted-foreground flex-shrink-0"/>
+                    <a 
+                      href={hymn.externalUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-xs text-accent hover:underline truncate flex-grow min-w-0"
+                      title={hymn.externalUrl}
+                    >
+                      {hymn.externalUrl}
+                    </a>
+                    <Button variant="outline" size="sm" onClick={() => handleEditClick(hymn)} className="text-xs">
                       Edit URL
-                    </Link>
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs text-muted-foreground italic flex-grow">No URL assigned.</p>
-                  <Button asChild variant="outline" size="sm" className="flex-shrink-0">
-                    <Link href={`/hymn-url-editor?hymnId=${hymn.id}`}>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs text-muted-foreground italic flex-grow">No URL assigned.</p>
+                    <Button variant="outline" size="sm" onClick={() => handleEditClick(hymn)} className="text-xs">
                        Add URL
-                    </Link>
-                  </Button>
-                </div>
-              )}
-            </div>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       ))}

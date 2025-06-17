@@ -12,13 +12,17 @@ import { Loader2 } from 'lucide-react';
 
 const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
 
-// Removed metadata export as it's not allowed in client components
-
 export default function BlankPageTurnedHymnOverview() {
   const [hymns, setHymns] = useState<Hymn[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hymnsVersion, setHymnsVersion] = useState(0); // For triggering re-fetch
+
+  const handleUrlUpdated = () => {
+    setHymnsVersion(v => v + 1); // Increment version to trigger useEffect
+  };
 
   useEffect(() => {
+    setIsLoading(true);
     let loadedHymns: Hymn[] = [];
     try {
       const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
@@ -46,15 +50,16 @@ export default function BlankPageTurnedHymnOverview() {
 
     setHymns(sortedHymns);
     setIsLoading(false);
-  }, []);
+  }, [hymnsVersion]); // Re-run when hymnsVersion changes
 
   return (
     <>
       <AppHeader title="Hymn Overview" />
       <div className="container mx-auto px-4 pb-8">
         <div className="my-6 text-center">
+          {/* This button now leads to a placeholder page. Inline editing is preferred. */}
           <Button asChild size="lg">
-            <Link href="/hymn-url-editor">Manage Hymn URLs</Link>
+            <Link href="/hymn-url-editor">Manage Hymn URLs (Placeholder)</Link>
           </Button>
         </div>
 
@@ -64,7 +69,7 @@ export default function BlankPageTurnedHymnOverview() {
             <p className="ml-3 text-muted-foreground">Loading hymns...</p>
           </div>
         ) : hymns.length > 0 ? (
-          <StaticHymnListDisplay hymns={hymns} />
+          <StaticHymnListDisplay hymns={hymns} onUrlUpdated={handleUrlUpdated} />
         ) : (
           <p className="text-center text-muted-foreground mt-10">No hymns available to display.</p>
         )}
