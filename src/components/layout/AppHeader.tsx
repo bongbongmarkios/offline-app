@@ -69,9 +69,9 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
   useEffect(() => {
     const updateNetworkStatus = () => {
       if (typeof navigator !== 'undefined' && 'connection' in navigator) {
-        const connection = navigator.connection as any;
-        const mbps = connection.downlink;
-        const effectiveType = connection.effectiveType;
+        const connection = navigator.connection as any; // Type assertion for broader compatibility
+        const mbps = connection.downlink; // Estimated download speed in Mbps
+        const effectiveType = connection.effectiveType; // e.g., '4g', '3g', 'wifi'
 
         let level: SignalLevel = 'unknown';
         let description = 'Unknown Connection';
@@ -80,24 +80,24 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
           level = 'none';
           description = 'Offline';
         } else if (mbps !== undefined && mbps > 0) {
-          if (mbps >= 50) { // e.g. Fiber, very fast Cable/5G
+          if (mbps >= 50) { // Example: Fiber, very fast Cable/5G
             level = 'strong';
             description = 'Excellent';
-          } else if (mbps >= 10) { // e.g. Good Cable, LTE, decent WiFi
+          } else if (mbps >= 10) { // Example: Good Cable, LTE, decent WiFi
             level = 'strong';
             description = 'Strong';
-          } else if (mbps >= 1) { // e.g. 3G, slower DSL/WiFi
+          } else if (mbps >= 1) { // Example: 3G, slower DSL/WiFi
             level = 'average';
             description = 'Average';
-          } else if (mbps > 0.1) { // e.g. 2G, very poor connection
+          } else if (mbps > 0.1) { // Example: 2G, very poor connection
             level = 'weak';
             description = 'Weak';
-          } else { // Barely usable
+          } else { // Barely usable or very slow
             level = 'weak';
             description = 'Poor';
           }
         } else { // Fallback if downlink is not available or 0, but online
-          if (effectiveType === '4g' || effectiveType === '5g') {
+          if (effectiveType === '4g' || effectiveType === '5g') { // 5G might not be in all `effectiveType` enums
             level = 'strong';
             description = 'Good (Cellular)';
           } else if (effectiveType === '3g') {
@@ -107,28 +107,33 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
             level = 'weak';
             description = 'Poor (Cellular)';
           } else if (effectiveType === 'wifi' && navigator.onLine) {
+            // If type is wifi but no speed, assume average.
             description = 'Online (Wi-Fi - Speed details unavailable)';
-            level = 'average'; // Assume average if on Wi-Fi but no speed
+            level = 'average'; 
           } else if (navigator.onLine) {
+            // Generic online status if no other details
             description = 'Online (Speed details unavailable)';
-            level = 'average'; // Assume average if online but no specific type/speed
+            level = 'average';
           } else {
-            // This case should be caught by !navigator.onLine, but as a fallback:
+            // This case should ideally be caught by !navigator.onLine, but as a final fallback:
             description = 'Offline';
             level = 'none';
           }
         }
         setCurrentSignal({ description, mbps, level, effectiveType });
       } else {
+        // Fallback for environments without navigator.connection (e.g., some SSR contexts or older browsers)
         setCurrentSignal({ description: 'Network API not supported', level: 'unknown' });
       }
     };
 
-    updateNetworkStatus();
+    updateNetworkStatus(); // Initial check
 
+    // Set up event listeners if navigator.connection is available
     if (typeof navigator !== 'undefined' && 'connection' in navigator) {
       const connection = navigator.connection as any;
       connection.addEventListener('change', updateNetworkStatus);
+      // Also listen to general online/offline events for robustness
       window.addEventListener('online', updateNetworkStatus);
       window.addEventListener('offline', updateNetworkStatus);
 
@@ -149,10 +154,10 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
       case 'weak':
         return 'text-red-500';
       case 'none':
-        return 'text-slate-400 dark:text-slate-600';
+        return 'text-slate-400 dark:text-slate-600'; // Muted color for offline
       case 'unknown':
       default:
-        return 'text-muted-foreground';
+        return 'text-muted-foreground'; // Default color for unknown or unsupported
     }
   };
 
@@ -180,6 +185,8 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
   };
 
   const handleDeleteSuccess = () => {
+    // This function is called when hymns or readings are deleted.
+    // Refresh the current page to reflect changes.
     router.refresh();
   }
 
@@ -188,12 +195,13 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
       <header className="bg-card shadow-sm mb-4 md:mb-6 print:hidden">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
+            {/* Render title: if string and non-empty, use h1; if string and empty, render nothing; otherwise, render as is (ReactNode) */}
             {typeof title === 'string' && title.length > 0 ? (
               <h1 className="text-2xl font-headline font-semibold text-primary sm:text-3xl">{title}</h1>
             ) : typeof title === 'string' && title.length === 0 ? (
-              null
+              null // Render nothing if title is an empty string
             ) : (
-              title
+              title // Render as ReactNode if it's not a string or if it's complex JSX
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -266,7 +274,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                       <BookPlus className="mr-2 h-4 w-4" />
                       <span>Add Reading</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => console.log('URL button clicked')}>
+                    <DropdownMenuItem onSelect={() => router.push('/hymnal')}>
                       <LinkIcon className="mr-2 h-4 w-4" />
                       <span>URL</span>
                     </DropdownMenuItem>
@@ -302,6 +310,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
         </div>
       </header>
 
+      {/* Add Hymn Dialog */}
       <Dialog open={isAddHymnDialogOpen} onOpenChange={setIsAddHymnDialogOpen}>
         <DialogContent className="sm:max-w-[600px] h-[85vh] flex flex-col sm:rounded-[25px]">
           <DialogHeader>
@@ -314,8 +323,9 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
         </DialogContent>
       </Dialog>
 
+      {/* Add Reading Dialog */}
       <Dialog open={isAddReadingDialogOpen} onOpenChange={setIsAddReadingDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px]"> {/* Adjusted max-width */}
           <DialogHeader>
             <DialogTitle>Add New Reading</DialogTitle>
             <DialogDescription>
@@ -326,6 +336,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
         </DialogContent>
       </Dialog>
 
+      {/* Delete Hymn Dialog */}
       <Dialog open={isDeleteHymnDialogOpen} onOpenChange={setIsDeleteHymnDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -337,13 +348,14 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
           <DeleteHymnDialogContent
             onOpenChange={setIsDeleteHymnDialogOpen}
             onDeleteSuccess={() => {
-              setIsDeleteHymnDialogOpen(false);
-              handleDeleteSuccess();
+              setIsDeleteHymnDialogOpen(false); // Close dialog
+              handleDeleteSuccess(); // Refresh page
             }}
           />
         </DialogContent>
       </Dialog>
 
+      {/* Delete Reading Dialog */}
       <Dialog open={isDeleteReadingDialogOpen} onOpenChange={setIsDeleteReadingDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -355,8 +367,8 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
           <DeleteReadingDialogContent
             onOpenChange={setIsDeleteReadingDialogOpen}
             onDeleteSuccess={() => {
-              setIsDeleteReadingDialogOpen(false);
-              handleDeleteSuccess();
+              setIsDeleteReadingDialogOpen(false); // Close dialog
+              handleDeleteSuccess(); // Refresh page
             }}
           />
         </DialogContent>
