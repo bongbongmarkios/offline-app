@@ -1,7 +1,7 @@
 
 'use client';
 import type { ReactNode } from 'react';
-import { Wifi, Menu, PlusCircle, Trash2, Info, Settings as SettingsIcon, BookPlus, BookX, Wand2 } from 'lucide-react';
+import { Wifi, Menu, PlusCircle, Trash2, Info, Settings as SettingsIcon, BookPlus, BookX, Wand2, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -69,9 +69,9 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
   useEffect(() => {
     const updateNetworkStatus = () => {
       if (typeof navigator !== 'undefined' && 'connection' in navigator) {
-        const connection = navigator.connection as any; 
-        const mbps = connection.downlink; 
-        const effectiveType = connection.effectiveType; 
+        const connection = navigator.connection as any;
+        const mbps = connection.downlink;
+        const effectiveType = connection.effectiveType;
 
         let level: SignalLevel = 'unknown';
         let description = 'Unknown Connection';
@@ -79,33 +79,43 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
         if (!navigator.onLine) {
           level = 'none';
           description = 'Offline';
-        } else if (mbps !== undefined && mbps > 0) { 
-          if (mbps >= 25) { 
+        } else if (mbps !== undefined && mbps > 0) {
+          if (mbps >= 50) { // e.g. Fiber, very fast Cable/5G
             level = 'strong';
             description = 'Excellent';
-          } else if (mbps >= 10) {
+          } else if (mbps >= 10) { // e.g. Good Cable, LTE, decent WiFi
             level = 'strong';
             description = 'Strong';
-          } else if (mbps >= 1) { 
+          } else if (mbps >= 1) { // e.g. 3G, slower DSL/WiFi
             level = 'average';
             description = 'Average';
-          } else { 
+          } else if (mbps > 0.1) { // e.g. 2G, very poor connection
             level = 'weak';
             description = 'Weak';
+          } else { // Barely usable
+            level = 'weak';
+            description = 'Poor';
           }
         } else { // Fallback if downlink is not available or 0, but online
-          if (effectiveType === '4g') {
+          if (effectiveType === '4g' || effectiveType === '5g') {
             level = 'strong';
-            description = 'Good (4G)';
+            description = 'Good (Cellular)';
           } else if (effectiveType === '3g') {
             level = 'average';
-            description = 'Average (3G)';
+            description = 'Average (Cellular)';
           } else if (effectiveType === '2g' || effectiveType === 'slow-2g') {
             level = 'weak';
-            description = 'Poor (2G)';
+            description = 'Poor (Cellular)';
+          } else if (effectiveType === 'wifi' && navigator.onLine) {
+            description = 'Online (Wi-Fi - Speed details unavailable)';
+            level = 'average'; // Assume average if on Wi-Fi but no speed
+          } else if (navigator.onLine) {
+            description = 'Online (Speed details unavailable)';
+            level = 'average'; // Assume average if online but no specific type/speed
           } else {
-            description = 'Online (Speed details unavailable)'; 
-            level = 'average'; 
+            // This case should be caught by !navigator.onLine, but as a fallback:
+            description = 'Offline';
+            level = 'none';
           }
         }
         setCurrentSignal({ description, mbps, level, effectiveType });
@@ -114,7 +124,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
       }
     };
 
-    updateNetworkStatus(); 
+    updateNetworkStatus();
 
     if (typeof navigator !== 'undefined' && 'connection' in navigator) {
       const connection = navigator.connection as any;
@@ -139,7 +149,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
       case 'weak':
         return 'text-red-500';
       case 'none':
-        return 'text-slate-400 dark:text-slate-600'; 
+        return 'text-slate-400 dark:text-slate-600';
       case 'unknown':
       default:
         return 'text-muted-foreground';
@@ -201,16 +211,16 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                     <div className="space-y-2">
                       <h4 className="font-medium leading-none">Internet Status</h4>
                       <p className="text-sm">
-                        Status: <span className={cn("font-semibold", getWifiIconColor())}>{currentSignal.description}</span>
+                        Signal: <span className={cn("font-semibold", getWifiIconColor())}>{currentSignal.description}</span>
                       </p>
                       {currentSignal.mbps !== undefined && currentSignal.level !== 'none' && (
                         <p className="text-sm text-muted-foreground">
-                          Est. Speed: ~{currentSignal.mbps.toFixed(1)} Mbps
+                          Speed: ~{currentSignal.mbps.toFixed(1)} Mbps
                         </p>
                       )}
                        {currentSignal.effectiveType && currentSignal.level !== 'none' && (
                         <p className="text-sm text-muted-foreground">
-                          Est. Type: {currentSignal.effectiveType}
+                          Type: {currentSignal.effectiveType}
                         </p>
                       )}
                       {currentSignal.level === 'unknown' && (
@@ -255,6 +265,10 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                     <DropdownMenuItem onSelect={() => setIsAddReadingDialogOpen(true)}>
                       <BookPlus className="mr-2 h-4 w-4" />
                       <span>Add Reading</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => console.log('URL button clicked')}>
+                      <LinkIcon className="mr-2 h-4 w-4" />
+                      <span>URL</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -350,4 +364,3 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
     </>
   );
 }
-
