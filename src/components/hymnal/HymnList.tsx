@@ -4,7 +4,7 @@ import type { Hymn } from '@/types';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEffect, useState } from 'react';
-import { initialSampleHymns } from '@/data/hymns'; // For fallback
+import { initialSampleHymns as fallbackInitialHymns } from '@/data/hymns'; // Renamed for clarity
 
 const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
 
@@ -12,29 +12,62 @@ const isValidHymn = (h: Hymn | undefined | null): h is Hymn => {
   return !!(h && h.id && typeof h.id === 'string' && h.id.trim() !== "");
 };
 
+interface HymnListProps {
+  initialHymns: Hymn[]; // These are from the server/code, potentially updated
+}
+
 export default function HymnList({ initialHymns }: HymnListProps) {
   const [hymns, setHymns] = useState<Hymn[]>(() => initialHymns.filter(isValidHymn));
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setIsLoading(true);
-    let loadedHymns: Hymn[] = [];
+    let finalHymnsToDisplay: Hymn[] = [];
+    const validInitialHymnsFromProp = initialHymns.filter(isValidHymn);
+
     try {
       const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
       if (storedHymnsString) {
-        const parsedHymns: Hymn[] = JSON.parse(storedHymnsString);
-        loadedHymns = parsedHymns.filter(isValidHymn);
+        const parsedStoredHymns: Hymn[] = JSON.parse(storedHymnsString).filter(isValidHymn);
+        
+        // Merge strategy:
+        // Start with stored hymns.
+        // Add any hymns from props (code's initialSampleHymns) that are not in stored hymns.
+        const mergedHymnsMap = new Map<string, Hymn>();
+        parsedStoredHymns.forEach(h => mergedHymnsMap.set(h.id, h));
+        
+        validInitialHymnsFromProp.forEach(h => {
+          if (!mergedHymnsMap.has(h.id)) {
+            // If a hymn from code isn't in localStorage, add it.
+            // This ensures new "initial" hymns from code updates appear.
+            mergedHymnsMap.set(h.id, h);
+          }
+          // If you want code changes to overwrite localStorage for matching IDs:
+          // else { mergedHymnsMap.set(h.id, h); } 
+          // But current logic preserves localStorage version if ID exists.
+        });
+        finalHymnsToDisplay = Array.from(mergedHymnsMap.values());
+        
+        // Save the potentially updated merged list back to localStorage
+        localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(finalHymnsToDisplay));
       } else {
-        const validInitialHymnsFromProp = initialHymns.filter(isValidHymn);
-        localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(validInitialHymnsFromProp));
-        loadedHymns = validInitialHymnsFromProp;
+        // localStorage is empty, use initial hymns from props and prime localStorage
+        finalHymnsToDisplay = validInitialHymnsFromProp;
+        localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(finalHymnsToDisplay));
       }
     } catch (error) {
-      console.error("Error loading or parsing hymns from localStorage for list:", error);
-      loadedHymns = initialHymns.filter(isValidHymn);
+      console.error("Error processing hymns from localStorage or props:", error);
+      // Fallback to initial hymns from props if any error occurs during processing
+      finalHymnsToDisplay = validInitialHymnsFromProp;
+      // Attempt to prime localStorage even on error, with the props data
+      try {
+        localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(finalHymnsToDisplay));
+      } catch (lsError) {
+        console.error("Error priming localStorage after initial error:", lsError);
+      }
     }
     
-    const sortedHymns = [...loadedHymns].sort((a, b) => {
+    const sortedHymns = [...finalHymnsToDisplay].sort((a, b) => {
         const pageNumA = a.pageNumber ? parseInt(a.pageNumber, 10) : Infinity;
         const pageNumB = b.pageNumber ? parseInt(b.pageNumber, 10) : Infinity;
         if (isNaN(pageNumA) && isNaN(pageNumB)) return (a.titleEnglish || a.titleHiligaynon || '').localeCompare(b.titleEnglish || b.titleHiligaynon || '');
@@ -49,7 +82,7 @@ export default function HymnList({ initialHymns }: HymnListProps) {
 
     setHymns(sortedHymns);
     setIsLoading(false);
-  }, [initialHymns]);
+  }, [initialHymns]); // Rerun if initialHymns prop changes
 
   if (isLoading) {
     return <p className="text-muted-foreground text-center py-4">Loading hymns...</p>;
@@ -62,10 +95,8 @@ export default function HymnList({ initialHymns }: HymnListProps) {
   return (
     <div className="space-y-4">
       {hymns.map((hymn) => {
-        // Explicitly check hymn and hymn.id before rendering the Link
-        // This is a reinforcement of isValidHymn for the href generation.
         if (hymn && typeof hymn.id === 'string' && hymn.id.trim() !== "") {
-          const hymnIdTrimmed = hymn.id.trim(); // Use trimmed ID for href and key
+          const hymnIdTrimmed = hymn.id.trim(); 
           return (
             <Link key={hymnIdTrimmed} href={`/hymnal/${hymnIdTrimmed}`} className="block hover:no-underline">
               <Card className="hover:shadow-md transition-shadow duration-200 cursor-pointer hover:border-primary/50">
@@ -92,10 +123,9 @@ export default function HymnList({ initialHymns }: HymnListProps) {
             </Link>
           );
         }
-        // If the hymn ID is not valid, render nothing for this item.
-        // This case should ideally be caught by the initial filtering of the hymns array.
         return null; 
       })}
     </div>
   );
 }
+
