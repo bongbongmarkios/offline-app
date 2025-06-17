@@ -24,13 +24,13 @@ export default function HymnDetail({ hymn }: HymnDetailProps) {
   return (
     <Card className="shadow-lg">
       <CardHeader>
-        <div className="flex justify-between items-start mb-2">
-            <div className="flex-grow text-center">
+        <div className="relative mb-2"> 
+            <div className="text-center">
                 {hymn.titleHiligaynon && <CardTitle className="font-headline text-3xl text-primary">{hymn.titleHiligaynon}</CardTitle>}
                 {hymn.titleFilipino && <p className={`text-lg ${hymn.titleHiligaynon ? 'text-muted-foreground' : 'font-headline text-3xl text-primary'}`}>{hymn.titleFilipino}</p>}
                 {hymn.titleEnglish && <p className={`text-lg ${(hymn.titleHiligaynon || hymn.titleFilipino) ? 'text-muted-foreground' : 'font-headline text-3xl text-primary'}`}>{hymn.titleEnglish}</p>}
             </div>
-            {hymn.pageNumber && <span className="text-lg font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full ml-4 flex-shrink-0">{hymn.pageNumber}</span>}
+            {hymn.pageNumber && <span className="absolute top-0 right-0 text-lg font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full">{hymn.pageNumber}</span>}
         </div>
         
         <div className="text-md text-muted-foreground space-y-1 text-center">
