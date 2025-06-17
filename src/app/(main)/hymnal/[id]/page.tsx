@@ -2,7 +2,6 @@
 // This is now a Server Component
 import { initialSampleHymns } from '@/data/hymns'; // Use initialSampleHymns
 import HymnInteractiveView from '@/components/hymnal/HymnInteractiveView';
-import { notFound } from 'next/navigation';
 import type { Hymn } from '@/types';
 import type { Metadata } from 'next';
 
@@ -15,7 +14,6 @@ export async function generateStaticParams() {
 
 async function getHymn(id: string): Promise<Hymn | undefined> {
   // This server-side fetch uses the initialSampleHymns.
-  // The client component (HymnInteractiveView) will handle localStorage.
   return initialSampleHymns.find((h) => h.id === id);
 }
 
@@ -23,7 +21,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   const hymn = await getHymn(params.id);
   if (!hymn) {
     return {
-      title: 'Hymn Not Found | GraceNotes',
+      title: 'Hymn | GraceNotes', // Generic title if not found on server
     };
   }
   const displayTitle = hymn.titleEnglish || hymn.titleHiligaynon;
@@ -32,15 +30,12 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
-// This Server Component fetches the data and passes it to the Client Component
+// This Server Component fetches data (or attempts to) and passes it and params to the Client Component
 export default async function HymnPageServerWrapper({ params }: { params: { id: string } }) {
-  const hymn = await getHymn(params.id);
+  const hymnFromServer = await getHymn(params.id); // Fetches from initialSampleHymns
 
-  if (!hymn) {
-    notFound();
-  }
-
-  // Pass hymn as initialHymn to the client component.
-  // HymnInteractiveView will then check localStorage for any updates to this hymn.
-  return <HymnInteractiveView initialHymn={hymn} />;
+  // DO NOT call notFound() here.
+  // Pass hymnFromServer (which can be undefined) and params to the client component.
+  // The client component will handle loading from localStorage and displaying "not found" if necessary.
+  return <HymnInteractiveView hymnFromServer={hymnFromServer} params={params} />;
 }
