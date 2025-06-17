@@ -265,7 +265,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                       <BookPlus className="mr-2 h-4 w-4" />
                       <span>Add Reading</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => router.push('/blank')}>
+                    <DropdownMenuItem onSelect={() => router.push('/hymn-url-editor')}>
                       <ListChecks className="mr-2 h-4 w-4" />
                       <span>URL</span>
                     </DropdownMenuItem>
