@@ -1,7 +1,7 @@
 
 'use client';
 import type { ReactNode } from 'react';
-import { Wifi, Menu, PlusCircle, Trash2, Info, Settings as SettingsIcon, BookPlus, BookX, Wand2, Link as LinkIcon } from 'lucide-react';
+import { Wifi, Menu, PlusCircle, Trash2, Info, Settings as SettingsIcon, BookPlus, BookX, Wand2, Link as LinkIcon, ListChecks } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -69,9 +69,9 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
   useEffect(() => {
     const updateNetworkStatus = () => {
       if (typeof navigator !== 'undefined' && 'connection' in navigator) {
-        const connection = navigator.connection as any; // Type assertion for broader compatibility
-        const mbps = connection.downlink; // Estimated download speed in Mbps
-        const effectiveType = connection.effectiveType; // e.g., '4g', '3g', 'wifi'
+        const connection = navigator.connection as any; 
+        const mbps = connection.downlink; 
+        const effectiveType = connection.effectiveType;
 
         let level: SignalLevel = 'unknown';
         let description = 'Unknown Connection';
@@ -80,24 +80,24 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
           level = 'none';
           description = 'Offline';
         } else if (mbps !== undefined && mbps > 0) {
-          if (mbps >= 50) { // Example: Fiber, very fast Cable/5G
+          if (mbps >= 50) { 
             level = 'strong';
             description = 'Excellent';
-          } else if (mbps >= 10) { // Example: Good Cable, LTE, decent WiFi
+          } else if (mbps >= 10) { 
             level = 'strong';
             description = 'Strong';
-          } else if (mbps >= 1) { // Example: 3G, slower DSL/WiFi
+          } else if (mbps >= 1) { 
             level = 'average';
             description = 'Average';
-          } else if (mbps > 0.1) { // Example: 2G, very poor connection
+          } else if (mbps > 0.1) { 
             level = 'weak';
             description = 'Weak';
-          } else { // Barely usable or very slow
+          } else { 
             level = 'weak';
             description = 'Poor';
           }
-        } else { // Fallback if downlink is not available or 0, but online
-          if (effectiveType === '4g' || effectiveType === '5g') { // 5G might not be in all `effectiveType` enums
+        } else { 
+          if (effectiveType === '4g' || effectiveType === '5g') { 
             level = 'strong';
             description = 'Good (Cellular)';
           } else if (effectiveType === '3g') {
@@ -107,33 +107,27 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
             level = 'weak';
             description = 'Poor (Cellular)';
           } else if (effectiveType === 'wifi' && navigator.onLine) {
-            // If type is wifi but no speed, assume average.
             description = 'Online (Wi-Fi - Speed details unavailable)';
             level = 'average'; 
           } else if (navigator.onLine) {
-            // Generic online status if no other details
             description = 'Online (Speed details unavailable)';
             level = 'average';
           } else {
-            // This case should ideally be caught by !navigator.onLine, but as a final fallback:
             description = 'Offline';
             level = 'none';
           }
         }
         setCurrentSignal({ description, mbps, level, effectiveType });
       } else {
-        // Fallback for environments without navigator.connection (e.g., some SSR contexts or older browsers)
         setCurrentSignal({ description: 'Network API not supported', level: 'unknown' });
       }
     };
 
-    updateNetworkStatus(); // Initial check
+    updateNetworkStatus(); 
 
-    // Set up event listeners if navigator.connection is available
     if (typeof navigator !== 'undefined' && 'connection' in navigator) {
       const connection = navigator.connection as any;
       connection.addEventListener('change', updateNetworkStatus);
-      // Also listen to general online/offline events for robustness
       window.addEventListener('online', updateNetworkStatus);
       window.addEventListener('offline', updateNetworkStatus);
 
@@ -154,10 +148,10 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
       case 'weak':
         return 'text-red-500';
       case 'none':
-        return 'text-slate-400 dark:text-slate-600'; // Muted color for offline
+        return 'text-slate-400 dark:text-slate-600'; 
       case 'unknown':
       default:
-        return 'text-muted-foreground'; // Default color for unknown or unsupported
+        return 'text-muted-foreground'; 
     }
   };
 
@@ -185,8 +179,6 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
   };
 
   const handleDeleteSuccess = () => {
-    // This function is called when hymns or readings are deleted.
-    // Refresh the current page to reflect changes.
     router.refresh();
   }
 
@@ -195,13 +187,12 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
       <header className="bg-card shadow-sm mb-4 md:mb-6 print:hidden">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            {/* Render title: if string and non-empty, use h1; if string and empty, render nothing; otherwise, render as is (ReactNode) */}
             {typeof title === 'string' && title.length > 0 ? (
               <h1 className="text-2xl font-headline font-semibold text-primary sm:text-3xl">{title}</h1>
             ) : typeof title === 'string' && title.length === 0 ? (
-              null // Render nothing if title is an empty string
+              null 
             ) : (
-              title // Render as ReactNode if it's not a string or if it's complex JSX
+              title 
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -274,9 +265,9 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                       <BookPlus className="mr-2 h-4 w-4" />
                       <span>Add Reading</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => router.push('/hymnal')}>
-                      <LinkIcon className="mr-2 h-4 w-4" />
-                      <span>URL</span>
+                    <DropdownMenuItem onSelect={() => router.push('/hymn-index')}>
+                      <ListChecks className="mr-2 h-4 w-4" />
+                      <span>Hymn Page Index</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -325,7 +316,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
 
       {/* Add Reading Dialog */}
       <Dialog open={isAddReadingDialogOpen} onOpenChange={setIsAddReadingDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]"> {/* Adjusted max-width */}
+        <DialogContent className="sm:max-w-[600px]"> 
           <DialogHeader>
             <DialogTitle>Add New Reading</DialogTitle>
             <DialogDescription>
@@ -348,8 +339,8 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
           <DeleteHymnDialogContent
             onOpenChange={setIsDeleteHymnDialogOpen}
             onDeleteSuccess={() => {
-              setIsDeleteHymnDialogOpen(false); // Close dialog
-              handleDeleteSuccess(); // Refresh page
+              setIsDeleteHymnDialogOpen(false); 
+              handleDeleteSuccess(); 
             }}
           />
         </DialogContent>
@@ -367,8 +358,8 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
           <DeleteReadingDialogContent
             onOpenChange={setIsDeleteReadingDialogOpen}
             onDeleteSuccess={() => {
-              setIsDeleteReadingDialogOpen(false); // Close dialog
-              handleDeleteSuccess(); // Refresh page
+              setIsDeleteReadingDialogOpen(false); 
+              handleDeleteSuccess(); 
             }}
           />
         </DialogContent>
