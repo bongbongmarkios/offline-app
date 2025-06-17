@@ -64,22 +64,22 @@ Nakikita ang bituin, naririnig ang kulog,
 Ang Iyong lakas sa sansinukob ay nahayag.
 
 Koro:
-Umaawit ang kaluluwa, Sa'yo, aking Diyos,
+Umaawit ang kaluluwa, Sa\'yo, aking Diyos,
 Dakila Ka, O Diyos, Dakila Ka, O Diyos.
-Umaawit ang kaluluwa, Sa'yo, aking Diyos,
+Umaawit ang kaluluwa, Sa\'yo, aking Diyos,
 Dakila Ka, O Diyos, Dakila Ka, O Diyos!
 
-Sa gubat at parang, ako'y gumagala,
+Sa gubat at parang, ako\'y gumagala,
 At naririnig ang ibong matamis humuni.
-Mula sa bundok, tanawin ko'y napakaganda
-Sapa'y nakikita, hanging banayad nadarama.
+Mula sa bundok, tanawin ko\'y napakaganda
+Sapa\'y nakikita, hanging banayad nadarama.
 
 At kapag naiisip, Diyos, Anak di pinagkait;
 Sinugo Siya upang mamatay, di ko lubos maisip;
-Sa Krus, pasan ko'y Kanyang dinala,
-Naghirap Siya upang sala ko'y makuha.
+Sa Krus, pasan ko\'y Kanyang dinala,
+Naghirap Siya upang sala ko\'y makuha.
 
-Pag si Kristo'y dumating, sa sigaw ng tagumpay,
+Pag si Kristo\'y dumating, sa sigaw ng tagumpay,
 At iuuwi ako, galak ay pupuno.
 Yuyuko ako, sa mapagkumbabang pagsamba,
 At ihahayag: "Diyos ko, dakila Ka, O Diyos!"`,
@@ -143,32 +143,32 @@ Bisan ano pa ang pagtilaw,
 May Dios nga nagatipig sa imo;
 Sandig, ikaw nga ginakapoy, sa Iya dughan,
 May Dios nga nagatipig sa imo.`,
-    titleFilipino: 'ANG DIYOS ANG INGAT SA \'YO',
+    titleFilipino: 'ANG DIYOS ANG INGAT SA \\\'YO',
     lyricsFilipino: `Huwag mangamba anumang dumating,
-Ang Diyos ang ingat sa 'yo;
+Ang Diyos ang ingat sa \'yo;
 Sa lilim ng Kanyang pag-ibig manatili,
-Ang Diyos ang ingat sa 'yo.
+Ang Diyos ang ingat sa \'yo.
 
 Koro:
-Ang Diyos ang ingat sa 'yo,
+Ang Diyos ang ingat sa \'yo,
 Bawat araw, sa lahat ng daan;
-Siya'y mag-iingat sa 'yo,
-Ang Diyos ang ingat sa 'yo.
+Siya\'y mag-iingat sa \'yo,
+Ang Diyos ang ingat sa \'yo.
 
-Sa araw ng pagod, puso'y nanghihina,
-Ang Diyos ang ingat sa 'yo;
-Panganib ma'y sumalakay sa 'yong landas,
-Ang Diyos ang ingat sa 'yo.
+Sa araw ng pagod, puso\'y nanghihina,
+Ang Diyos ang ingat sa \'yo;
+Panganib ma\'y sumalakay sa \'yong landas,
+Ang Diyos ang ingat sa \'yo.
 
-Lahat ng kailangan mo'y Kanyang ibibigay,
-Ang Diyos ang ingat sa 'yo;
+Lahat ng kailangan mo\'y Kanyang ibibigay,
+Ang Diyos ang ingat sa \'yo;
 Walang hihilingin mong Kanyang tatanggihan,
-Ang Diyos ang ingat sa 'yo.
+Ang Diyos ang ingat sa \'yo.
 
 Anuman ang pagsubok na dumating,
-Ang Diyos ang ingat sa 'yo;
+Ang Diyos ang ingat sa \'yo;
 Sumandal, O napapagal, sa Kanyang dibdib,
-Ang Diyos ang ingat sa 'yo.`,
+Ang Diyos ang ingat sa \'yo.`,
     author: 'Civilla D. Martin / W. Stillman Martin',
     category: 'Trust and Guidance',
     pageNumber: '70',
@@ -220,22 +220,22 @@ Samtang ang kabuhi nagapadayon.`,
     titleFilipino: 'BIYAYANG KAHANGA-HANGA',
     lyricsFilipino: `Biyayang kahanga-hanga, anong tamis ng tunog
 Na nagligtas sa tulad kong aba!
-Nawala ako noon, nguni't ngayo'y natagpuan;
-Nabulag, nguni't ngayo'y nakakakita.
+Nawala ako noon, nguni\'t ngayo\'y natagpuan;
+Nabulag, nguni\'t ngayo\'y nakakakita.
 
 Biyaya ang nagturo sa puso kong matakot,
-At biyaya ang takot ko'y inalis;
+At biyaya ang takot ko\'y inalis;
 Kay mahalaga ng biyayang iyon
-Nang oras na ako'y unang naniwala.
+Nang oras na ako\'y unang naniwala.
 
 Sa maraming panganib, hirap, at bitag,
-Ako'y nakarating na;
+Ako\'y nakarating na;
 Biyaya ang nagdala sa akin hanggang dito,
 At biyaya ang maghahatid sa akin pauwi.
 
-Panginoo'y nangako ng mabuti sa akin,
-Salita Niya'y pag-asa ko'y tinitiyak;
-Siya'y magiging kalasag at bahagi ko,
+Panginoo\'y nangako ng mabuti sa akin,
+Salita Niya\'y pag-asa ko\'y tinitiyak;
+Siya\'y magiging kalasag at bahagi ko,
 Habang buhay ay nagtatagal.`,
     author: 'John Newton',
     category: 'Grace and Salvation',
@@ -293,7 +293,7 @@ Apang mas putli, kag mas mataas, kag mas daku pa
 Aton katingala, aton kalipay, kon si Hesus aton makita.`,
     titleFilipino: 'SA DIYOS ANG KALUWALHATIAN',
     lyricsFilipino: `Sa Diyos ang kaluwalhatian, dakilang mga bagay Kanyang ginawa;
-Gayon na lamang ang pag-ibig Niya sa sanlibutan, Anak Niya'y ibinigay,
+Gayon na lamang ang pag-ibig Niya sa sanlibutan, Anak Niya\'y ibinigay,
 Na nag-alay ng Kanyang buhay pantubos sa kasalanan,
 At binuksan ang pinto ng buhay upang lahat ay makapasok.
 
@@ -322,73 +322,42 @@ Ang ating pagkamangha, ating kagalakan, kapag si Hesus ay ating makikita.`,
   },
   {
     id: '5',
-    titleEnglish: 'Blessed Assurance',
-    lyricsEnglish: `Blessed assurance, Jesus is mine!
-O what a foretaste of glory divine!
-Heir of salvation, purchase of God,
-Born of His Spirit, washed in His blood.
+    titleHiligaynon: 'DAYAWA SIA (Praise him, Praise Him)',
+    lyricsHiligaynon: `Verse 1:
+Dayawa Sia, si Hesus nga Manunubos
+Ibantala ang lya nga Gugma
+Dayawa Sia, kamong mga manugtonda
+Gahom, dungog, ihatag sa Iya
+Manugbantay Sia sang Iya nga obeha
+Nagaatipan sa ila tanan.
 
-Chorus:
-This is my story, this is my song,
-Praising my Savior all the day long;
-This is my story, this is my song,
-Praising my Savior all the day long.
+KORO
+Dayawa Sia, kag ang Iya kagamhanan
+Dayawa Sia sa imo pagkanta
 
-Perfect submission, perfect delight,
-Visions of rapture now burst on my sight;
-Angels descending, bring from above
-Echoes of mercy, whispers of love.
+Verse 2:
+Dayawa Sia, si Hesus nga Manunubos
+Nga namatay sa aton nagtubos
+Sia kalasag, paglaom kag kaluwasan
+Ibayaw ngalan Niya nga mahal
+Ibantala ta ang iya kadayawan
+Dayawa Sia nga way katapusan.
 
-Perfect submission, all is at rest,
-I in my Savior am happy and blest;
-Watching and waiting, looking above,
-Filled with His goodness, lost in His love.`,
-    titleHiligaynon: 'PAGPASALIG NGA BULAHAN',
-    lyricsHiligaynon: `Pagpasalig nga bulahan, si Hesus akon!
-O daw ano nga pagtilaw sang himaya nga langitnon!
-Manunubli sang kaluwasan, binakal sang Dios,
-Natawo sa Iya Espiritu, nahugasan sa Iya dugo.
-
-Koro:
-Amo ini akon istorya, amo ini akon ambahanon,
-Nagadayaw sa Manluluwas bug-os nga adlaw;
-Amo ini akon istorya, amo ini akon ambahanon,
-Nagadayaw sa Manluluwas bug-os nga adlaw.
-
-Himpit nga pagpasakop, himpit nga kalipay,
-Mga palanan-awon sang kalipay karon nagbutlak sa panan-aw;
-Mga anghel nagapanaug, nagadala halin sa ibabaw
-Mga lanog sang kaluoy, mga hutik sang gugma.
-
-Himpit nga pagpasakop, tanan nagapahimuyong,
-Ako sa akon Manluluwas malipayon kag bulahan;
-Nagabantay kag nagahulat, nagatan-aw sa ibabaw,
-Napuno sang Iya kaayo, nadula sa Iya gugma.`,
-    titleFilipino: 'BIYAYANG KATIYAKAN',
-    lyricsFilipino: `Biyayang katiyakan, si Hesus ay akin!
-O anong paunang lasap ng luwalhating banal!
-Tagapagmana ng kaligtasan, binili ng Diyos,
-Isinilang sa Kanyang Espiritu, hinugasan sa Kanyang dugo.
-
-Koro:
-Ito ang aking kwento, ito ang aking awit,
-Pinupuri ang aking Tagapagligtas buong araw;
-Ito ang aking kwento, ito ang aking awit,
-Pinupuri ang aking Tagapagligtas buong araw.
-
-Sakdal na pagsuko, sakdal na galak,
-Mga pangitain ng ligaya ngayo'y sumilay sa paningin;
-Mga anghel bumababa, dala mula sa itaas
-Mga alingawngaw ng awa, mga bulong ng pag-ibig.
-
-Sakdal na pagsuko, lahat ay payapa,
-Ako sa aking Tagapagligtas ay masaya't pinagpala;
-Nagbabantay at naghihintay, nakatingin sa itaas,
-Puno ng Kanyang kabutihan, nalulunod sa Kanyang pag-ibig.`,
-    author: 'Fanny J. Crosby / Phoebe P. Knapp',
-    category: 'Assurance and Faith',
-    pageNumber: '308',
-    keySignature: 'D Major',
+Verse 3:
+Dayawa Sia, si Hesus nga Manunubos
+Ang kalangitan gadayaw tanan
+Hesus, Manluluwas kag Makagagahom
+Purongan Sia nga Hari gid naton
+Magakari Sia subong nga Mandadaos
+Makita ta Sia sa himaya Nia.`,
+    titleEnglish: 'Praise Him, Praise Him',
+    lyricsEnglish: '', // No English lyrics provided by user for this hymn
+    titleFilipino: undefined, // No Filipino title provided
+    lyricsFilipino: undefined, // No Filipino lyrics provided
+    keySignature: '6/8', // From "Key of 6/8"
+    pageNumber: undefined, // No page number provided
+    author: undefined, // No author provided
+    category: undefined, // No category provided
     externalUrl: undefined,
   },
 ];
@@ -413,14 +382,15 @@ export function deleteSampleHymnsByIds(hymnIds: string[]): void {
 
 // Function to add a new hymn to the in-memory sample data
 // This function is currently not used by the UI after removing add hymn functionality
-export function addSampleHymn(hymnData: Omit<Hymn, 'id'>): Hymn {
-  const newIdNumber = Math.max(0, ...initialSampleHymns.map(h => parseInt(h.id, 10) || 0)) + 1;
-  const newId = newIdNumber.toString();
+// export function addSampleHymn(hymnData: Omit<Hymn, 'id'>): Hymn {
+//   const newIdNumber = Math.max(0, ...initialSampleHymns.map(h => parseInt(h.id, 10) || 0)) + 1;
+//   const newId = newIdNumber.toString();
   
-  const newHymn: Hymn = {
-    id: newId,
-    ...hymnData,
-  };
-  initialSampleHymns.push(newHymn);
-  return newHymn;
-}
+//   const newHymn: Hymn = {
+//     id: newId,
+//     ...hymnData,
+//   };
+//   initialSampleHymns.push(newHymn);
+//   return newHymn;
+// }
+
