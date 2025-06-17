@@ -30,7 +30,7 @@ import DeleteHymnDialogContent from '@/components/hymnal/DeleteHymnDialogContent
 import DeleteReadingDialogContent from '@/components/readings/DeleteReadingDialogContent';
 import ChatInterface from '@/components/ai/ChatInterface';
 import { useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils'; // Added missing import
+import { cn } from '@/lib/utils';
 
 
 interface AppHeaderProps {
@@ -69,42 +69,52 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
   useEffect(() => {
     const updateNetworkStatus = () => {
       if (typeof navigator !== 'undefined' && 'connection' in navigator) {
-        const connection = navigator.connection as any; // Type assertion for broader compatibility
+        const connection = navigator.connection as any; 
+        const mbps = connection.downlink; 
+        const effectiveType = connection.effectiveType; 
+
         let level: SignalLevel = 'unknown';
         let description = 'Unknown Connection';
-        const mbps = connection.downlink; // Mbps
-        const effectiveType = connection.effectiveType; // 'slow-2g', '2g', '3g', '4g'
 
         if (!navigator.onLine) {
           level = 'none';
           description = 'Offline';
-        } else if (effectiveType === '4g' && (!mbps || mbps >= 10)) {
-          level = 'strong';
-          description = 'Excellent (4G/WiFi)';
-        } else if (effectiveType === '4g' || (effectiveType === '3g' && (!mbps || mbps >= 1))) {
-          level = 'average';
-          description = 'Good (3G/4G)';
-        } else if (effectiveType === '2g' || effectiveType === 'slow-2g') {
-          level = 'weak';
-          description = 'Poor (2G)';
-        } else if (mbps && mbps > 5) {
-          level = 'strong';
-          description = 'Excellent (WiFi/Ethernet)';
-        } else if (mbps && mbps > 1) {
+        } else if (mbps !== undefined && mbps > 0) { 
+          if (mbps >= 25) { 
+            level = 'strong';
+            description = 'Excellent';
+          } else if (mbps >= 10) {
+            level = 'strong';
+            description = 'Strong';
+          } else if (mbps >= 1) { 
             level = 'average';
-            description = 'Good (WiFi/Ethernet)';
-        } else if (mbps) {
+            description = 'Average';
+          } else { 
             level = 'weak';
-            description = 'Poor Connection';
+            description = 'Weak';
+          }
+        } else { // Fallback if downlink is not available or 0, but online
+          if (effectiveType === '4g') {
+            level = 'strong';
+            description = 'Good (4G)';
+          } else if (effectiveType === '3g') {
+            level = 'average';
+            description = 'Average (3G)';
+          } else if (effectiveType === '2g' || effectiveType === 'slow-2g') {
+            level = 'weak';
+            description = 'Poor (2G)';
+          } else {
+            description = 'Online (Speed details unavailable)'; 
+            level = 'average'; 
+          }
         }
-
         setCurrentSignal({ description, mbps, level, effectiveType });
       } else {
         setCurrentSignal({ description: 'Network API not supported', level: 'unknown' });
       }
     };
 
-    updateNetworkStatus(); // Initial check
+    updateNetworkStatus(); 
 
     if (typeof navigator !== 'undefined' && 'connection' in navigator) {
       const connection = navigator.connection as any;
@@ -129,7 +139,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
       case 'weak':
         return 'text-red-500';
       case 'none':
-        return 'text-slate-400 dark:text-slate-600'; // More distinct offline color
+        return 'text-slate-400 dark:text-slate-600'; 
       case 'unknown':
       default:
         return 'text-muted-foreground';
@@ -138,11 +148,11 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
 
   const getWifiAriaLabel = (): string => {
     let label = `Wifi Status: ${currentSignal.description}`;
-    if (currentSignal.mbps !== undefined) {
+    if (currentSignal.mbps !== undefined && currentSignal.level !== 'none') {
       label += `, ~${currentSignal.mbps.toFixed(1)} Mbps`;
     }
-    if (currentSignal.effectiveType) {
-      label += ` (Effective Type: ${currentSignal.effectiveType})`;
+    if (currentSignal.effectiveType && currentSignal.level !== 'none') {
+      label += ` (Type: ${currentSignal.effectiveType})`;
     }
     label += ". Click for details.";
     return label;
@@ -191,20 +201,23 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                     <div className="space-y-2">
                       <h4 className="font-medium leading-none">Internet Status</h4>
                       <p className="text-sm">
-                        Signal: <span className={cn("font-semibold", getWifiIconColor())}>{currentSignal.description}</span>
+                        Status: <span className={cn("font-semibold", getWifiIconColor())}>{currentSignal.description}</span>
                       </p>
-                      {currentSignal.mbps !== undefined && (
+                      {currentSignal.mbps !== undefined && currentSignal.level !== 'none' && (
                         <p className="text-sm text-muted-foreground">
-                          Speed: ~{currentSignal.mbps.toFixed(1)} Mbps
+                          Est. Speed: ~{currentSignal.mbps.toFixed(1)} Mbps
                         </p>
                       )}
-                       {currentSignal.effectiveType && (
+                       {currentSignal.effectiveType && currentSignal.level !== 'none' && (
                         <p className="text-sm text-muted-foreground">
-                          Type: {currentSignal.effectiveType}
+                          Est. Type: {currentSignal.effectiveType}
                         </p>
                       )}
                       {currentSignal.level === 'unknown' && (
                         <p className="text-xs text-muted-foreground italic">Browser may not fully support network status updates.</p>
+                      )}
+                       {currentSignal.level === 'none' && (
+                        <p className="text-sm font-semibold text-destructive">You are currently offline.</p>
                       )}
                     </div>
                   </PopoverContent>
@@ -337,3 +350,4 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
     </>
   );
 }
+
