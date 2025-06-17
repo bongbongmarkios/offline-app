@@ -1,3 +1,4 @@
+
 'use client';
 import type { Hymn } from '@/types';
 import { useEffect } from 'react';
@@ -70,11 +71,12 @@ export default function HymnDetail({ hymn, selectedLanguage, showLanguageSelecto
   const { addHymnView } = useActivity();
 
   useEffect(() => {
+    // Track view based on English title if available, otherwise Hiligaynon.
     const trackingTitle = hymn.titleEnglish || hymn.titleHiligaynon;
     if (trackingTitle) {
       addHymnView(trackingTitle);
     }
-  }, [addHymnView, hymn.titleEnglish, hymn.titleHiligaynon, hymn.id]);
+  }, [addHymnView, hymn.titleEnglish, hymn.titleHiligaynon, hymn.id]); // Added hymn.id to dependencies for safety
 
   const currentTitle = getTitleForLanguage(selectedLanguage, hymn);
   const currentLyrics = getLyricsForLanguage(selectedLanguage, hymn);
@@ -101,7 +103,6 @@ export default function HymnDetail({ hymn, selectedLanguage, showLanguageSelecto
 
         <div className="mt-3 text-md text-muted-foreground space-y-1 text-center">
             {hymn.keySignature && <p>Key: {hymn.keySignature}</p>}
-            {hymn.composer && <p>Composer: {hymn.composer}</p>}
             {hymn.pageNumber && <p>Page: {hymn.pageNumber}</p>}
         </div>
 
@@ -117,6 +118,7 @@ export default function HymnDetail({ hymn, selectedLanguage, showLanguageSelecto
                   variant={selectedLanguage === option.value ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => onSelectLanguage(option.value)}
+                  disabled={!isAvailable} // Disable if not available, though it's also hidden
                 >
                   {option.label}
                 </Button>
