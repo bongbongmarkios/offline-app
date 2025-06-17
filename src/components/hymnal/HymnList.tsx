@@ -3,8 +3,8 @@
 import type { Hymn } from '@/types';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { useEffect, useState } from 'react';
-import { initialSampleHymns as fallbackInitialHymns } from '@/data/hymns'; // Renamed for clarity
+import { useEffect, useState, useCallback } from 'react';
+// No need to import fallbackInitialHymns as initialHymns prop is the source of truth from server.
 
 const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
 
@@ -13,14 +13,14 @@ const isValidHymn = (h: Hymn | undefined | null): h is Hymn => {
 };
 
 interface HymnListProps {
-  initialHymns: Hymn[]; // These are from the server/code, potentially updated
+  initialHymns: Hymn[]; 
 }
 
 export default function HymnList({ initialHymns }: HymnListProps) {
-  const [hymns, setHymns] = useState<Hymn[]>(() => initialHymns.filter(isValidHymn));
+  const [hymns, setHymns] = useState<Hymn[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  const loadAndSetHymns = useCallback(() => {
     setIsLoading(true);
     let finalHymnsToDisplay: Hymn[] = [];
     const validInitialHymnsFromProp = initialHymns.filter(isValidHymn);
@@ -30,38 +30,42 @@ export default function HymnList({ initialHymns }: HymnListProps) {
       if (storedHymnsString) {
         const parsedStoredHymns: Hymn[] = JSON.parse(storedHymnsString).filter(isValidHymn);
         
-        // Merge strategy:
-        // Start with stored hymns.
-        // Add any hymns from props (code's initialSampleHymns) that are not in stored hymns.
         const mergedHymnsMap = new Map<string, Hymn>();
+        // Prioritize hymns from localStorage as they might have user edits (like URLs)
         parsedStoredHymns.forEach(h => mergedHymnsMap.set(h.id, h));
         
+        // Add any hymns from props (code's initialSampleHymns) that are not in stored hymns.
+        // This ensures new hymns added to code appear.
         validInitialHymnsFromProp.forEach(h => {
           if (!mergedHymnsMap.has(h.id)) {
-            // If a hymn from code isn't in localStorage, add it.
-            // This ensures new "initial" hymns from code updates appear.
             mergedHymnsMap.set(h.id, h);
           }
-          // If you want code changes to overwrite localStorage for matching IDs:
-          // else { mergedHymnsMap.set(h.id, h); } 
-          // But current logic preserves localStorage version if ID exists.
+          // Optional: If you want code changes to *always* overwrite localStorage for matching IDs:
+          // else { mergedHymnsMap.set(h.id, h); }
         });
         finalHymnsToDisplay = Array.from(mergedHymnsMap.values());
         
-        // Save the potentially updated merged list back to localStorage
-        localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(finalHymnsToDisplay));
+        // If the merge resulted in a list different from what was in localStorage, update localStorage.
+        // This typically happens if new hymns from code were added.
+        if (JSON.stringify(finalHymnsToDisplay.sort((a,b) => a.id.localeCompare(b.id))) !== JSON.stringify(parsedStoredHymns.sort((a,b) => a.id.localeCompare(b.id)))) {
+            localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(finalHymnsToDisplay));
+        }
+
       } else {
         // localStorage is empty, use initial hymns from props and prime localStorage
         finalHymnsToDisplay = validInitialHymnsFromProp;
-        localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(finalHymnsToDisplay));
+        if (finalHymnsToDisplay.length > 0) { // Only prime if there's something to prime with
+            localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(finalHymnsToDisplay));
+        }
       }
     } catch (error) {
       console.error("Error processing hymns from localStorage or props:", error);
-      // Fallback to initial hymns from props if any error occurs during processing
-      finalHymnsToDisplay = validInitialHymnsFromProp;
-      // Attempt to prime localStorage even on error, with the props data
+      finalHymnsToDisplay = validInitialHymnsFromProp; // Fallback
+       // Attempt to prime localStorage even on error, with the props data
       try {
-        localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(finalHymnsToDisplay));
+        if (finalHymnsToDisplay.length > 0) {
+            localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(finalHymnsToDisplay));
+        }
       } catch (lsError) {
         console.error("Error priming localStorage after initial error:", lsError);
       }
@@ -82,7 +86,23 @@ export default function HymnList({ initialHymns }: HymnListProps) {
 
     setHymns(sortedHymns);
     setIsLoading(false);
-  }, [initialHymns]); // Rerun if initialHymns prop changes
+  }, [initialHymns]); // Depends on initialHymns prop
+
+  useEffect(() => {
+    loadAndSetHymns(); // Call on mount and when initialHymns (and thus loadAndSetHymns) changes
+
+    const handleStorageChange = (event: StorageEvent) => {
+      // Check if the change is for the hymns key or if storage was cleared (event.key is null)
+      if (event.key === LOCAL_STORAGE_HYMNS_KEY || event.key === null) {
+        loadAndSetHymns();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [loadAndSetHymns]); // Effect hook depends on the memoized loader function
 
   if (isLoading) {
     return <p className="text-muted-foreground text-center py-4">Loading hymns...</p>;
@@ -95,7 +115,8 @@ export default function HymnList({ initialHymns }: HymnListProps) {
   return (
     <div className="space-y-4">
       {hymns.map((hymn) => {
-        if (hymn && typeof hymn.id === 'string' && hymn.id.trim() !== "") {
+        // Using isValidHymn before attempting to render the Link
+        if (isValidHymn(hymn)) {
           const hymnIdTrimmed = hymn.id.trim(); 
           return (
             <Link key={hymnIdTrimmed} href={`/hymnal/${hymnIdTrimmed}`} className="block hover:no-underline">
@@ -128,4 +149,3 @@ export default function HymnList({ initialHymns }: HymnListProps) {
     </div>
   );
 }
-
