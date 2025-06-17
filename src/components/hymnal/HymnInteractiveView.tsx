@@ -12,37 +12,37 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import Link from 'next/link';
 import { ArrowLeft, FilePenLine, Music } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { initialSampleHymns, updateSampleHymn } from '@/data/hymns'; 
+import { initialSampleHymns } from '@/data/hymns';
+import { cn } from '@/lib/utils';
 
 type LanguageOption = 'hiligaynon' | 'filipino' | 'english';
 const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
 
-type SignalStrength = 'strong' | 'average' | 'weak' | 'none';
-
 interface HymnInteractiveViewProps {
-  hymnFromServer?: Hymn; 
-  params: { id: string };   
+  hymnFromServer?: Hymn;
+  params: { id: string };
 }
 
 export default function HymnInteractiveView({ hymnFromServer, params }: HymnInteractiveViewProps) {
-  const [hymn, setHymn] = useState<Hymn | null>(null); 
-  const [isLoading, setIsLoading] = useState(true); 
+  const [hymn, setHymn] = useState<Hymn | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption>('hiligaynon');
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const router = useRouter();
-  const [signalStrength, setSignalStrength] = useState<SignalStrength>('strong');
+  const [isOnline, setIsOnline] = useState(true);
+
 
   // Refined languageIsAvailable for HymnInteractiveView
   const languageIsAvailable = (lang: LanguageOption, currentHymn: Hymn | null): boolean => {
     if (!currentHymn) return false;
     switch (lang) {
-      case 'hiligaynon': // Hiligaynon title is required for the hymn to be valid
-        return !!currentHymn.titleHiligaynon; // Lyrics are also required by type, so title check is enough
-      case 'filipino':   // Filipino is optional
-        return !!currentHymn.titleFilipino && !!currentHymn.lyricsFilipino; // Both title and actual lyrics must exist and be non-empty
-      case 'english':    // English title is required for the hymn to be valid
-        return !!currentHymn.titleEnglish; // lyricsEnglish is a string, can be empty, still "available" if title exists
+      case 'hiligaynon':
+        return !!currentHymn.titleHiligaynon;
+      case 'filipino':
+        return !!currentHymn.titleFilipino && !!currentHymn.lyricsFilipino && currentHymn.lyricsFilipino.trim() !== '';
+      case 'english':
+        return !!currentHymn.titleEnglish;
       default:
         return false;
     }
@@ -58,21 +58,15 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
         const storedHymns: Hymn[] = JSON.parse(storedHymnsString);
         const hymnFromStorage = storedHymns.find(h => h.id === params.id);
         if (hymnFromStorage) {
-          resolvedHymn = hymnFromStorage; 
+          resolvedHymn = hymnFromStorage;
         } else {
-          // Hymn ID not in localStorage, try hymnFromServer (from initial data)
           resolvedHymn = hymnFromServer || null;
         }
       } else {
-        // localStorage key doesn't exist. This means no hymns have been saved by the app via Add/Edit/Delete operations yet.
-        // Try hymnFromServer (which would come from the initialSampleHymns at build/server time).
-        // DO NOT write to localStorage here, as it could overwrite localStorage if it was cleared by other means
-        // or if this page is loaded before HymnList (which does prime localStorage if empty).
         resolvedHymn = hymnFromServer || null;
       }
     } catch (error) {
       console.error("Error loading hymn:", error);
-      // Fallback to hymnFromServer in case of parsing errors or other issues
       resolvedHymn = hymnFromServer || null;
     }
 
@@ -83,7 +77,6 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
 
   useEffect(() => {
     if (hymn) {
-      // Set initial language based on availability, preferring Hiligaynon, then English
       if (languageIsAvailable('hiligaynon', hymn)) {
         setSelectedLanguage('hiligaynon');
       } else if (languageIsAvailable('english', hymn)) {
@@ -91,56 +84,33 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       } else if (languageIsAvailable('filipino', hymn)) {
         setSelectedLanguage('filipino');
       } else {
-        setSelectedLanguage('hiligaynon'); // Default fallback
+        setSelectedLanguage('hiligaynon');
       }
     }
-    setShowLanguageSelector(false); // Reset selector visibility when hymn changes
+    setShowLanguageSelector(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hymn]); 
+  }, [hymn]);
 
   useEffect(() => {
-    const signalLevels: SignalStrength[] = ['strong', 'average', 'weak', 'none'];
-    let currentIndex = 0;
-    const intervalId = setInterval(() => {
-      currentIndex = (currentIndex + 1) % signalLevels.length;
-      setSignalStrength(signalLevels[currentIndex]);
-    }, 3000);
-    return () => clearInterval(intervalId);
+    const updateOnlineStatus = () => {
+      if (typeof navigator !== 'undefined') {
+        setIsOnline(navigator.onLine);
+      } else {
+        setIsOnline(true); // Fallback
+      }
+    };
+
+    updateOnlineStatus(); // Initial check
+
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+
+    return () => {
+      window.removeEventListener('online', updateOnlineStatus);
+      window.removeEventListener('offline', updateOnlineStatus);
+    };
   }, []);
 
-  const getMusicIconColor = (): string => {
-    switch (signalStrength) {
-      case 'strong':
-        return 'text-green-500';
-      case 'average':
-        return 'text-orange-500';
-      case 'weak':
-        return 'text-red-500';
-      case 'none':
-      default:
-        return 'text-muted-foreground';
-    }
-  };
-  
-  const getMusicIconAriaLabel = (): string => {
-    let label = 'Add note to hymn';
-    switch (signalStrength) {
-      case 'strong':
-        label += ' (Signal: Strong)';
-        break;
-      case 'average':
-        label += ' (Signal: Average)';
-        break;
-      case 'weak':
-        label += ' (Signal: Weak)';
-        break;
-      case 'none':
-      default:
-        label += ' (Signal: None)';
-        break;
-    }
-    return label;
-  }
 
   const toggleLanguageSelector = () => {
     setShowLanguageSelector(prev => !prev);
@@ -151,7 +121,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
   };
 
   const handleEditSuccess = (updatedHymnData: Hymn) => {
-    setHymn(updatedHymnData); 
+    setHymn(updatedHymnData);
     setIsEditDialogOpen(false);
 
     try {
@@ -160,40 +130,35 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       if (storedHymnsString) {
         allStoredHymns = JSON.parse(storedHymnsString);
       } else {
-        // If localStorage was empty, base it on (now modified by updateSampleHymn) initialSampleHymns
-        allStoredHymns = [...initialSampleHymns]; 
+        allStoredHymns = [...initialSampleHymns];
       }
 
       const hymnIndex = allStoredHymns.findIndex(h => h.id === updatedHymnData.id);
       if (hymnIndex > -1) {
         allStoredHymns[hymnIndex] = updatedHymnData;
       } else {
-         // Hymn wasn't in localStorage, add it. This can happen if localStorage was cleared
-         // but the hymn existed in initialSampleHymns.
-         allStoredHymns.push(updatedHymnData); 
+         allStoredHymns.push(updatedHymnData);
       }
       localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allStoredHymns));
-      // The in-memory initialSampleHymns was already updated by the updateSampleHymn call
-      // that produced updatedHymnData before this handler was called.
     } catch (error) {
         console.error("Error saving edited hymn to localStorage:", error);
     }
-    router.refresh(); 
+    router.refresh();
   };
 
 
   if (isLoading) {
     return (
       <>
-        <AppHeader 
+        <AppHeader
           title={
             <Button asChild variant="outline" size="sm" disabled>
               <Link href="/hymnal">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back
               </Link>
             </Button>
-          } 
-          hideDefaultActions={true} 
+          }
+          hideDefaultActions={true}
         />
         <div className="container mx-auto px-4 pb-8 text-center py-10 text-muted-foreground">Loading hymn details...</div>
       </>
@@ -203,15 +168,15 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
   if (!hymn) {
     return (
       <>
-        <AppHeader 
+        <AppHeader
           title={
             <Button asChild variant="outline" size="sm">
               <Link href="/hymnal">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Hymnal
               </Link>
             </Button>
-          } 
-          hideDefaultActions={true} 
+          }
+          hideDefaultActions={true}
         />
         <div className="container mx-auto px-4 pb-8 text-center py-10">
           <h2 className="text-2xl font-semibold mb-4 text-destructive">Hymn Not Found</h2>
@@ -226,8 +191,8 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
 
   const headerActions = (
     <>
-      <Button variant="ghost" size="icon" aria-label={getMusicIconAriaLabel()}>
-        <Music className={`h-6 w-6 ${getMusicIconColor()}`} />
+      <Button variant="ghost" size="icon" aria-label="Add note to hymn">
+        <Music className={cn("h-6 w-6", isOnline ? "text-primary" : "text-muted-foreground")} />
       </Button>
       <Button variant="ghost" size="icon" aria-label="Edit hymn" onClick={() => setIsEditDialogOpen(true)}>
         <FilePenLine className="h-6 w-6 text-muted-foreground" />
