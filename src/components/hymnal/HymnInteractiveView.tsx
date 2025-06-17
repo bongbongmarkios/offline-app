@@ -10,7 +10,7 @@ import EditHymnForm from '@/components/hymnal/EditHymnForm';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import Link from 'next/link';
-import { ArrowLeft, FilePenLine, StickyNote } from 'lucide-react'; // Added StickyNote
+import { ArrowLeft, FilePenLine, Music } from 'lucide-react'; // Changed StickyNote to Music
 import { useRouter } from 'next/navigation';
 import { updateSampleHymn, initialSampleHymns } from '@/data/hymns'; 
 
@@ -118,8 +118,8 @@ export default function HymnInteractiveView({ initialHymn }: HymnInteractiveView
 
   const headerActions = (
     <>
-      <Button variant="ghost" size="icon" aria-label="Add note to hymn"> {/* New Note button */}
-        <StickyNote className="h-6 w-6 text-muted-foreground" />
+      <Button variant="ghost" size="icon" aria-label="Add note to hymn">
+        <Music className="h-6 w-6 text-muted-foreground" />
       </Button>
       <Button variant="ghost" size="icon" aria-label="Edit hymn" onClick={() => setIsEditDialogOpen(true)}>
         <FilePenLine className="h-6 w-6 text-muted-foreground" />
