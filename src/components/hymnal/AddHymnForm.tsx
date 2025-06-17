@@ -9,13 +9,15 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { addSampleHymn } from '@/data/hymns'; // Import the new function
+import { addSampleHymn, initialSampleHymns } from '@/data/hymns'; // Import initialSampleHymns for fallback
 import type { Hymn } from '@/types';
 
 interface AddHymnFormProps {
   onFormSubmit?: () => void;
   className?: string;
 }
+
+const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
 
 export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProps) {
   const [pageNumber, setPageNumber] = useState('');
@@ -43,10 +45,8 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
       return;
     }
 
-    // Ensure English title and lyrics have default values if empty, as they are required in the type.
-    // The Hymn type expects them for consistency, even if not filled in the form.
-    const finalTitleEnglish = titleEnglish || titleHiligaynon; // Default to Hiligaynon if English is empty
-    const finalLyricsEnglish = lyricsEnglish || ""; // Default to empty string
+    const finalTitleEnglish = titleEnglish || titleHiligaynon;
+    const finalLyricsEnglish = lyricsEnglish || "";
 
 
     const newHymnData: Omit<Hymn, 'id'> = {
@@ -60,14 +60,56 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
       lyricsEnglish: finalLyricsEnglish,
     };
     
-    const addedHymn = addSampleHymn(newHymnData);
-    console.log('New Hymn Added:', addedHymn);
+    const addedHymn = addSampleHymn(newHymnData); // This adds to in-memory initialSampleHymns
+
+    // Now, update localStorage
+    try {
+      const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
+      let allHymnsForStorage: Hymn[];
+
+      if (storedHymnsString) {
+        try {
+          allHymnsForStorage = JSON.parse(storedHymnsString);
+          // Ensure the newly added hymn is in this list (or replaces an old version if ID somehow matched)
+          allHymnsForStorage = allHymnsForStorage.filter(h => h.id !== addedHymn.id);
+          allHymnsForStorage.push(addedHymn);
+        } catch (parseError) {
+          console.error("Error parsing hymns from localStorage, re-initializing with current data:", parseError);
+          // initialSampleHymns already contains addedHymn
+          allHymnsForStorage = [...initialSampleHymns]; 
+        }
+      } else {
+        // localStorage is empty, initialize with initialSampleHymns (which includes addedHymn)
+        allHymnsForStorage = [...initialSampleHymns];
+      }
+      
+      // Sort before saving to localStorage for consistency (optional, but good practice)
+      allHymnsForStorage.sort((a, b) => {
+        const pageNumA = a.pageNumber ? parseInt(a.pageNumber, 10) : Infinity;
+        const pageNumB = b.pageNumber ? parseInt(b.pageNumber, 10) : Infinity;
+        if (isNaN(pageNumA) && isNaN(pageNumB)) return 0;
+        if (isNaN(pageNumA)) return 1;
+        if (isNaN(pageNumB)) return -1;
+        return pageNumA - pageNumB;
+      });
+
+      localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allHymnsForStorage));
+      
+    } catch (error) {
+      console.error("Error saving hymn to localStorage:", error);
+      toast({
+        title: 'Storage Error',
+        description: 'Could not save hymn to local storage. It is added for this session only.',
+        variant: 'destructive',
+      });
+    }
 
     toast({
       title: "Hymn Added",
-      description: `"${addedHymn.titleEnglish}" has been added to the hymn data.`,
+      description: `"${addedHymn.titleEnglish || addedHymn.titleHiligaynon}" has been added.`,
     });
 
+    // Reset form fields
     setTitleHiligaynon('');
     setTitleFilipino('');
     setTitleEnglish('');
@@ -86,6 +128,7 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
   };
 
   const handleCancel = () => {
+    // Reset form fields
     setTitleHiligaynon('');
     setTitleFilipino('');
     setTitleEnglish('');
