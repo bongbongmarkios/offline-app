@@ -8,21 +8,16 @@ import { initialSampleHymns } from '@/data/hymns'; // For fallback
 
 const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
 
-interface HymnListProps {
-  initialHymns: Hymn[]; // For SSR and fallback
-}
-
 const isValidHymn = (h: Hymn | undefined | null): h is Hymn => {
   return !!(h && h.id && typeof h.id === 'string' && h.id.trim() !== "");
 };
 
 export default function HymnList({ initialHymns }: HymnListProps) {
-  // Ensure the initial state from props is also filtered.
   const [hymns, setHymns] = useState<Hymn[]>(() => initialHymns.filter(isValidHymn));
-  const [isLoading, setIsLoading] = useState(true); // To manage loading state
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoading(true); // Set loading true when effect runs
+    setIsLoading(true);
     let loadedHymns: Hymn[] = [];
     try {
       const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
@@ -36,7 +31,7 @@ export default function HymnList({ initialHymns }: HymnListProps) {
       }
     } catch (error) {
       console.error("Error loading or parsing hymns from localStorage for list:", error);
-      loadedHymns = initialHymns.filter(isValidHymn); // Fallback to filtered initial props
+      loadedHymns = initialHymns.filter(isValidHymn);
     }
     
     const sortedHymns = [...loadedHymns].sort((a, b) => {
@@ -54,11 +49,9 @@ export default function HymnList({ initialHymns }: HymnListProps) {
 
     setHymns(sortedHymns);
     setIsLoading(false);
-  }, [initialHymns]); // Rerun if initialHymns prop changes, which happens on router.refresh after adding
+  }, [initialHymns]);
 
   if (isLoading) {
-    // Display a loading state, possibly using skeletons for a better UX
-    // For now, simple text:
     return <p className="text-muted-foreground text-center py-4">Loading hymns...</p>;
   }
 
@@ -68,35 +61,41 @@ export default function HymnList({ initialHymns }: HymnListProps) {
 
   return (
     <div className="space-y-4">
-      {hymns.map((hymn) => (
-        // The check isValidHymn(hymn) should be redundant here if state `hymns` is always filtered
-        // but as an extra safeguard for the key and href:
-        isValidHymn(hymn) ? (
-          <Link key={hymn.id} href={`/hymnal/${hymn.id}`} className="block hover:no-underline">
-            <Card className="hover:shadow-md transition-shadow duration-200 cursor-pointer hover:border-primary/50">
-              <CardHeader>
-                <div className="flex items-start gap-3">
-                  {hymn.pageNumber && (
-                    <span className="text-sm font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full flex-shrink-0 mt-1">
-                      {hymn.pageNumber}
-                    </span>
-                  )}
-                  <div className="flex-grow">
-                    <CardTitle className="font-headline text-xl group-hover:text-primary">
-                      {hymn.titleHiligaynon ? hymn.titleHiligaynon.toUpperCase() : 'Untitled Hymn'}
-                    </CardTitle>
-                    {hymn.titleEnglish && hymn.titleEnglish.toUpperCase() !== (hymn.titleHiligaynon || '').toUpperCase() && (
-                      <p className="text-sm text-muted-foreground mt-0.5">
-                        {hymn.titleEnglish}
-                      </p>
+      {hymns.map((hymn) => {
+        // Explicitly check hymn and hymn.id before rendering the Link
+        // This is a reinforcement of isValidHymn for the href generation.
+        if (hymn && typeof hymn.id === 'string' && hymn.id.trim() !== "") {
+          const hymnIdTrimmed = hymn.id.trim(); // Use trimmed ID for href and key
+          return (
+            <Link key={hymnIdTrimmed} href={`/hymnal/${hymnIdTrimmed}`} className="block hover:no-underline">
+              <Card className="hover:shadow-md transition-shadow duration-200 cursor-pointer hover:border-primary/50">
+                <CardHeader>
+                  <div className="flex items-start gap-3">
+                    {hymn.pageNumber && (
+                      <span className="text-sm font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full flex-shrink-0 mt-1">
+                        {hymn.pageNumber}
+                      </span>
                     )}
+                    <div className="flex-grow">
+                      <CardTitle className="font-headline text-xl group-hover:text-primary">
+                        {hymn.titleHiligaynon ? hymn.titleHiligaynon.toUpperCase() : 'Untitled Hymn'}
+                      </CardTitle>
+                      {hymn.titleEnglish && hymn.titleEnglish.toUpperCase() !== (hymn.titleHiligaynon || '').toUpperCase() && (
+                        <p className="text-sm text-muted-foreground mt-0.5">
+                          {hymn.titleEnglish}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-            </Card>
-          </Link>
-        ) : null 
-      ))}
+                </CardHeader>
+              </Card>
+            </Link>
+          );
+        }
+        // If the hymn ID is not valid, render nothing for this item.
+        // This case should ideally be caught by the initial filtering of the hymns array.
+        return null; 
+      })}
     </div>
   );
 }
