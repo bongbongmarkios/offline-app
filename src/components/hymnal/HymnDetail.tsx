@@ -1,13 +1,11 @@
-
 'use client';
 import type { Hymn } from '@/types';
 import { useEffect } from 'react';
 import { useActivity } from '@/hooks/useActivityTracker';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Button } from '@/components/ui/button'; // Added Button import
+import { Button } from '@/components/ui/button';
 
-// Define LanguageOption type here or import if moved
 type LanguageOption = 'hiligaynon' | 'filipino' | 'english';
 
 interface HymnDetailProps {
@@ -72,21 +70,16 @@ export default function HymnDetail({ hymn, selectedLanguage, showLanguageSelecto
   const { addHymnView } = useActivity();
 
   useEffect(() => {
-    // Track view based on the primary English title, or fallback if not available
     const trackingTitle = hymn.titleEnglish || hymn.titleHiligaynon;
     if (trackingTitle) {
       addHymnView(trackingTitle);
     }
-  }, [addHymnView, hymn.titleEnglish, hymn.titleHiligaynon, hymn.id]); 
+  }, [addHymnView, hymn.titleEnglish, hymn.titleHiligaynon, hymn.id]);
 
   const currentTitle = getTitleForLanguage(selectedLanguage, hymn);
   const currentLyrics = getLyricsForLanguage(selectedLanguage, hymn);
 
-  const hasContentInSelectedLanguage = 
-    (selectedLanguage === 'hiligaynon' && languageIsAvailable('hiligaynon', hymn)) ||
-    (selectedLanguage === 'filipino' && languageIsAvailable('filipino', hymn)) ||
-    (selectedLanguage === 'english' && languageIsAvailable('english', hymn));
-
+  const hasContentInSelectedLanguage = languageIsAvailable(selectedLanguage, hymn);
 
   return (
     <Card className="shadow-lg">
@@ -95,7 +88,6 @@ export default function HymnDetail({ hymn, selectedLanguage, showLanguageSelecto
           <CardTitle className="font-headline text-3xl text-primary">
             {currentTitle.toUpperCase()}
           </CardTitle>
-          {/* Subtitles for other available languages */}
           {selectedLanguage !== 'hiligaynon' && hymn.titleHiligaynon && hymn.titleHiligaynon.toUpperCase() !== currentTitle.toUpperCase() && (
              <p className="text-md text-muted-foreground">{hymn.titleHiligaynon.toUpperCase()}</p>
           )}
@@ -106,7 +98,7 @@ export default function HymnDetail({ hymn, selectedLanguage, showLanguageSelecto
             <p className="text-md text-muted-foreground">{hymn.titleEnglish}</p>
           )}
         </div>
-        
+
         <div className="mt-3 text-md text-muted-foreground space-y-1 text-center">
             {hymn.keySignature && <p>Key: {hymn.keySignature}</p>}
             {hymn.composer && <p>Composer: {hymn.composer}</p>}
@@ -117,14 +109,14 @@ export default function HymnDetail({ hymn, selectedLanguage, showLanguageSelecto
           <div className="flex items-center justify-center gap-2 py-3 border-y my-3">
             {languageOptions.map((option) => {
               const isAvailable = languageIsAvailable(option.value, hymn);
+              if (!isAvailable) return null; // Don't render button if language not available
+
               return (
                 <Button
                   key={option.value}
                   variant={selectedLanguage === option.value ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => onSelectLanguage(option.value)}
-                  disabled={!isAvailable}
-                  className={!isAvailable ? 'opacity-50 cursor-not-allowed' : ''}
                 >
                   {option.label}
                 </Button>
