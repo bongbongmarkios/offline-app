@@ -28,15 +28,16 @@ import { useRouter } from 'next/navigation';
 
 
 interface AppHeaderProps {
-  title: ReactNode; // Changed from string to ReactNode
+  title: ReactNode;
   actions?: ReactNode;
+  hideDefaultActions?: boolean; // New prop
 }
 
-export default function AppHeader({ title, actions }: AppHeaderProps) {
+export default function AppHeader({ title, actions, hideDefaultActions }: AppHeaderProps) {
   const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = useState(false);
   const [isAddReadingDialogOpen, setIsAddReadingDialogOpen] = useState(false);
   const [isDeleteHymnDialogOpen, setIsDeleteHymnDialogOpen] = useState(false);
-  const [isDeleteReadingDialogOpen, setIsDeleteReadingDialogOpen] = useState(false); // New state
+  const [isDeleteReadingDialogOpen, setIsDeleteReadingDialogOpen] = useState(false);
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
   const router = useRouter();
 
@@ -70,64 +71,68 @@ export default function AppHeader({ title, actions }: AppHeaderProps) {
           <div className="flex items-center gap-2">
             {actions}
             
-            <Dialog open={isChatDialogOpen} onOpenChange={setIsChatDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Open AI Chat">
-                  <Wand2 className="h-6 w-6" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px] h-[70vh] flex flex-col">
-                <DialogHeader>
-                  <DialogTitle>Chat with GraceNotes AI</DialogTitle>
-                  <DialogDescription>
-                    Ask questions or get help.
-                  </DialogDescription>
-                </DialogHeader>
-                <ChatInterface />
-              </DialogContent>
-            </Dialog>
+            {!hideDefaultActions && (
+              <>
+                <Dialog open={isChatDialogOpen} onOpenChange={setIsChatDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon" aria-label="Open AI Chat">
+                      <Wand2 className="h-6 w-6" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[600px] h-[70vh] flex flex-col">
+                    <DialogHeader>
+                      <DialogTitle>Chat with GraceNotes AI</DialogTitle>
+                      <DialogDescription>
+                        Ask questions or get help.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <ChatInterface />
+                  </DialogContent>
+                </Dialog>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Open menu">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={() => setIsAddHymnDialogOpen(true)}>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  <span>Add Hymn</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => setIsAddReadingDialogOpen(true)}>
-                  <BookPlus className="mr-2 h-4 w-4" />
-                  <span>Add Reading</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onSelect={() => setIsDeleteHymnDialogOpen(true)}
-                  className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  <span>Delete Hymn</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onSelect={() => setIsDeleteReadingDialogOpen(true)} // Updated onSelect
-                  className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                >
-                  <BookX className="mr-2 h-4 w-4" />
-                  <span>Delete Reading</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={() => router.push('/settings')}>
-                  <SettingsIcon className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => router.push('/about')}>
-                  <Info className="mr-2 h-4 w-4" />
-                  <span>About</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" aria-label="Open menu">
+                      <Menu className="h-6 w-6" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => setIsAddHymnDialogOpen(true)}>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      <span>Add Hymn</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setIsAddReadingDialogOpen(true)}>
+                      <BookPlus className="mr-2 h-4 w-4" />
+                      <span>Add Reading</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onSelect={() => setIsDeleteHymnDialogOpen(true)}
+                      className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      <span>Delete Hymn</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => setIsDeleteReadingDialogOpen(true)} 
+                      className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                    >
+                      <BookX className="mr-2 h-4 w-4" />
+                      <span>Delete Reading</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onSelect={() => router.push('/settings')}>
+                      <SettingsIcon className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => router.push('/about')}>
+                      <Info className="mr-2 h-4 w-4" />
+                      <span>About</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
           </div>
         </div>
       </header>

@@ -44,6 +44,7 @@ export default async function HymnPage({ params }: HymnPageProps) {
           </Button>
         } 
         actions={null}
+        hideDefaultActions={true} // Hide chat and menu icons
       />
       <div className="container mx-auto px-4 pb-8">
         <HymnDetail hymn={hymn} />
