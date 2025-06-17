@@ -5,8 +5,9 @@ import { sampleHymns } from '@/data/hymns';
 import type { Hymn } from '@/types';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Globe } from 'lucide-react'; // Imported Globe
+import { ArrowLeft } from 'lucide-react';
 import {notFound} from 'next/navigation';
+import HymnMultiLanguageDialog from '@/components/hymnal/HymnMultiLanguageDialog'; // New Import
 
 interface HymnPageProps {
   params: { id: string };
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: HymnPageProps) {
   if (!hymn) {
     return { title: 'Hymn Not Found' };
   }
-  return { title: hymn.titleEnglish }; // Use English title for metadata
+  return { title: hymn.titleEnglish || hymn.titleHiligaynon }; // Use English or Hiligaynon title for metadata
 }
 
 export default async function HymnPage({ params }: HymnPageProps) {
@@ -33,9 +34,7 @@ export default async function HymnPage({ params }: HymnPageProps) {
     notFound();
   }
 
-  const headerActions = hymn.pageNumber ? (
-    <Globe className="h-6 w-6 text-muted-foreground" />
-  ) : null;
+  const headerActions = <HymnMultiLanguageDialog hymn={hymn} pageNumberExists={!!hymn.pageNumber} />;
 
   return (
     <>
@@ -47,8 +46,8 @@ export default async function HymnPage({ params }: HymnPageProps) {
             </Link>
           </Button>
         } 
-        actions={headerActions} // Pass Globe icon as action
-        hideDefaultActions={true} // Hide chat and menu icons
+        actions={headerActions}
+        hideDefaultActions={true} 
       />
       <div className="container mx-auto px-4 pb-8">
         <HymnDetail hymn={hymn} />
