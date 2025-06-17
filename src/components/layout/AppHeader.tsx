@@ -1,7 +1,7 @@
 
 'use client';
 import type { ReactNode } from 'react';
-import { Wifi, Menu, PlusCircle, Trash2, Info, Settings as SettingsIcon, BookPlus, BookX, Wand2, Link as LinkIcon, ListChecks } from 'lucide-react';
+import { Wifi, Menu, PlusCircle, Trash2, Info, Settings as SettingsIcon, BookPlus, BookX, Wand2, ListChecks } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -69,8 +69,8 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
   useEffect(() => {
     const updateNetworkStatus = () => {
       if (typeof navigator !== 'undefined' && 'connection' in navigator) {
-        const connection = navigator.connection as any; 
-        const mbps = connection.downlink; 
+        const connection = navigator.connection as any;
+        const mbps = connection.downlink;
         const effectiveType = connection.effectiveType;
 
         let level: SignalLevel = 'unknown';
@@ -80,24 +80,24 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
           level = 'none';
           description = 'Offline';
         } else if (mbps !== undefined && mbps > 0) {
-          if (mbps >= 50) { 
+          if (mbps >= 50) {
             level = 'strong';
             description = 'Excellent';
-          } else if (mbps >= 10) { 
+          } else if (mbps >= 10) {
             level = 'strong';
             description = 'Strong';
-          } else if (mbps >= 1) { 
+          } else if (mbps >= 1) {
             level = 'average';
             description = 'Average';
-          } else if (mbps > 0.1) { 
+          } else if (mbps > 0.1) {
             level = 'weak';
             description = 'Weak';
-          } else { 
+          } else {
             level = 'weak';
             description = 'Poor';
           }
-        } else { 
-          if (effectiveType === '4g' || effectiveType === '5g') { 
+        } else {
+          if (effectiveType === '4g' || effectiveType === '5g') {
             level = 'strong';
             description = 'Good (Cellular)';
           } else if (effectiveType === '3g') {
@@ -108,7 +108,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
             description = 'Poor (Cellular)';
           } else if (effectiveType === 'wifi' && navigator.onLine) {
             description = 'Online (Wi-Fi - Speed details unavailable)';
-            level = 'average'; 
+            level = 'average';
           } else if (navigator.onLine) {
             description = 'Online (Speed details unavailable)';
             level = 'average';
@@ -123,7 +123,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
       }
     };
 
-    updateNetworkStatus(); 
+    updateNetworkStatus();
 
     if (typeof navigator !== 'undefined' && 'connection' in navigator) {
       const connection = navigator.connection as any;
@@ -148,10 +148,10 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
       case 'weak':
         return 'text-red-500';
       case 'none':
-        return 'text-slate-400 dark:text-slate-600'; 
+        return 'text-slate-400 dark:text-slate-600';
       case 'unknown':
       default:
-        return 'text-muted-foreground'; 
+        return 'text-muted-foreground';
     }
   };
 
@@ -190,9 +190,9 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
             {typeof title === 'string' && title.length > 0 ? (
               <h1 className="text-2xl font-headline font-semibold text-primary sm:text-3xl">{title}</h1>
             ) : typeof title === 'string' && title.length === 0 ? (
-              null 
+              null
             ) : (
-              title 
+              title
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -267,10 +267,6 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => router.push('/blank')}>
                       <ListChecks className="mr-2 h-4 w-4" />
-                      <span>Hymn Page Index</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => { console.log("URL button clicked"); router.push('/hymnal'); }}>
-                      <LinkIcon className="mr-2 h-4 w-4" />
                       <span>URL</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -320,7 +316,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
 
       {/* Add Reading Dialog */}
       <Dialog open={isAddReadingDialogOpen} onOpenChange={setIsAddReadingDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]"> 
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Add New Reading</DialogTitle>
             <DialogDescription>
@@ -343,8 +339,8 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
           <DeleteHymnDialogContent
             onOpenChange={setIsDeleteHymnDialogOpen}
             onDeleteSuccess={() => {
-              setIsDeleteHymnDialogOpen(false); 
-              handleDeleteSuccess(); 
+              setIsDeleteHymnDialogOpen(false);
+              handleDeleteSuccess();
             }}
           />
         </DialogContent>
@@ -362,8 +358,8 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
           <DeleteReadingDialogContent
             onOpenChange={setIsDeleteReadingDialogOpen}
             onDeleteSuccess={() => {
-              setIsDeleteReadingDialogOpen(false); 
-              handleDeleteSuccess(); 
+              setIsDeleteReadingDialogOpen(false);
+              handleDeleteSuccess();
             }}
           />
         </DialogContent>
