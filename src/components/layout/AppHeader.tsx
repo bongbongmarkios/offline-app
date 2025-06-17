@@ -18,6 +18,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useState, useEffect } from 'react';
 import AddHymnForm from '@/components/hymnal/AddHymnForm';
 import AddReadingForm from '@/components/readings/AddReadingForm';
@@ -33,7 +38,23 @@ interface AppHeaderProps {
   hideDefaultActions?: boolean; 
 }
 
-type SignalStrength = 'strong' | 'average' | 'weak' | 'none';
+type SignalLevel = 'very-strong' | 'strong' | 'average' | 'weak' | 'very-weak' | 'none';
+
+interface SignalDetail {
+  description: string;
+  mbps: number;
+  level: SignalLevel;
+}
+
+const signalDetails: SignalDetail[] = [
+  { description: "Very Strong", mbps: 100, level: 'very-strong' },
+  { description: "Strong", mbps: 50, level: 'strong' },
+  { description: "Average", mbps: 25, level: 'average' },
+  { description: "Weak", mbps: 5, level: 'weak' },
+  { description: "Very Weak", mbps: 1, level: 'very-weak' },
+  { description: "No Signal / Offline", mbps: 0, level: 'none' },
+];
+
 
 export default function AppHeader({ title, actions, hideDefaultActions }: AppHeaderProps) {
   const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = useState(false);
@@ -43,27 +64,29 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
   const router = useRouter();
 
-  const [signalStrength, setSignalStrength] = useState<SignalStrength>('strong');
+  const [currentSignal, setCurrentSignal] = useState<SignalDetail>(signalDetails[0]);
+  const [isStatusPopoverOpen, setIsStatusPopoverOpen] = useState(false);
+
 
   useEffect(() => {
-    const signalLevels: SignalStrength[] = ['strong', 'average', 'weak', 'none'];
-    let currentIndex = 0; // Start with 'strong' as per initial state
-
+    let currentIndex = 0;
     const intervalId = setInterval(() => {
-      currentIndex = (currentIndex + 1) % signalLevels.length;
-      setSignalStrength(signalLevels[currentIndex]);
-    }, 3000); // Change signal every 3 seconds
+      currentIndex = (currentIndex + 1) % signalDetails.length;
+      setCurrentSignal(signalDetails[currentIndex]);
+    }, 3000); 
 
-    return () => clearInterval(intervalId); // Cleanup interval on unmount
+    return () => clearInterval(intervalId); 
   }, []);
 
   const getWifiIconColor = (): string => {
-    switch (signalStrength) {
+    switch (currentSignal.level) {
+      case 'very-strong':
       case 'strong':
         return 'text-green-500';
       case 'average':
         return 'text-orange-500';
       case 'weak':
+      case 'very-weak':
         return 'text-red-500';
       case 'none':
       default:
@@ -72,17 +95,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
   };
   
   const getWifiAriaLabel = (): string => {
-    switch (signalStrength) {
-      case 'strong':
-        return 'Wifi Status: Strong Signal';
-      case 'average':
-        return 'Wifi Status: Average Signal';
-      case 'weak':
-        return 'Wifi Status: Weak Signal';
-      case 'none':
-      default:
-        return 'Wifi Status: No Signal / Unknown';
-    }
+    return `Wifi Status: ${currentSignal.description}, ${currentSignal.mbps} Mbps. Click for details.`;
   }
 
 
@@ -118,9 +131,25 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
             
             {!hideDefaultActions && (
               <>
-                <Button variant="ghost" size="icon" aria-label={getWifiAriaLabel()}>
-                  <Wifi className={`h-6 w-6 ${getWifiIconColor()}`} />
-                </Button>
+                <Popover open={isStatusPopoverOpen} onOpenChange={setIsStatusPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="icon" aria-label={getWifiAriaLabel()}>
+                      <Wifi className={`h-6 w-6 ${getWifiIconColor()}`} />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-4">
+                    <div className="space-y-2">
+                      <h4 className="font-medium leading-none">Internet Status</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Signal: <span className={getWifiIconColor()}>{currentSignal.description}</span>
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Speed: {currentSignal.mbps} Mbps (Simulated)
+                      </p>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
 
                 <Dialog open={isChatDialogOpen} onOpenChange={setIsChatDialogOpen}>
                   <DialogTrigger asChild>
@@ -248,4 +277,3 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
     </>
   );
 }
-
