@@ -297,32 +297,15 @@ Ang ating pagkamangha, ang ating kagalakan, kapag si Hesus ay ating makita.`,
   }
 ];
 
-// Function to add a new hymn to the in-memory sample data
-export function addSampleHymn(hymnData: Omit<Hymn, 'id'>): Hymn {
-  const newId = 'hymn-' + Date.now().toString() + '-' + Math.floor(Math.random() * 1000);
-  const newHymn: Hymn = {
-    id: newId,
-    ...hymnData,
-  };
-  initialSampleHymns.push(newHymn);
-  return newHymn;
-}
-
 // Function to update an existing hymn in the in-memory sample data
 export function updateSampleHymn(hymnId: string, updatedData: Partial<Omit<Hymn, 'id'>>): Hymn | null {
   const hymnIndex = initialSampleHymns.findIndex(h => h.id === hymnId);
   if (hymnIndex === -1) {
     return null;
   }
-  // Directly apply updates. The form should handle defaults for required fields.
   initialSampleHymns[hymnIndex] = {
     ...initialSampleHymns[hymnIndex],
     ...updatedData,
-    // Ensure required fields from original are preserved if not in updatedData,
-    // though form logic should make this less necessary.
-    // e.g. id: initialSampleHymns[hymnIndex].id, // id is not in updatedData
-    // titleHiligaynon: updatedData.titleHiligaynon || initialSampleHymns[hymnIndex].titleHiligaynon, 
-    // etc. but spread operator handles this well.
   };
   return initialSampleHymns[hymnIndex];
 }
