@@ -25,7 +25,7 @@ The Lord has promised good to me,
 His Word my hope secures;
 He will my Shield and Portion be,
 As long as life endures.`,
-    titleHiligaynon: 'MAKAHALAHALAWAT NGA GRASYA', // Example, replace with actual
+    titleHiligaynon: 'MAKAHALAHALAWAT NGA GRASYA',
     lyricsHiligaynon: `Makahalahalawat nga grasya! Daw ano katam-is
 Nga nagluwas sa akon nga makaluluoy!
 Sadto nadula ako, apang karon nakita na;
@@ -44,7 +44,27 @@ Kag grasya ang magadala sa akon pauli.
 Ang Ginoo nagpromisa sing maayo sa akon,
 Ang Iya Pulong nagapasalig sang akon paglaum;
 Sia mangin akon Taming kag Bahin,
-Samtang ang kabuhi nagapadayon.`, // Example, replace with actual
+Samtang ang kabuhi nagapadayon.`,
+    titleFilipino: 'BIYAYANG KAHANGA-HANGA', // Added Filipino Title
+    lyricsFilipino: `Biyayang kahanga-hanga! Anong tamis ng tunog
+Na nagligtas sa tulad kong hamak!
+Dati'y nawala, ngayo'y natagpuan;
+Naging bulag, ngayo'y nakakakita na.
+
+Biyaya ang nagturo sa puso kong matakot,
+At biyaya ang pawi sa aking takot;
+Kay mahalaga ng biyayang iyon
+Nang oras na una akong naniwala.
+
+Sa maraming panganib, hirap, at patibong,
+Ako'y nakarating na;
+Biyaya ang nagdala sa akin hanggang dito,
+At biyaya ang maghahatid sa akin pauwi.
+
+Panginoo'y nangako ng mabuti sa akin,
+Salita Niya'y pag-asa kong matibay;
+Siya'y magiging Kalasag at Bahagi ko,
+Habang buhay ay nagpapatuloy.`, // Added Filipino Lyrics
     author: 'John Newton',
     category: 'Grace',
     pageNumber: '202',
@@ -73,7 +93,7 @@ Pardon for sin and a peace that endureth,
 Thine own dear presence to cheer and to guide;
 Strength for today and bright hope for tomorrow,
 Blessings all mine, with ten thousand beside!`,
-    titleHiligaynon: 'DAKU ANG IMO KATUTUM', // Example, replace with actual
+    titleHiligaynon: 'DAKU ANG IMO KATUTUM', 
     lyricsHiligaynon: `Daku ang Imo katutum, O Dios ko nga Amay;
 Wala sing landong sang pagbag-o sa Imo;
 Wala Ka nagabag-o, ang Imo kaluoy, wala nagakapaslaw;
@@ -93,7 +113,7 @@ Sa Imo daku nga katutum, kaluoy kag gugma.
 Kapatawaran sa sala kag paghidaet nga nagapadayon,
 Ang Imo mismo presensya sa paglipay kag paggiya;
 Kusog para sa karon kag masanag nga paglaum para sa buas,
-Mga bugay tanan akon, upod ang napulo ka libo pa!`, // Example, replace with actual
+Mga bugay tanan akon, upod ang napulo ka libo pa!`, 
     author: 'Thomas O. Chisholm',
     category: 'Faithfulness',
     pageNumber: '100',
@@ -127,7 +147,7 @@ When Christ shall come, with shout of acclamation,
 And take me home, what joy shall fill my heart.
 Then I shall bow, in humble adoration,
 And then proclaim: "My God, how great Thou art!"`,
-    titleHiligaynon: 'DAW ANO KA GAMHANAN', // Example, replace with actual
+    titleHiligaynon: 'DAW ANO KA GAMHANAN', 
     lyricsHiligaynon: `O Ginoo ko nga Dios, kon ako sa makahalawhaw nga katingala
 Ginahunahuna ang tanan nga kalibutan nga ginhimo sang Imo mga Kamot;
 Makita ko ang mga bituon, mabatian ko ang nagadaguob nga daguob,
@@ -152,7 +172,7 @@ Nagtulo ang Iya dugo kag namatay agud kuhaon ang akon sala.
 Kon si Kristo mag-abot, nga may singgit sang pagdayaw,
 Kag dalhon ako pauli, ano nga kalipay ang magapuno sang akon tagipusuon.
 Dayon ako magayaub, sa mapainubuson nga pagsimba,
-Kag dayon magproklamar: "Dios ko, daw ano Ka gamhanan!"`, // Example, replace with actual
+Kag dayon magproklamar: "Dios ko, daw ano Ka gamhanan!"`, 
     author: 'Carl Boberg, Stuart K. Hine (Translator)',
     category: 'Praise',
     pageNumber: '77',
@@ -220,3 +240,5 @@ export function addSampleHymn(hymnData: Omit<Hymn, 'id'>): Hymn {
   sampleHymns.push(newHymn);
   return newHymn;
 }
+
+    
