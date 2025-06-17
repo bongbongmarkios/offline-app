@@ -15,6 +15,7 @@ export interface Hymn {
   composer?: string;
   author?: string;
   category?: string;
+  externalUrl?: string; // New field for external URL
 }
 
 export const programItemTitles = [
