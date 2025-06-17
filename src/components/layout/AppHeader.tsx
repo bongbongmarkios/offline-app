@@ -1,7 +1,7 @@
 
 'use client';
 import type { ReactNode } from 'react';
-import { Menu, PlusCircle, Trash2, Info, Settings as SettingsIcon, BookPlus, BookX, Wand2, Wifi } from 'lucide-react'; // Added Wifi
+import { Wifi, Menu, PlusCircle, Trash2, Info, Settings as SettingsIcon, BookPlus, BookX, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -18,7 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AddHymnForm from '@/components/hymnal/AddHymnForm';
 import AddReadingForm from '@/components/readings/AddReadingForm';
 import DeleteHymnDialogContent from '@/components/hymnal/DeleteHymnDialogContent';
@@ -33,6 +33,8 @@ interface AppHeaderProps {
   hideDefaultActions?: boolean; 
 }
 
+type SignalStrength = 'strong' | 'average' | 'weak' | 'none';
+
 export default function AppHeader({ title, actions, hideDefaultActions }: AppHeaderProps) {
   const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = useState(false);
   const [isAddReadingDialogOpen, setIsAddReadingDialogOpen] = useState(false);
@@ -40,6 +42,49 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
   const [isDeleteReadingDialogOpen, setIsDeleteReadingDialogOpen] = useState(false);
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
   const router = useRouter();
+
+  const [signalStrength, setSignalStrength] = useState<SignalStrength>('strong');
+
+  useEffect(() => {
+    const signalLevels: SignalStrength[] = ['strong', 'average', 'weak', 'none'];
+    let currentIndex = 0; // Start with 'strong' as per initial state
+
+    const intervalId = setInterval(() => {
+      currentIndex = (currentIndex + 1) % signalLevels.length;
+      setSignalStrength(signalLevels[currentIndex]);
+    }, 3000); // Change signal every 3 seconds
+
+    return () => clearInterval(intervalId); // Cleanup interval on unmount
+  }, []);
+
+  const getWifiIconColor = (): string => {
+    switch (signalStrength) {
+      case 'strong':
+        return 'text-green-500';
+      case 'average':
+        return 'text-orange-500';
+      case 'weak':
+        return 'text-red-500';
+      case 'none':
+      default:
+        return 'text-muted-foreground';
+    }
+  };
+  
+  const getWifiAriaLabel = (): string => {
+    switch (signalStrength) {
+      case 'strong':
+        return 'Wifi Status: Strong Signal';
+      case 'average':
+        return 'Wifi Status: Average Signal';
+      case 'weak':
+        return 'Wifi Status: Weak Signal';
+      case 'none':
+      default:
+        return 'Wifi Status: No Signal / Unknown';
+    }
+  }
+
 
   const handleAddHymnSubmit = () => {
     setIsAddHymnDialogOpen(false);
@@ -73,8 +118,8 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
             
             {!hideDefaultActions && (
               <>
-                <Button variant="ghost" size="icon" aria-label="Wifi Status (Placeholder)">
-                  <Wifi className="h-6 w-6" />
+                <Button variant="ghost" size="icon" aria-label={getWifiAriaLabel()}>
+                  <Wifi className={`h-6 w-6 ${getWifiIconColor()}`} />
                 </Button>
 
                 <Dialog open={isChatDialogOpen} onOpenChange={setIsChatDialogOpen}>
@@ -203,3 +248,4 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
     </>
   );
 }
+
