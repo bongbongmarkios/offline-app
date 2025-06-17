@@ -1,13 +1,14 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import type { Hymn } from '@/types';
 import AppHeader from '@/components/layout/AppHeader';
 import HymnDetail from '@/components/hymnal/HymnDetail';
-import HymnMultiLanguageDialog from '@/components/hymnal/HymnMultiLanguageDialog';
+import HymnMultiLanguageDialog from '@/components/hymnal/HymnMultiLanguageDialog'; // This is the Globe icon button
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, FilePenLine } from 'lucide-react'; // Added FilePenLine
 
 type LanguageOption = 'hiligaynon' | 'filipino' | 'english';
 
@@ -15,7 +16,7 @@ interface HymnInteractiveViewProps {
   hymn: Hymn;
 }
 
-// Helper function to check language availability (can be defined here or imported)
+// Helper function to check language availability
 const languageIsAvailable = (lang: LanguageOption, hymn: Hymn): boolean => {
   switch (lang) {
     case 'hiligaynon':
@@ -42,8 +43,6 @@ export default function HymnInteractiveView({ hymn }: HymnInteractiveViewProps) 
     } else if (languageIsAvailable('filipino', hymn)) {
       setSelectedLanguage('filipino');
     }
-    // If no language is available, selectedLanguage remains 'hiligaynon' (initial value),
-    // and HymnDetail will display a "not available" message.
   }, [hymn]);
 
   const toggleLanguageSelector = () => {
@@ -52,12 +51,19 @@ export default function HymnInteractiveView({ hymn }: HymnInteractiveViewProps) 
 
   const handleSelectLanguage = (language: LanguageOption) => {
     setSelectedLanguage(language);
-    // setShowLanguageSelector(false); // Optionally close selector after choice
+    // Optionally close selector after choice, but current design keeps it open
+    // setShowLanguageSelector(false); 
   };
 
-  const headerActions = hymn.pageNumber ? (
-    <HymnMultiLanguageDialog hymn={hymn} onToggle={toggleLanguageSelector} />
-  ) : null;
+  const headerActions = (
+    <>
+      {/* Edit Button - Placeholder functionality */}
+      <Button variant="ghost" size="icon" aria-label="Edit hymn">
+        <FilePenLine className="h-6 w-6 text-muted-foreground" />
+      </Button>
+      <HymnMultiLanguageDialog hymn={hymn} onToggle={toggleLanguageSelector} />
+    </>
+  );
 
   return (
     <>
@@ -69,7 +75,7 @@ export default function HymnInteractiveView({ hymn }: HymnInteractiveViewProps) 
             </Link>
           </Button>
         }
-        actions={headerActions}
+        actions={hymn.pageNumber ? headerActions : null} // Show actions only if pageNumber exists
         hideDefaultActions={true}
       />
       <div className="container mx-auto px-4 pb-8">
