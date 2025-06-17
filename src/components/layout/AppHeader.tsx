@@ -27,33 +27,31 @@ import { useState, useEffect } from 'react';
 import AddHymnForm from '@/components/hymnal/AddHymnForm';
 import AddReadingForm from '@/components/readings/AddReadingForm';
 import DeleteHymnDialogContent from '@/components/hymnal/DeleteHymnDialogContent';
-import DeleteReadingDialogContent from '@/components/readings/DeleteReadingDialogContent'; 
+import DeleteReadingDialogContent from '@/components/readings/DeleteReadingDialogContent';
 import ChatInterface from '@/components/ai/ChatInterface';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils'; // Added missing import
 
 
 interface AppHeaderProps {
   title: ReactNode;
   actions?: ReactNode;
-  hideDefaultActions?: boolean; 
+  hideDefaultActions?: boolean;
 }
 
-type SignalLevel = 'very-strong' | 'strong' | 'average' | 'weak' | 'very-weak' | 'none';
+type SignalLevel = 'strong' | 'average' | 'weak' | 'none' | 'unknown';
 
 interface SignalDetail {
   description: string;
-  mbps: number;
+  mbps?: number;
   level: SignalLevel;
+  effectiveType?: string;
 }
 
-const signalDetails: SignalDetail[] = [
-  { description: "Very Strong", mbps: 100, level: 'very-strong' },
-  { description: "Strong", mbps: 50, level: 'strong' },
-  { description: "Average", mbps: 25, level: 'average' },
-  { description: "Weak", mbps: 5, level: 'weak' },
-  { description: "Very Weak", mbps: 1, level: 'very-weak' },
-  { description: "No Signal / Offline", mbps: 0, level: 'none' },
-];
+const initialSignalDetail: SignalDetail = {
+  description: "Initializing...",
+  level: 'unknown',
+};
 
 
 export default function AppHeader({ title, actions, hideDefaultActions }: AppHeaderProps) {
@@ -64,49 +62,101 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
   const router = useRouter();
 
-  const [currentSignal, setCurrentSignal] = useState<SignalDetail>(signalDetails[0]);
+  const [currentSignal, setCurrentSignal] = useState<SignalDetail>(initialSignalDetail);
   const [isStatusPopoverOpen, setIsStatusPopoverOpen] = useState(false);
 
 
   useEffect(() => {
-    let currentIndex = 0;
-    const intervalId = setInterval(() => {
-      currentIndex = (currentIndex + 1) % signalDetails.length;
-      setCurrentSignal(signalDetails[currentIndex]);
-    }, 3000); 
+    const updateNetworkStatus = () => {
+      if (typeof navigator !== 'undefined' && 'connection' in navigator) {
+        const connection = navigator.connection as any; // Type assertion for broader compatibility
+        let level: SignalLevel = 'unknown';
+        let description = 'Unknown Connection';
+        const mbps = connection.downlink; // Mbps
+        const effectiveType = connection.effectiveType; // 'slow-2g', '2g', '3g', '4g'
 
-    return () => clearInterval(intervalId); 
+        if (!navigator.onLine) {
+          level = 'none';
+          description = 'Offline';
+        } else if (effectiveType === '4g' && (!mbps || mbps >= 10)) {
+          level = 'strong';
+          description = 'Excellent (4G/WiFi)';
+        } else if (effectiveType === '4g' || (effectiveType === '3g' && (!mbps || mbps >= 1))) {
+          level = 'average';
+          description = 'Good (3G/4G)';
+        } else if (effectiveType === '2g' || effectiveType === 'slow-2g') {
+          level = 'weak';
+          description = 'Poor (2G)';
+        } else if (mbps && mbps > 5) {
+          level = 'strong';
+          description = 'Excellent (WiFi/Ethernet)';
+        } else if (mbps && mbps > 1) {
+            level = 'average';
+            description = 'Good (WiFi/Ethernet)';
+        } else if (mbps) {
+            level = 'weak';
+            description = 'Poor Connection';
+        }
+
+        setCurrentSignal({ description, mbps, level, effectiveType });
+      } else {
+        setCurrentSignal({ description: 'Network API not supported', level: 'unknown' });
+      }
+    };
+
+    updateNetworkStatus(); // Initial check
+
+    if (typeof navigator !== 'undefined' && 'connection' in navigator) {
+      const connection = navigator.connection as any;
+      connection.addEventListener('change', updateNetworkStatus);
+      window.addEventListener('online', updateNetworkStatus);
+      window.addEventListener('offline', updateNetworkStatus);
+
+      return () => {
+        connection.removeEventListener('change', updateNetworkStatus);
+        window.removeEventListener('online', updateNetworkStatus);
+        window.removeEventListener('offline', updateNetworkStatus);
+      };
+    }
   }, []);
 
   const getWifiIconColor = (): string => {
     switch (currentSignal.level) {
-      case 'very-strong':
       case 'strong':
         return 'text-green-500';
       case 'average':
         return 'text-orange-500';
       case 'weak':
-      case 'very-weak':
         return 'text-red-500';
       case 'none':
+        return 'text-slate-400 dark:text-slate-600'; // More distinct offline color
+      case 'unknown':
       default:
         return 'text-muted-foreground';
     }
   };
-  
+
   const getWifiAriaLabel = (): string => {
-    return `Wifi Status: ${currentSignal.description}, ${currentSignal.mbps} Mbps. Click for details.`;
+    let label = `Wifi Status: ${currentSignal.description}`;
+    if (currentSignal.mbps !== undefined) {
+      label += `, ~${currentSignal.mbps.toFixed(1)} Mbps`;
+    }
+    if (currentSignal.effectiveType) {
+      label += ` (Effective Type: ${currentSignal.effectiveType})`;
+    }
+    label += ". Click for details.";
+    return label;
   }
 
 
   const handleAddHymnSubmit = () => {
     setIsAddHymnDialogOpen(false);
-    router.refresh(); 
+    router.refresh();
   };
 
   const handleAddReadingSubmit = () => {
     setIsAddReadingDialogOpen(false);
-    router.refresh(); 
+    router.refresh();
   };
 
   const handleDeleteSuccess = () => {
@@ -117,18 +167,18 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
     <>
       <header className="bg-card shadow-sm mb-4 md:mb-6 print:hidden">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3"> 
+          <div className="flex items-center gap-3">
             {typeof title === 'string' && title.length > 0 ? (
               <h1 className="text-2xl font-headline font-semibold text-primary sm:text-3xl">{title}</h1>
             ) : typeof title === 'string' && title.length === 0 ? (
-              null 
+              null
             ) : (
-              title 
+              title
             )}
           </div>
           <div className="flex items-center gap-2">
             {actions}
-            
+
             {!hideDefaultActions && (
               <>
                 <Popover open={isStatusPopoverOpen} onOpenChange={setIsStatusPopoverOpen}>
@@ -137,15 +187,25 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                       <Wifi className={`h-6 w-6 ${getWifiIconColor()}`} />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-4">
+                  <PopoverContent className="w-auto p-4" side="bottom" align="end">
                     <div className="space-y-2">
                       <h4 className="font-medium leading-none">Internet Status</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Signal: <span className={getWifiIconColor()}>{currentSignal.description}</span>
+                      <p className="text-sm">
+                        Signal: <span className={cn("font-semibold", getWifiIconColor())}>{currentSignal.description}</span>
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        Speed: {currentSignal.mbps} Mbps (Simulated)
-                      </p>
+                      {currentSignal.mbps !== undefined && (
+                        <p className="text-sm text-muted-foreground">
+                          Speed: ~{currentSignal.mbps.toFixed(1)} Mbps
+                        </p>
+                      )}
+                       {currentSignal.effectiveType && (
+                        <p className="text-sm text-muted-foreground">
+                          Type: {currentSignal.effectiveType}
+                        </p>
+                      )}
+                      {currentSignal.level === 'unknown' && (
+                        <p className="text-xs text-muted-foreground italic">Browser may not fully support network status updates.</p>
+                      )}
                     </div>
                   </PopoverContent>
                 </Popover>
@@ -192,7 +252,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                       <span>Delete Hymn</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onSelect={() => setIsDeleteReadingDialogOpen(true)} 
+                      onSelect={() => setIsDeleteReadingDialogOpen(true)}
                       className="text-destructive focus:text-destructive focus:bg-destructive/10"
                     >
                       <BookX className="mr-2 h-4 w-4" />
@@ -247,8 +307,8 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
               Select the hymns you want to delete. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DeleteHymnDialogContent 
-            onOpenChange={setIsDeleteHymnDialogOpen} 
+          <DeleteHymnDialogContent
+            onOpenChange={setIsDeleteHymnDialogOpen}
             onDeleteSuccess={() => {
               setIsDeleteHymnDialogOpen(false);
               handleDeleteSuccess();
@@ -265,8 +325,8 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
               Select the readings you want to delete. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DeleteReadingDialogContent 
-            onOpenChange={setIsDeleteReadingDialogOpen} 
+          <DeleteReadingDialogContent
+            onOpenChange={setIsDeleteReadingDialogOpen}
             onDeleteSuccess={() => {
               setIsDeleteReadingDialogOpen(false);
               handleDeleteSuccess();
