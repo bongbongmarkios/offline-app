@@ -92,29 +92,20 @@ export default function DeleteHymnDialogContent({
     deleteSampleHymnsByIds(selectedHymnIds);
 
     // Update localStorage
+    let updatedStoredHymns: Hymn[];
     try {
       const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
       let currentStoredHymns: Hymn[] = [];
       if (storedHymnsString) {
         currentStoredHymns = JSON.parse(storedHymnsString);
       } else {
-        // If localStorage was empty, base it on (now modified) initialSampleHymns
-        currentStoredHymns = [...initialSampleHymns];
+        // If localStorage was empty, it means initialSampleHymns (now modified) is the source
+        currentStoredHymns = [...initialSampleHymns]; 
       }
       
-      const updatedStoredHymns = currentStoredHymns.filter(h => !selectedHymnIds.includes(h.id));
+      updatedStoredHymns = currentStoredHymns.filter(h => !selectedHymnIds.includes(h.id));
       localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(updatedStoredHymns));
       
-      // Update the displayed list within the dialog immediately
-      setHymnsToDisplay(updatedStoredHymns.sort((a, b) => {
-        const pageNumA = a.pageNumber ? parseInt(a.pageNumber, 10) : Infinity;
-        const pageNumB = b.pageNumber ? parseInt(b.pageNumber, 10) : Infinity;
-        if (isNaN(pageNumA) && isNaN(pageNumB)) return 0;
-        if (isNaN(pageNumA)) return 1;
-        if (isNaN(pageNumB)) return -1;
-        return pageNumA - pageNumB;
-      }));
-
     } catch (error) {
       console.error("Error deleting hymns from localStorage:", error);
       toast({
@@ -122,8 +113,20 @@ export default function DeleteHymnDialogContent({
         description: 'Could not update hymns in local storage.',
         variant: 'destructive',
       });
-      // Proceed with UI update even if localStorage fails for this operation
+      // Fallback: use the modified initialSampleHymns as the source for the dialog if localStorage fails
+      updatedStoredHymns = [...initialSampleHymns];
     }
+
+    // Update the displayed list within the dialog immediately
+    setHymnsToDisplay(updatedStoredHymns.sort((a, b) => {
+      const pageNumA = a.pageNumber ? parseInt(a.pageNumber, 10) : Infinity;
+      const pageNumB = b.pageNumber ? parseInt(b.pageNumber, 10) : Infinity;
+      if (isNaN(pageNumA) && isNaN(pageNumB)) return 0;
+      if (isNaN(pageNumA)) return 1;
+      if (isNaN(pageNumB)) return -1;
+      return pageNumA - pageNumB;
+    }));
+
 
     toast({
       title: 'Hymns Deleted',
@@ -199,3 +202,4 @@ export default function DeleteHymnDialogContent({
     </div>
   );
 }
+
