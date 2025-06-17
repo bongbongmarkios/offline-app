@@ -1,6 +1,6 @@
 // This is now a Server Component
 import { sampleHymns } from '@/data/hymns';
-import HymnInteractiveView from '@/components/hymnal/HymnInteractiveView'; // New client component
+import HymnInteractiveView from '@/components/hymnal/HymnInteractiveView';
 import { notFound } from 'next/navigation';
 import type { Hymn } from '@/types';
 import type { Metadata } from 'next';
@@ -30,6 +30,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
+// This Server Component fetches the data and passes it to the Client Component
 export default async function HymnPageServerWrapper({ params }: { params: { id: string } }) {
   const hymn = await getHymn(params.id);
 
@@ -37,5 +38,6 @@ export default async function HymnPageServerWrapper({ params }: { params: { id: 
     notFound();
   }
 
-  return <HymnInteractiveView hymn={hymn} />;
+  // Pass hymn as initialHymn to the client component
+  return <HymnInteractiveView initialHymn={hymn} />;
 }

@@ -6,51 +6,46 @@ import type { Hymn } from '@/types';
 import AppHeader from '@/components/layout/AppHeader';
 import HymnDetail from '@/components/hymnal/HymnDetail';
 import HymnMultiLanguageDialog from '@/components/hymnal/HymnMultiLanguageDialog';
-import EditHymnForm from '@/components/hymnal/EditHymnForm'; // New import
+import EditHymnForm from '@/components/hymnal/EditHymnForm';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'; // New imports
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import Link from 'next/link';
 import { ArrowLeft, FilePenLine } from 'lucide-react';
-import { useRouter } from 'next/navigation'; // New import
+import { useRouter } from 'next/navigation';
 
 type LanguageOption = 'hiligaynon' | 'filipino' | 'english';
 
 interface HymnInteractiveViewProps {
-  hymn: Hymn;
+  initialHymn: Hymn; // Renamed prop
 }
 
-// Helper function to check language availability
-const languageIsAvailable = (lang: LanguageOption, hymn: Hymn): boolean => {
-  switch (lang) {
-    case 'hiligaynon':
-      return !!hymn.titleHiligaynon && !!hymn.lyricsHiligaynon;
-    case 'filipino':
-      return !!hymn.titleFilipino && !!hymn.lyricsFilipino;
-    case 'english':
-      return !!hymn.titleEnglish && !!hymn.lyricsEnglish;
-    default:
-      return false;
-  }
-};
-
-export default function HymnInteractiveView({ hymn }: HymnInteractiveViewProps) {
+export default function HymnInteractiveView({ initialHymn }: HymnInteractiveViewProps) {
+  const [hymn, setHymn] = useState<Hymn>(initialHymn); // Local state for hymn
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption>('hiligaynon');
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false); // State for edit dialog
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const router = useRouter();
 
+  // Update local hymn state if initialHymn prop changes (e.g., after router.refresh completes)
   useEffect(() => {
-    // Set default language based on availability, prioritizing Hiligaynon
+    setHymn(initialHymn);
+  }, [initialHymn]);
+
+  // Effect to set default language based on availability and when the hymn object changes
+  useEffect(() => {
     if (languageIsAvailable('hiligaynon', hymn)) {
       setSelectedLanguage('hiligaynon');
     } else if (languageIsAvailable('english', hymn)) {
       setSelectedLanguage('english');
     } else if (languageIsAvailable('filipino', hymn)) {
       setSelectedLanguage('filipino');
+    } else {
+      setSelectedLanguage('hiligaynon'); // Fallback if somehow no languages are available
     }
-    // Reset language selector visibility when hymn changes
+    // Reset language selector visibility when hymn changes (e.g. after edit)
     setShowLanguageSelector(false);
   }, [hymn]);
+
 
   const toggleLanguageSelector = () => {
     setShowLanguageSelector(prev => !prev);
@@ -60,9 +55,25 @@ export default function HymnInteractiveView({ hymn }: HymnInteractiveViewProps) 
     setSelectedLanguage(language);
   };
 
-  const handleEditSuccess = () => {
+  const handleEditSuccess = (updatedHymnData: Hymn) => {
+    setHymn(updatedHymnData); // Optimistically update local state
     setIsEditDialogOpen(false);
-    router.refresh(); // Refresh the page to reflect changes
+    router.refresh(); // Refresh the page to ensure server state is primary and other parts of app get updates
+  };
+
+  // Helper function to check language availability
+  const languageIsAvailable = (lang: LanguageOption, currentHymn: Hymn): boolean => {
+    if (!currentHymn) return false;
+    switch (lang) {
+      case 'hiligaynon':
+        return !!currentHymn.titleHiligaynon && !!currentHymn.lyricsHiligaynon;
+      case 'filipino':
+        return !!currentHymn.titleFilipino && !!currentHymn.lyricsFilipino;
+      case 'english':
+        return !!currentHymn.titleEnglish && !!currentHymn.lyricsEnglish;
+      default:
+        return false;
+    }
   };
 
   const headerActions = (
@@ -73,6 +84,10 @@ export default function HymnInteractiveView({ hymn }: HymnInteractiveViewProps) 
       <HymnMultiLanguageDialog hymn={hymn} onToggle={toggleLanguageSelector} />
     </>
   );
+
+  if (!hymn) { // Should not happen if page.tsx handles notFound, but good for robustness
+    return <div>Loading hymn...</div>;
+  }
 
   return (
     <>

@@ -9,11 +9,11 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { updateSampleHymn } from '@/data/hymns';
 import type { Hymn } from '@/types';
-import { CardContent, CardFooter } from '@/components/ui/card'; // Re-added for dialog structure
+import { CardContent, CardFooter } from '@/components/ui/card';
 
 interface EditHymnFormProps {
   hymnToEdit: Hymn;
-  onEditSuccess: () => void;
+  onEditSuccess: (updatedHymn: Hymn) => void; // Changed signature
   onCancel: () => void;
   className?: string;
 }
@@ -32,7 +32,6 @@ export default function EditHymnForm({ hymnToEdit, onEditSuccess, onCancel, clas
   
   const { toast } = useToast();
 
-  // Effect to update form fields if hymnToEdit prop changes (e.g., if dialog is reused without remounting)
   useEffect(() => {
     setPageNumber(hymnToEdit.pageNumber || '');
     setKeySignature(hymnToEdit.keySignature || '');
@@ -55,7 +54,6 @@ export default function EditHymnForm({ hymnToEdit, onEditSuccess, onCancel, clas
       return;
     }
 
-    // Ensure English title and lyrics have default values if empty
     const finalTitleEnglish = titleEnglish || titleHiligaynon;
     const finalLyricsEnglish = lyricsEnglish || "";
 
@@ -77,7 +75,7 @@ export default function EditHymnForm({ hymnToEdit, onEditSuccess, onCancel, clas
         title: "Hymn Updated",
         description: `"${updatedHymn.titleEnglish || updatedHymn.titleHiligaynon}" has been updated.`,
       });
-      onEditSuccess();
+      onEditSuccess(updatedHymn); // Pass the updated hymn object
     } else {
       toast({
         title: "Error",
