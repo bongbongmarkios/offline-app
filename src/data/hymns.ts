@@ -315,22 +315,13 @@ export function updateSampleHymn(hymnId: string, updatedData: Partial<Omit<Hymn,
   if (hymnIndex === -1) {
     return null;
   }
-  // Ensure required fields (titleHiligaynon, lyricsHiligaynon, titleEnglish, lyricsEnglish) have fallbacks if cleared
   const currentHymn = sampleHymns[hymnIndex];
-  
-  const newHymnData = {
-    ...currentHymn,
-    ...updatedData,
-    titleHiligaynon: updatedData.titleHiligaynon || currentHymn.titleHiligaynon,
-    lyricsHiligaynon: updatedData.lyricsHiligaynon || currentHymn.lyricsHiligaynon,
-    // English title defaults to Hiligaynon if English is removed and was the only one
-    titleEnglish: updatedData.titleEnglish || currentHymn.titleEnglish || updatedData.titleHiligaynon || currentHymn.titleHiligaynon,
-    lyricsEnglish: updatedData.lyricsEnglish || currentHymn.lyricsEnglish || "", // Default to empty string if removed
-  };
 
+  // Directly merge updatedData, as it's already correctly structured by EditHymnForm
+  // to include all necessary fields and handle optional ones appropriately (e.g., setting to undefined if empty).
   sampleHymns[hymnIndex] = {
     ...currentHymn,
-    ...newHymnData
+    ...updatedData
   };
   return sampleHymns[hymnIndex];
 }
