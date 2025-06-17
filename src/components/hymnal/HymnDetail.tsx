@@ -16,62 +16,50 @@ interface HymnDetailProps {
   onSelectLanguage: (language: LanguageOption) => void;
 }
 
-// Refined: Determines if a language option should be shown.
-// For English/Hiligaynon (required lyrics field), available if title exists.
-// For Filipino (optional lyrics field), available if title AND lyrics exist and are non-empty.
+// Determines if a language option should be shown in the selector.
+// Based only on the existence of the title for that language.
 const languageIsActuallyAvailableForSelection = (lang: LanguageOption, hymn: Hymn): boolean => {
   switch (lang) {
-    case 'hiligaynon': // Hiligaynon title is required by type for a valid hymn. Lyrics also required.
+    case 'hiligaynon':
       return !!hymn.titleHiligaynon;
-    case 'filipino':   // Filipino title and lyrics are optional.
-      return !!hymn.titleFilipino && !!hymn.lyricsFilipino; // Must have non-empty lyrics for Filipino to be an option.
-    case 'english':    // English title is required by type for a valid hymn. Lyrics (string) can be empty.
+    case 'filipino':
+      return !!hymn.titleFilipino;
+    case 'english':
       return !!hymn.titleEnglish;
     default:
       return false;
   }
 };
 
-// Refined: Gets lyrics for the selected language.
-// Returns "" for English/Hiligaynon if their lyrics are explicitly empty.
-// Falls back only if lyrics for the selected language are truly undefined (e.g., optional Filipino).
-const getLyricsForLanguage = (lang: LanguageOption, hymn: Hymn): string => {
-  let lyrics: string | undefined;
+const LYRICS_UNAVAILABLE_FILIPINO = "Lyrics unavailable for Filipino.";
+const LYRICS_UNAVAILABLE_GENERIC = "Lyrics unavailable in this language.";
 
+// Gets lyrics for the selected language. Prioritizes specific language lyrics (even if empty string).
+// Falls back only if specific lyrics are undefined (e.g., optional Filipino not provided).
+const getLyricsForLanguage = (lang: LanguageOption, hymn: Hymn): string => {
   switch (lang) {
     case 'hiligaynon':
-      lyrics = hymn.lyricsHiligaynon; // Required, can be ""
-      break;
+      // Hiligaynon lyrics are a required string, can be ""
+      return hymn.lyricsHiligaynon;
     case 'filipino':
-      lyrics = hymn.lyricsFilipino;   // Optional, can be undefined
-      break;
+      // If Filipino lyrics exist (even as ""), use them.
+      if (hymn.lyricsFilipino !== undefined) {
+        return hymn.lyricsFilipino;
+      }
+      // Fallback for Filipino if its specific lyrics are undefined:
+      // Prefer non-empty fallbacks.
+      if (hymn.lyricsHiligaynon && hymn.lyricsHiligaynon.trim() !== "") return hymn.lyricsHiligaynon;
+      if (hymn.lyricsEnglish && hymn.lyricsEnglish.trim() !== "") return hymn.lyricsEnglish;
+      return LYRICS_UNAVAILABLE_FILIPINO;
     case 'english':
-      lyrics = hymn.lyricsEnglish;    // Required, can be ""
-      break;
+      // English lyrics are a required string, can be ""
+      return hymn.lyricsEnglish;
     default:
-      // Should not happen with LanguageOption type
-      lyrics = undefined;
+      // Should not happen with LanguageOption type. Generic fallback.
+      if (hymn.lyricsHiligaynon && hymn.lyricsHiligaynon.trim() !== "") return hymn.lyricsHiligaynon;
+      if (hymn.lyricsEnglish && hymn.lyricsEnglish.trim() !== "") return hymn.lyricsEnglish;
+      return LYRICS_UNAVAILABLE_GENERIC;
   }
-
-  // If lyrics for the selected language are defined (this includes empty strings for English/Hiligaynon),
-  // and the title for that language exists (implied for Hiligaynon/English by type, checked for Filipino via languageIsActuallyAvailableForSelection),
-  // then use those lyrics.
-  if (lyrics !== undefined && 
-      ((lang === 'filipino' && hymn.titleFilipino) || (lang !== 'filipino'))) {
-    return lyrics;
-  }
-
-  // Fallback logic: If selected language lyrics were undefined (e.g. Filipino not provided)
-  // Prefer Hiligaynon as primary fallback if available
-  if (hymn.lyricsHiligaynon !== undefined) { // Should always be true due to type
-    return hymn.lyricsHiligaynon;
-  }
-  // Then English if Hiligaynon somehow wasn't available (shouldn't happen)
-  if (hymn.lyricsEnglish !== undefined) { // Should always be true due to type
-    return hymn.lyricsEnglish;
-  }
-  
-  return "Lyrics unavailable in this language.";
 };
 
 
@@ -109,26 +97,10 @@ export default function HymnDetail({ hymn, selectedLanguage, showLanguageSelecto
   }, [addHymnView, hymn.titleEnglish, hymn.titleHiligaynon, hymn.id]);
 
   const currentTitle = getTitleForLanguage(selectedLanguage, hymn);
-  const currentLyrics = getLyricsForLanguage(selectedLanguage, hymn);
-
-  // Determine if content (lyrics) is truly available for the selected language,
-  // or if we are showing fallback lyrics.
-  // This is true if currentLyrics is not the generic "unavailable" message.
-  // And, for the selected language, its specific lyrics field was not undefined.
-  let hasSpecificContentForSelectedLanguage: boolean;
-  if (selectedLanguage === 'filipino') {
-    hasSpecificContentForSelectedLanguage = hymn.lyricsFilipino !== undefined && !!hymn.titleFilipino;
-  } else if (selectedLanguage === 'english') {
-    // English lyrics are a string, can be empty. Considered specific content if title exists.
-    hasSpecificContentForSelectedLanguage = !!hymn.titleEnglish; 
-  } else { // Hiligaynon
-    // Hiligaynon lyrics are a string, can be empty. Considered specific content if title exists.
-    hasSpecificContentForSelectedLanguage = !!hymn.titleHiligaynon;
-  }
+  const displayLyrics = getLyricsForLanguage(selectedLanguage, hymn);
   
-  const displayLyrics = currentLyrics; // Lyrics to actually display (could be specific or fallback)
-  const showNoLyricsMessage = !hasSpecificContentForSelectedLanguage && displayLyrics === "Lyrics unavailable in this language.";
-
+  const unavailableMessages = [LYRICS_UNAVAILABLE_FILIPINO, LYRICS_UNAVAILABLE_GENERIC];
+  const showNoLyricsMessage = unavailableMessages.includes(displayLyrics);
 
   return (
     <Card className="shadow-lg">
@@ -156,7 +128,6 @@ export default function HymnDetail({ hymn, selectedLanguage, showLanguageSelecto
         {showLanguageSelector && (
           <div className="flex items-center justify-center gap-2 py-3 border-y my-3">
             {languageOptions.map((option) => {
-              // Use refined availability check for rendering buttons
               const isSelectable = languageIsActuallyAvailableForSelection(option.value, hymn);
               if (!isSelectable) return null; 
 
@@ -177,11 +148,11 @@ export default function HymnDetail({ hymn, selectedLanguage, showLanguageSelecto
       <Separator className="my-2"/>
       <CardContent className="pt-4 space-y-6">
         {showNoLyricsMessage ? (
-           <p className="text-muted-foreground italic text-center py-4">Lyrics not available in the selected language.</p>
+           <p className="text-muted-foreground italic text-center py-4">{displayLyrics}</p>
         ) : (
           <div>
             <div className="whitespace-pre-line text-foreground leading-relaxed text-lg">
-              {displayLyrics} {/* This will show "" if lyrics are intentionally blank and selected */}
+              {displayLyrics} {/* This will show "" if lyrics are intentionally blank */}
             </div>
           </div>
         )}

@@ -59,22 +59,25 @@ export default function EditHymnForm({ hymnToEdit, onEditSuccess, onCancel, clas
     const finalTitleEnglish = titleEnglish || titleHiligaynon;
     const finalLyricsEnglish = lyricsEnglish || "";
 
+    // For Filipino, lyrics are only set if the Filipino title is also provided.
+    const finalLyricsFilipino = (titleFilipino && lyricsFilipino) ? lyricsFilipino : undefined;
+    const finalTitleFilipino = titleFilipino || undefined;
+
+
     const updatedHymnPartialData: Partial<Omit<Hymn, 'id'>> = {
       titleHiligaynon, 
-      titleFilipino: titleFilipino || undefined,
+      titleFilipino: finalTitleFilipino,
       titleEnglish: finalTitleEnglish,
       pageNumber: pageNumber || undefined,
       keySignature: keySignature || undefined,
-      lyricsHiligaynon,
-      lyricsFilipino: lyricsFilipino || undefined,
+      lyricsHiligaynon, // Will be "" from state if form field is empty
+      lyricsFilipino: finalLyricsFilipino,
       lyricsEnglish: finalLyricsEnglish,
     };
     
-    // This call updates the in-memory initialSampleHymns array
     const updatedHymnFullData = updateSampleHymn(hymnToEdit.id, updatedHymnPartialData);
 
     if (updatedHymnFullData) {
-      // Now, update localStorage
       try {
         const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
         let allHymnsForStorage: Hymn[];
@@ -82,7 +85,6 @@ export default function EditHymnForm({ hymnToEdit, onEditSuccess, onCancel, clas
         if (storedHymnsString) {
           allHymnsForStorage = JSON.parse(storedHymnsString);
         } else {
-          // localStorage is empty, initialize with initialSampleHymns (which includes the edited hymn)
           allHymnsForStorage = [...initialSampleHymns]; 
         }
         
@@ -90,7 +92,6 @@ export default function EditHymnForm({ hymnToEdit, onEditSuccess, onCancel, clas
         if (hymnIndex > -1) {
           allHymnsForStorage[hymnIndex] = updatedHymnFullData;
         } else {
-          // Should not happen if editing an existing hymn, but as a fallback, add it.
           allHymnsForStorage.push(updatedHymnFullData);
         }
         localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allHymnsForStorage));

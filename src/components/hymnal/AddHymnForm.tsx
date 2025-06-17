@@ -45,18 +45,24 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
       return;
     }
 
-    const finalTitleEnglish = titleEnglish || titleHiligaynon;
-    const finalLyricsEnglish = lyricsEnglish || "";
+    const finalTitleEnglish = titleEnglish || titleHiligaynon; // Fallback for English title
+    const finalLyricsEnglish = lyricsEnglish || ""; // English lyrics default to empty string if not provided
+
+    // For Filipino, lyrics are only set if the Filipino title is also provided.
+    // If titleFilipino is set, lyricsFilipino will be its value or undefined if lyrics field is empty.
+    // If titleFilipino is not set, lyricsFilipino will be undefined.
+    const finalLyricsFilipino = (titleFilipino && lyricsFilipino) ? lyricsFilipino : undefined;
+    const finalTitleFilipino = titleFilipino || undefined;
 
 
     const newHymnData: Omit<Hymn, 'id'> = {
       titleHiligaynon, 
-      titleFilipino: titleFilipino || undefined,
+      titleFilipino: finalTitleFilipino,
       titleEnglish: finalTitleEnglish,
       pageNumber: pageNumber || undefined,
       keySignature: keySignature || undefined,
-      lyricsHiligaynon,
-      lyricsFilipino: lyricsFilipino || undefined,
+      lyricsHiligaynon, // This comes directly from state, will be "" if form field is empty
+      lyricsFilipino: finalLyricsFilipino,
       lyricsEnglish: finalLyricsEnglish,
     };
     
@@ -70,20 +76,16 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
       if (storedHymnsString) {
         try {
           allHymnsForStorage = JSON.parse(storedHymnsString);
-          // Ensure the newly added hymn is in this list (or replaces an old version if ID somehow matched)
           allHymnsForStorage = allHymnsForStorage.filter(h => h.id !== addedHymn.id);
           allHymnsForStorage.push(addedHymn);
         } catch (parseError) {
           console.error("Error parsing hymns from localStorage, re-initializing with current data:", parseError);
-          // initialSampleHymns already contains addedHymn
           allHymnsForStorage = [...initialSampleHymns]; 
         }
       } else {
-        // localStorage is empty, initialize with initialSampleHymns (which includes addedHymn)
         allHymnsForStorage = [...initialSampleHymns];
       }
       
-      // Sort before saving to localStorage for consistency (optional, but good practice)
       allHymnsForStorage.sort((a, b) => {
         const pageNumA = a.pageNumber ? parseInt(a.pageNumber, 10) : Infinity;
         const pageNumB = b.pageNumber ? parseInt(b.pageNumber, 10) : Infinity;
