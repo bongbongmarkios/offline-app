@@ -1,7 +1,7 @@
 
 'use client';
 import type { ReactNode } from 'react';
-import { Menu, PlusCircle, Trash2, Info, Settings as SettingsIcon, BookPlus, BookX, Wand2 } from 'lucide-react';
+import { Menu, PlusCircle, Trash2, Info, Settings as SettingsIcon, BookPlus, BookX, Wand2, Wifi } from 'lucide-react'; // Added Wifi
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -22,7 +22,7 @@ import { useState } from 'react';
 import AddHymnForm from '@/components/hymnal/AddHymnForm';
 import AddReadingForm from '@/components/readings/AddReadingForm';
 import DeleteHymnDialogContent from '@/components/hymnal/DeleteHymnDialogContent';
-import DeleteReadingDialogContent from '@/components/readings/DeleteReadingDialogContent'; // New import
+import DeleteReadingDialogContent from '@/components/readings/DeleteReadingDialogContent'; 
 import ChatInterface from '@/components/ai/ChatInterface';
 import { useRouter } from 'next/navigation';
 
@@ -30,7 +30,7 @@ import { useRouter } from 'next/navigation';
 interface AppHeaderProps {
   title: ReactNode;
   actions?: ReactNode;
-  hideDefaultActions?: boolean; // New prop
+  hideDefaultActions?: boolean; 
 }
 
 export default function AppHeader({ title, actions, hideDefaultActions }: AppHeaderProps) {
@@ -43,7 +43,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
 
   const handleAddHymnSubmit = () => {
     setIsAddHymnDialogOpen(false);
-    router.refresh(); // Refresh data on the current route
+    router.refresh(); 
   };
 
   const handleAddReadingSubmit = () => {
@@ -59,13 +59,13 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
     <>
       <header className="bg-card shadow-sm mb-4 md:mb-6 print:hidden">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3"> {/* Left side container */}
+          <div className="flex items-center gap-3"> 
             {typeof title === 'string' && title.length > 0 ? (
               <h1 className="text-2xl font-headline font-semibold text-primary sm:text-3xl">{title}</h1>
             ) : typeof title === 'string' && title.length === 0 ? (
-              null // If title is an empty string, render nothing
+              null 
             ) : (
-              title // Otherwise, title is a ReactNode (e.g., a button), render it directly
+              title 
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -73,6 +73,10 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
             
             {!hideDefaultActions && (
               <>
+                <Button variant="ghost" size="icon" aria-label="Wifi Status (Placeholder)">
+                  <Wifi className="h-6 w-6" />
+                </Button>
+
                 <Dialog open={isChatDialogOpen} onOpenChange={setIsChatDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="ghost" size="icon" aria-label="Open AI Chat">
