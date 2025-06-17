@@ -314,10 +314,20 @@ export function updateSampleHymn(hymnId: string, updatedData: Partial<Omit<Hymn,
   if (hymnIndex === -1) {
     return null;
   }
-  
+  // Directly apply updates. The form should handle defaults for required fields.
   initialSampleHymns[hymnIndex] = {
     ...initialSampleHymns[hymnIndex],
-    ...updatedData
+    ...updatedData,
+    // Ensure required fields from original are preserved if not in updatedData,
+    // though form logic should make this less necessary.
+    // e.g. id: initialSampleHymns[hymnIndex].id, // id is not in updatedData
+    // titleHiligaynon: updatedData.titleHiligaynon || initialSampleHymns[hymnIndex].titleHiligaynon, 
+    // etc. but spread operator handles this well.
   };
   return initialSampleHymns[hymnIndex];
+}
+
+// Function to delete hymns by their IDs from the in-memory sample data
+export function deleteSampleHymnsByIds(hymnIds: string[]): void {
+  initialSampleHymns = initialSampleHymns.filter(hymn => !hymnIds.includes(hymn.id));
 }
