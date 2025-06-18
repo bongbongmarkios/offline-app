@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import AppHeader from '@/components/layout/AppHeader';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArchiveRestore, Trash2, Info, AlertTriangle, RotateCcw, CalendarX2 } from 'lucide-react';
+import { ArchiveRestore, Trash2, Info, AlertTriangle, RotateCcw, CalendarX2, Layers, Eraser } from 'lucide-react';
 import type { AnyTrashedItem, TrashedHymn, Hymn } from '@/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -69,19 +69,21 @@ export default function TrashPage() {
   }, []);
 
   const handleRestoreItem = (itemToRestore: AnyTrashedItem) => {
-    // Placeholder: This function would move the item back to its original list
-    // e.g., from 'graceNotesTrash' to 'graceNotesHymns'
     console.log("Attempting to restore:", itemToRestore);
 
     try {
-        let activeItems: any[] = [];
-        const activeItemsKey = `graceNotes${itemToRestore.itemType.charAt(0).toUpperCase() + itemToRestore.itemType.slice(1)}s`; // e.g. graceNotesHymns
-        const activeItemsString = localStorage.getItem(activeItemsKey);
-        if (activeItemsString) {
-            activeItems = JSON.parse(activeItemsString);
+        if (itemToRestore.itemType === 'hymn') {
+            const activeItemsKey = 'graceNotesHymns';
+            const activeItemsString = localStorage.getItem(activeItemsKey);
+            let activeItems: Hymn[] = activeItemsString ? JSON.parse(activeItemsString) : [];
+            
+            // Check if item already exists to prevent duplicates, then add
+            if (!activeItems.find(h => h.id === (itemToRestore.data as Hymn).id)) {
+                 activeItems.push(itemToRestore.data as Hymn);
+            }
+            localStorage.setItem(activeItemsKey, JSON.stringify(activeItems));
         }
-        activeItems.push(itemToRestore.data);
-        localStorage.setItem(activeItemsKey, JSON.stringify(activeItems));
+        // Add logic for other item types (readings, programs) here if needed
 
         const updatedTrash = trashedItems.filter(item => item.originalId !== itemToRestore.originalId || item.itemType !== itemToRestore.itemType);
         localStorage.setItem(LOCAL_STORAGE_TRASH_KEY, JSON.stringify(updatedTrash));
@@ -99,7 +101,6 @@ export default function TrashPage() {
   };
 
   const handlePermanentlyDeleteItem = (itemToDelete: AnyTrashedItem) => {
-    // Placeholder: This function would permanently remove the item from 'graceNotesTrash'
     console.log("Attempting to permanently delete:", itemToDelete);
     try {
         const updatedTrash = trashedItems.filter(item => item.originalId !== itemToDelete.originalId || item.itemType !== itemToDelete.itemType);
@@ -112,6 +113,52 @@ export default function TrashPage() {
     } catch (error) {
         console.error("Error permanently deleting item:", error);
         toast({ title: "Error", description: "Could not permanently delete item.", variant: "destructive"});
+    }
+  };
+
+  const handleRestoreAllItems = () => {
+    if (trashedItems.length === 0) return;
+    try {
+        let restoredCount = 0;
+        trashedItems.forEach(itemToRestore => {
+            if (itemToRestore.itemType === 'hymn') {
+                const activeItemsKey = 'graceNotesHymns';
+                const activeItemsString = localStorage.getItem(activeItemsKey);
+                let activeItems: Hymn[] = activeItemsString ? JSON.parse(activeItemsString) : [];
+                if (!activeItems.find(h => h.id === (itemToRestore.data as Hymn).id)) {
+                    activeItems.push(itemToRestore.data as Hymn);
+                }
+                localStorage.setItem(activeItemsKey, JSON.stringify(activeItems));
+                restoredCount++;
+            }
+            // Add logic for other item types (readings, programs) here
+        });
+
+        localStorage.setItem(LOCAL_STORAGE_TRASH_KEY, JSON.stringify([]));
+        setTrashedItems([]);
+        toast({
+            title: "All Items Restored",
+            description: `${restoredCount} item(s) have been restored.`,
+        });
+    } catch (error) {
+        console.error("Error restoring all items:", error);
+        toast({ title: "Error", description: "Could not restore all items.", variant: "destructive" });
+    }
+  };
+
+  const handlePermanentlyDeleteAllItems = () => {
+    if (trashedItems.length === 0) return;
+    try {
+        const count = trashedItems.length;
+        localStorage.setItem(LOCAL_STORAGE_TRASH_KEY, JSON.stringify([]));
+        setTrashedItems([]);
+        toast({
+            title: "All Items Deleted Permanently",
+            description: `${count} item(s) have been permanently deleted from trash.`,
+        });
+    } catch (error) {
+        console.error("Error deleting all items permanently:", error);
+        toast({ title: "Error", description: "Could not permanently delete all items.", variant: "destructive" });
     }
   };
   
@@ -136,6 +183,50 @@ export default function TrashPage() {
               Items moved to trash are stored here for {TRASH_EXPIRY_DAYS} days before permanent deletion.
               You can restore them or delete them permanently before they expire.
             </CardDescription>
+            <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm" disabled={trashedItems.length === 0}>
+                            <Layers className="mr-2 h-4 w-4" /> Restore All ({trashedItems.length})
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>Restore All Items?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to restore all {trashedItems.length} items from the trash?
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleRestoreAllItems}>
+                            Yes, Restore All
+                        </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" disabled={trashedItems.length === 0}>
+                            <Eraser className="mr-2 h-4 w-4" /> Permanently Delete All ({trashedItems.length})
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>Permanently Delete All Items?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. All {trashedItems.length} items in the trash will be permanently deleted.
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handlePermanentlyDeleteAllItems} className={"bg-destructive hover:bg-destructive/90"}>
+                            Yes, Delete All Permanently
+                        </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             {isLoading ? (
@@ -147,7 +238,7 @@ export default function TrashPage() {
                 <p className="text-sm">Deleted items will appear here.</p>
               </div>
             ) : (
-              <ScrollArea className="h-[calc(100vh-20rem)] pr-3"> {/* Adjust height as needed */}
+              <ScrollArea className="h-[calc(100vh-25rem)] pr-3"> {/* Adjusted height as needed */}
                 <div className="space-y-3">
                 {trashedItems.map((item) => {
                   const daysRemaining = getDaysRemaining(item.trashedAt);
@@ -189,7 +280,7 @@ export default function TrashPage() {
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handlePermanentlyDeleteItem(item)}>
+                              <AlertDialogAction onClick={() => handlePermanentlyDeleteItem(item)} className={"bg-destructive hover:bg-destructive/90"}>
                                 Yes, Delete Permanently
                               </AlertDialogAction>
                             </AlertDialogFooter>
@@ -225,3 +316,4 @@ export default function TrashPage() {
     </>
   );
 }
+
