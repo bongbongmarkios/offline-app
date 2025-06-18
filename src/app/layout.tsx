@@ -5,8 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/context/ThemeContext';
 
 export const metadata: Metadata = {
-  title: 'SBC Church App',
-  description: 'Your companion for hymns, programs, and readings at SBC Church.',
+  title: 'SBC App',
+  description: 'Your companion for hymns, programs, and readings at SBC.',
 };
 
 export default function RootLayout({

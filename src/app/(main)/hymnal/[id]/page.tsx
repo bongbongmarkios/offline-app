@@ -21,12 +21,12 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   const hymn = await getHymn(params.id);
   if (!hymn) {
     return {
-      title: 'Hymn | SBC Church App', // Generic title if not found on server
+      title: 'Hymn | SBC App', // Generic title if not found on server
     };
   }
   const displayTitle = hymn.titleEnglish || hymn.titleHiligaynon;
   return {
-    title: `${displayTitle} | SBC Church App`,
+    title: `${displayTitle} | SBC App`,
   };
 }
 
