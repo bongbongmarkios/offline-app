@@ -6,18 +6,21 @@ import { useEffect, useState } from 'react';
 import type { Hymn } from '@/types';
 import { initialSampleHymns } from '@/data/hymns';
 import StaticHymnListDisplay from '@/components/hymnal/StaticHymnListDisplay';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
 
 // Metadata cannot be exported from Client Components. 
-// The title in AppHeader will be "Manage Hymn URLs".
+// The title in AppHeader will be set.
 // For browser tab title, alternative methods like useEffect would be needed if static export is not an option.
 
 export default function HymnUrlEditorPage() {
   const [hymns, setHymns] = useState<Hymn[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hymnsVersion, setHymnsVersion] = useState(0); // For triggering re-fetch
+  const router = useRouter();
 
   const handleUrlUpdated = () => {
     setHymnsVersion(v => v + 1); // Increment version to trigger useEffect, causing re-fetch from localStorage
@@ -57,9 +60,28 @@ export default function HymnUrlEditorPage() {
     setIsLoading(false);
   }, [hymnsVersion]); // Re-run when hymnsVersion changes (e.g., after a URL update)
 
+  const headerTitleContent = (
+    <div className="flex items-center w-full">
+        <Button variant="outline" size="sm" onClick={() => router.back()} className="flex-shrink-0">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+        </Button>
+        <h1 className="flex-grow text-center text-2xl font-headline font-semibold text-primary sm:text-3xl">
+            Manage Hymn URLs
+        </h1>
+        <div className="invisible flex-shrink-0"> {/* Spacer to balance the Back button for centering H1 */}
+            <Button variant="outline" size="sm">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+            </Button>
+        </div>
+    </div>
+  );
+
+
   return (
     <>
-      <AppHeader title="Manage Hymn URLs" />
+      <AppHeader title={headerTitleContent} />
       <div className="container mx-auto px-4 pb-8">
         {isLoading ? (
           <div className="flex justify-center items-center min-h-[200px] py-10">
