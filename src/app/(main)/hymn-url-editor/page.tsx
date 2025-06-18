@@ -67,7 +67,7 @@ export default function HymnUrlEditorPage() {
             Back
         </Button>
         <h1 className="flex-grow text-center mx-4 text-2xl font-headline font-semibold text-primary sm:text-3xl">
-            Hymn Urls
+            URLs
         </h1>
         <div className="invisible flex-shrink-0"> {/* Spacer to balance the Back button for centering H1 */}
             <Button variant="outline" size="sm">
