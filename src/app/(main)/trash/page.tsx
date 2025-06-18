@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import AppHeader from '@/components/layout/AppHeader';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArchiveRestore, Trash2, Info, AlertTriangle, RotateCcw, CalendarX2, Layers, Eraser } from 'lucide-react';
+import { ArchiveRestore, Trash2, Info, AlertTriangle, RotateCcw, CalendarX2, Layers, Eraser, ArrowLeft } from 'lucide-react';
 import type { AnyTrashedItem, TrashedHymn, Hymn } from '@/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -20,6 +20,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 const LOCAL_STORAGE_TRASH_KEY = 'graceNotesTrash';
 const TRASH_EXPIRY_DAYS = 30;
@@ -28,6 +29,7 @@ export default function TrashPage() {
   const [trashedItems, setTrashedItems] = useState<AnyTrashedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const router = useRouter();
 
   const loadAndPurgeTrash = () => {
     setIsLoading(true);
@@ -170,9 +172,16 @@ export default function TrashPage() {
     return Math.max(0, Math.ceil(TRASH_EXPIRY_DAYS - daysInTrash));
   };
 
+  const backButton = (
+    <Button variant="outline" size="sm" onClick={() => router.back()}>
+      <ArrowLeft className="mr-2 h-4 w-4" />
+      Back
+    </Button>
+  );
+
   return (
     <>
-      <AppHeader title="Trash" />
+      <AppHeader title="Trash" actions={backButton} />
       <div className="container mx-auto px-4 pb-8">
         <Card className="mt-6">
           <CardHeader>
