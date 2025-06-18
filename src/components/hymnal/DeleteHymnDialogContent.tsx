@@ -3,14 +3,14 @@
 
 import { useState, useEffect } from 'react';
 import type { Hymn, AnyTrashedItem, TrashedHymn } from '@/types';
-import { initialSampleHymns } from '@/data/hymns'; // No longer using deleteSampleHymnsByIds from here
+import { initialSampleHymns } from '@/data/hymns';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { DialogFooter } from '@/components/ui/dialog';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CheckCheck, XSquare } from 'lucide-react';
 
 const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
 const LOCAL_STORAGE_TRASH_KEY = 'graceNotesTrash';
@@ -32,8 +32,6 @@ export default function DeleteHymnDialogContent({
       if (storedHymnsString) {
         loadedHymns = JSON.parse(storedHymnsString);
       } else {
-        // If no active hymns in localStorage, initialize with initialSampleHymns
-        // This scenario implies a fresh start or cleared localStorage for active hymns.
         loadedHymns = [...initialSampleHymns];
         localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(loadedHymns));
       }
@@ -49,7 +47,6 @@ export default function DeleteHymnDialogContent({
       setActiveHymnsToDisplay(sortedHymns);
     } catch (error) {
       console.error("Error loading active hymns for deletion dialog:", error);
-      // Fallback to initialSampleHymns if there's an error reading localStorage
       const sortedInitial = [...initialSampleHymns].sort((a, b) => {
         const pageNumA = a.pageNumber ? parseInt(a.pageNumber, 10) : Infinity;
         const pageNumB = b.pageNumber ? parseInt(b.pageNumber, 10) : Infinity;
@@ -74,6 +71,14 @@ export default function DeleteHymnDialogContent({
     }
   };
 
+  const handleSelectAll = () => {
+    setSelectedHymnIds(activeHymnsToDisplay.map(h => h.id));
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedHymnIds([]);
+  };
+
   const handleMoveToTrashSelected = () => {
     if (selectedHymnIds.length === 0) {
       toast({
@@ -85,11 +90,9 @@ export default function DeleteHymnDialogContent({
     }
 
     try {
-      // Get current active hymns
       const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
       let currentActiveHymns: Hymn[] = storedHymnsString ? JSON.parse(storedHymnsString) : [...initialSampleHymns];
 
-      // Get current trash or initialize if empty
       const storedTrashString = localStorage.getItem(LOCAL_STORAGE_TRASH_KEY);
       let currentTrash: AnyTrashedItem[] = storedTrashString ? JSON.parse(storedTrashString) : [];
 
@@ -102,19 +105,16 @@ export default function DeleteHymnDialogContent({
             data: hymn,
             trashedAt: new Date().toISOString(),
           });
-          return false; // Remove from active list
+          return false; 
         }
-        return true; // Keep in active list
+        return true; 
       });
 
-      // Add selected hymns to trash
       currentTrash.push(...hymnsToTrash);
 
-      // Update localStorage
       localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(remainingActiveHymns));
       localStorage.setItem(LOCAL_STORAGE_TRASH_KEY, JSON.stringify(currentTrash));
       
-      // Update the displayed list within the dialog immediately
       const sortedRemainingHymns = [...remainingActiveHymns].sort((a, b) => {
         const pageNumA = a.pageNumber ? parseInt(a.pageNumber, 10) : Infinity;
         const pageNumB = b.pageNumber ? parseInt(b.pageNumber, 10) : Infinity;
@@ -134,8 +134,6 @@ export default function DeleteHymnDialogContent({
       if (onDeleteSuccess) {
         onDeleteSuccess(); 
       }
-      // Do not close dialog automatically, user might want to delete more or cancel
-      // onOpenChange(false); 
       
     } catch (error) {
       console.error("Error moving hymns to trash:", error);
@@ -149,7 +147,11 @@ export default function DeleteHymnDialogContent({
 
   if (isLoading) {
     return (
-      <div className="flex flex-col space-y-4 h-[348px]">
+      <div className="flex flex-col space-y-4 h-[388px]"> {/* Adjusted height for select all/deselect all buttons */}
+        <div className="flex justify-end gap-2 mb-2">
+            <Button variant="outline" size="sm" disabled><CheckCheck className="mr-1.5 h-4 w-4"/>Select All</Button>
+            <Button variant="outline" size="sm" disabled><XSquare className="mr-1.5 h-4 w-4"/>Deselect All</Button>
+        </div>
         <div className="h-[300px] flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -168,6 +170,26 @@ export default function DeleteHymnDialogContent({
   return (
     <div className="flex flex-col space-y-4">
       <p className="text-sm text-muted-foreground">Select hymns to move to the trash. Items in trash will be permanently deleted after 30 days.</p>
+      
+      <div className="flex justify-end gap-2 mb-1">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleSelectAll} 
+          disabled={activeHymnsToDisplay.length === 0 || selectedHymnIds.length === activeHymnsToDisplay.length}
+        >
+          <CheckCheck className="mr-1.5 h-4 w-4"/>Select All
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleDeselectAll}
+          disabled={selectedHymnIds.length === 0}
+        >
+          <XSquare className="mr-1.5 h-4 w-4"/>Deselect All
+        </Button>
+      </div>
+
       <ScrollArea className="h-[300px] w-full rounded-md border p-4">
         <div className="space-y-3">
           {activeHymnsToDisplay.length > 0 ? (
