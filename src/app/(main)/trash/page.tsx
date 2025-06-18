@@ -139,6 +139,7 @@ export default function TrashPage() {
         toast({
             title: "All Items Restored",
             description: `${restoredCount} item(s) have been restored.`,
+            duration: 1000, 
         });
     } catch (error) {
         console.error("Error restoring all items:", error);
