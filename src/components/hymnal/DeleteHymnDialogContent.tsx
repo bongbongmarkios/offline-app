@@ -36,8 +36,6 @@ export default function DeleteHymnDialogContent({
       if (storedHymnsString) {
         loadedHymns = JSON.parse(storedHymnsString);
       } else {
-        // Fallback to initialSampleHymns if localStorage is empty
-        // And prime localStorage with the initial set if it was empty
         loadedHymns = [...initialSampleHymns];
         localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(loadedHymns));
       }
@@ -53,7 +51,6 @@ export default function DeleteHymnDialogContent({
       setHymnsToDisplay(sortedHymns);
     } catch (error) {
       console.error("Error loading hymns from localStorage for deletion dialog:", error);
-      // Fallback to initialSampleHymns on error (already sorted on server, but sort again for safety)
       const sortedInitial = [...initialSampleHymns].sort((a, b) => {
         const pageNumA = a.pageNumber ? parseInt(a.pageNumber, 10) : Infinity;
         const pageNumB = b.pageNumber ? parseInt(b.pageNumber, 10) : Infinity;
@@ -66,7 +63,7 @@ export default function DeleteHymnDialogContent({
     } finally {
       setIsLoading(false);
     }
-  }, []); // Empty dependency array: runs once when the dialog is opened (component mounts)
+  }, []);
 
   const handleCheckboxChange = (hymnId: string, checked: boolean | 'indeterminate') => {
     if (typeof checked === 'boolean') {
@@ -91,7 +88,6 @@ export default function DeleteHymnDialogContent({
     // Update the in-memory initialSampleHymns array
     deleteSampleHymnsByIds(selectedHymnIds);
 
-    // Update localStorage
     let updatedStoredHymns: Hymn[];
     try {
       const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
@@ -99,7 +95,6 @@ export default function DeleteHymnDialogContent({
       if (storedHymnsString) {
         currentStoredHymns = JSON.parse(storedHymnsString);
       } else {
-        // If localStorage was empty, it means initialSampleHymns (now modified) is the source
         currentStoredHymns = [...initialSampleHymns]; 
       }
       
@@ -113,8 +108,7 @@ export default function DeleteHymnDialogContent({
         description: 'Could not update hymns in local storage.',
         variant: 'destructive',
       });
-      // Fallback: use the modified initialSampleHymns as the source for the dialog if localStorage fails
-      updatedStoredHymns = [...initialSampleHymns];
+      updatedStoredHymns = [...initialSampleHymns]; // Fallback to modified in-memory data
     }
 
     // Update the displayed list within the dialog immediately
@@ -130,21 +124,20 @@ export default function DeleteHymnDialogContent({
 
     toast({
       title: 'Hymns Deleted',
-      description: `${selectedHymnIds.length} hymn(s) have been deleted. The main list will refresh.`,
+      description: `${selectedHymnIds.length} hymn(s) have been permanently deleted.`,
     });
 
-    setSelectedHymnIds([]); // Clear selection
+    setSelectedHymnIds([]); 
     if (onDeleteSuccess) {
       onDeleteSuccess(); 
     } else {
-      // This part might not be strictly necessary if onDeleteSuccess always closes the dialog
       onOpenChange(false); 
     }
   };
 
   if (isLoading) {
     return (
-      <div className="flex flex-col space-y-4 h-[348px]"> {/* Min height to match ScrollArea + Footer */}
+      <div className="flex flex-col space-y-4 h-[348px]">
         <div className="h-[300px] flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -168,13 +161,13 @@ export default function DeleteHymnDialogContent({
             hymnsToDisplay.map((hymn) => (
               <div key={hymn.id} className="flex items-center space-x-3 rounded-md p-2 hover:bg-muted/50 transition-colors">
                 <Checkbox
-                  id={`hymn-delete-${hymn.id}`} // Ensure unique ID for checkbox
+                  id={`hymn-delete-${hymn.id}`}
                   checked={selectedHymnIds.includes(hymn.id)}
                   onCheckedChange={(checked) => handleCheckboxChange(hymn.id, checked)}
                   aria-label={`Select ${hymn.titleEnglish || hymn.titleHiligaynon}`}
                 />
                 <Label
-                  htmlFor={`hymn-delete-${hymn.id}`} // Match unique ID
+                  htmlFor={`hymn-delete-${hymn.id}`}
                   className="flex-grow cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
                   {hymn.titleEnglish || hymn.titleHiligaynon}
