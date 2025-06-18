@@ -66,3 +66,28 @@ export type UserActivity = {
   recentReadings: string[];
 };
 
+// For Trashed Items
+export type ItemType = 'hymn' | 'reading' | 'program';
+
+export interface TrashedItemBase {
+  originalId: string; // Original ID of the item
+  itemType: ItemType;
+  trashedAt: string; // ISO string date of when it was trashed
+}
+
+export interface TrashedHymn extends TrashedItemBase {
+  itemType: 'hymn';
+  data: Hymn;
+}
+
+export interface TrashedReading extends TrashedItemBase {
+  itemType: 'reading';
+  data: Reading;
+}
+
+export interface TrashedProgram extends TrashedItemBase {
+  itemType: 'program';
+  data: Program;
+}
+
+export type AnyTrashedItem = TrashedHymn | TrashedReading | TrashedProgram;
