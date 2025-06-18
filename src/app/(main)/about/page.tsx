@@ -1,16 +1,31 @@
+'use client';
 
 import AppHeader from '@/components/layout/AppHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Info, UserCircle, Target, BookOpenCheck, ListChecks } from 'lucide-react';
+import { Info, UserCircle, Target, BookOpenCheck, ListChecks, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 
-export const metadata = {
-  title: 'About | GraceNotes',
-};
+// Client components cannot export metadata directly.
+// The title in AppHeader will be set. For browser tab, consider parent layout or useEffect.
 
 export default function AboutPage() {
+  const router = useRouter();
+
+  const headerTitleContent = (
+    <div className="flex items-center gap-3">
+      <Button variant="outline" size="icon" onClick={() => router.back()} aria-label="Go back">
+        <ArrowLeft className="h-5 w-5" />
+      </Button>
+      <h1 className="text-2xl font-headline font-semibold text-primary sm:text-3xl">
+        About GraceNotes
+      </h1>
+    </div>
+  );
+
   return (
     <>
-      <AppHeader title="About GraceNotes" />
+      <AppHeader title={headerTitleContent} />
       <div className="container mx-auto px-4 pb-8">
         <Card className="mt-6 shadow-lg">
           <CardHeader>
