@@ -172,17 +172,16 @@ export default function TrashPage() {
   };
 
   const headerTitleContent = (
-    <div className="flex items-center justify-between w-full">
-        <Button variant="outline" size="sm" onClick={() => router.back()}>
+    <div className="flex items-center w-full">
+        <Button variant="outline" size="sm" onClick={() => router.back()} className="flex-shrink-0">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
         </Button>
-        <h1 className="text-2xl font-headline font-semibold text-primary sm:text-3xl">
+        <h1 className="flex-grow text-center text-2xl font-headline font-semibold text-primary sm:text-3xl">
             Trash
         </h1>
-        {/* Invisible spacer to balance the "Back" button for centering. Its width should match the Back button's. */}
-        <div className="invisible">
-            <Button variant="outline" size="sm" onClick={() => { /* Dummy for layout */ }}>
+        <div className="invisible flex-shrink-0"> {/* Spacer to balance the Back button for centering H1 */}
+            <Button variant="outline" size="sm">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back
             </Button>
