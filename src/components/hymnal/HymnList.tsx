@@ -26,39 +26,24 @@ export default function HymnList({ initialHymns }: HymnListProps) {
 
     try {
       const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
-      if (storedHymnsString) {
-        const parsedStoredHymns: Hymn[] = JSON.parse(storedHymnsString).filter(isValidHymn);
-        
-        const mergedHymnsMap = new Map<string, Hymn>();
-        parsedStoredHymns.forEach(h => mergedHymnsMap.set(h.id, h));
-        
-        validInitialHymnsFromProp.forEach(h => {
-          if (!mergedHymnsMap.has(h.id)) {
-            mergedHymnsMap.set(h.id, h);
-          }
-        });
-        finalHymnsToDisplay = Array.from(mergedHymnsMap.values());
-        
-        const sortedFinalForStorage = [...finalHymnsToDisplay].sort((a,b) => a.id.localeCompare(b.id));
-        const sortedParsedFromStorage = [...parsedStoredHymns].sort((a,b) => a.id.localeCompare(b.id));
 
-        if (JSON.stringify(sortedFinalForStorage) !== JSON.stringify(sortedParsedFromStorage)) {
-            localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(sortedFinalForStorage));
-        }
-
+      if (storedHymnsString !== null) { 
+        // localStorage has been initialized (could be "[]" or populated).
+        // This is now the source of truth.
+        finalHymnsToDisplay = JSON.parse(storedHymnsString).filter(isValidHymn);
       } else {
+        // localStorage is completely empty (key does not exist).
+        // Seed localStorage with hymns from props.
         finalHymnsToDisplay = validInitialHymnsFromProp;
-        if (finalHymnsToDisplay.length > 0) {
-            localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(finalHymnsToDisplay));
-        }
+        localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(finalHymnsToDisplay));
       }
     } catch (error) {
       console.error("Error processing hymns from localStorage or props:", error);
+      // Fallback to props if localStorage fails badly
       finalHymnsToDisplay = validInitialHymnsFromProp;
       try {
-        if (finalHymnsToDisplay.length > 0) {
-            localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(finalHymnsToDisplay));
-        }
+        // Attempt to reset localStorage with prop data on error
+        localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(finalHymnsToDisplay));
       } catch (lsError) {
         console.error("Error priming localStorage after initial error:", lsError);
       }
@@ -85,7 +70,7 @@ export default function HymnList({ initialHymns }: HymnListProps) {
     loadAndSetHymns();
 
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === LOCAL_STORAGE_HYMNS_KEY || event.key === null) {
+      if (event.key === LOCAL_STORAGE_HYMNS_KEY || event.key === null) { // event.key can be null if localStorage.clear() is called
         loadAndSetHymns();
       }
     };
@@ -107,11 +92,10 @@ export default function HymnList({ initialHymns }: HymnListProps) {
   return (
     <div className="space-y-4">
       {hymns.map((hymn) => {
-        if (isValidHymn(hymn)) {
-          const hymnIdTrimmed = hymn.id.trim(); 
-          if (hymnIdTrimmed.length > 0) { // Explicitly check for non-empty ID
+        // Ensure hymn and hymn.id are valid before creating a link
+        if (isValidHymn(hymn) && hymn.id.trim().length > 0) {
             return (
-              <Link key={hymnIdTrimmed} href={`/hymnal/${hymnIdTrimmed}`} className="block hover:no-underline">
+              <Link key={hymn.id} href={`/hymnal/${hymn.id.trim()}`} className="block hover:no-underline">
                 <Card className="hover:shadow-md transition-shadow duration-200 cursor-pointer hover:border-primary/50">
                   <CardHeader>
                     <div className="flex items-start gap-3">
@@ -135,7 +119,6 @@ export default function HymnList({ initialHymns }: HymnListProps) {
                 </Card>
               </Link>
             );
-          }
         }
         return null; 
       })}
