@@ -79,7 +79,6 @@ export default function TrashPage() {
             const activeItemsString = localStorage.getItem(activeItemsKey);
             let activeItems: Hymn[] = activeItemsString ? JSON.parse(activeItemsString) : [];
             
-            // Check if item already exists to prevent duplicates, then add
             if (!activeItems.find(h => h.id === (itemToRestore.data as Hymn).id)) {
                  activeItems.push(itemToRestore.data as Hymn);
             }
@@ -172,16 +171,28 @@ export default function TrashPage() {
     return Math.max(0, Math.ceil(TRASH_EXPIRY_DAYS - daysInTrash));
   };
 
-  const backButton = (
-    <Button variant="outline" size="sm" onClick={() => router.back()}>
-      <ArrowLeft className="mr-2 h-4 w-4" />
-      Back
-    </Button>
+  const headerTitleContent = (
+    <div className="flex items-center justify-between w-full">
+        <Button variant="outline" size="sm" onClick={() => router.back()}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+        </Button>
+        <h1 className="text-2xl font-headline font-semibold text-primary sm:text-3xl">
+            Trash
+        </h1>
+        {/* Invisible spacer to balance the "Back" button for centering. Its width should match the Back button's. */}
+        <div className="invisible">
+            <Button variant="outline" size="sm" onClick={() => { /* Dummy for layout */ }}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+            </Button>
+        </div>
+    </div>
   );
 
   return (
     <>
-      <AppHeader title="Trash" actions={backButton} />
+      <AppHeader title={headerTitleContent} />
       <div className="container mx-auto px-4 pb-8">
         <Card className="mt-6">
           <CardHeader>
@@ -326,4 +337,3 @@ export default function TrashPage() {
     </>
   );
 }
-
