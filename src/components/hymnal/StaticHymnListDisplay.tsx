@@ -42,15 +42,16 @@ export default function StaticHymnListDisplay({ hymns, onUrlUpdated }: StaticHym
       return;
     }
 
+    // Create a new array with the updated hymn
     const updatedHymns = hymns.map(h =>
       h.id === hymnId ? { ...h, externalUrl: urlInputValue.trim() || undefined } : h
     );
 
     try {
-      // Update localStorage
+      // Update localStorage with the new array
       localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(updatedHymns));
       
-      // Update in-memory initialSampleHymns (fallback data)
+      // Also update in-memory initialSampleHymns (fallback data) for consistency during the session
       updateSampleHymn(hymnId, { externalUrl: urlInputValue.trim() || undefined });
 
       toast({ title: "URL Saved", description: "The external URL has been updated." });
