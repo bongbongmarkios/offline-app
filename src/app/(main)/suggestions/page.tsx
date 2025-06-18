@@ -3,7 +3,7 @@ import AppHeader from '@/components/layout/AppHeader';
 import AISuggestionDisplay from '@/components/ai/AISuggestionDisplay';
 
 export const metadata = {
-  title: 'Suggestions | SBC APP',
+  title: 'Suggestions | SBC Church App',
 };
 
 export default function SuggestionsPage() {

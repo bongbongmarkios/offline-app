@@ -226,7 +226,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[600px] h-[70vh] flex flex-col">
                     <DialogHeader>
-                      <DialogTitle>Chat with GraceNotes AI</DialogTitle>
+                      <DialogTitle>Chat with SBC Church App AI</DialogTitle>
                       <DialogDescription>
                         Ask questions or get help.
                       </DialogDescription>
@@ -291,7 +291,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
           <DialogHeader>
             <DialogTitle>Delete Hymns</DialogTitle>
             <DialogDescription>
-              Select the hymns you want to delete. This action cannot be undone.
+              Select the hymns you want to move to trash. Items in trash will be permanently deleted after 30 days.
             </DialogDescription>
           </DialogHeader>
           <DeleteHymnDialogContent

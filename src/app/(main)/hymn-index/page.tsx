@@ -5,7 +5,7 @@ import { initialSampleHymns } from '@/data/hymns';
 import type { Hymn } from '@/types';
 
 export const metadata = {
-  title: 'Hymn Page Index | GraceNotes',
+  title: 'Hymn Page Index | SBC Church App',
 };
 
 export default async function HymnIndexPage() {

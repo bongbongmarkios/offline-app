@@ -1,3 +1,4 @@
+
 'use client';
 
 import AppHeader from '@/components/layout/AppHeader';
@@ -18,7 +19,7 @@ export default function AboutPage() {
         <ArrowLeft className="h-5 w-5" />
       </Button>
       <h1 className="text-2xl font-headline font-semibold text-primary sm:text-3xl">
-        About GraceNotes
+        About SBC Church App
       </h1>
     </div>
   );
@@ -41,7 +42,7 @@ export default function AboutPage() {
                 Developer
               </h3>
               <p className="text-muted-foreground">
-                This application, GraceNotes, was developed by John Mark Solomon.
+                This application, SBC Church App, was developed by John Mark Solomon.
               </p>
             </div>
 
@@ -51,7 +52,7 @@ export default function AboutPage() {
                 Purpose
               </h3>
               <p className="text-muted-foreground">
-                GraceNotes aims to make hymnals more accessible, providing an intuitive platform for:
+                SBC Church App aims to make hymnals more accessible, providing an intuitive platform for:
               </p>
               <ul className="list-disc list-inside pl-4 text-muted-foreground space-y-1">
                 <li className="flex items-start">

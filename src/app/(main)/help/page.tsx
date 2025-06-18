@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { HelpCircle } from 'lucide-react';
 
 export const metadata = {
-  title: 'Help | SBC APP',
+  title: 'Help | SBC Church App',
 };
 
 export default function HelpPage() {
