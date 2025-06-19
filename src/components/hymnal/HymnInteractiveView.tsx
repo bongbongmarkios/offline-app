@@ -33,10 +33,9 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const router = useRouter();
-  const [isOnline, setIsOnline] = useState(true); // Retained for potential future use, not directly affecting URL edit dialog button
+  const [isOnline, setIsOnline] = useState(true); 
   const { toast } = useToast();
 
-  // State for URL editing dialog
   const [isUrlEditDialogOpen, setIsUrlEditDialogOpen] = useState(false);
   const [urlInputForDialog, setUrlInputForDialog] = useState('');
 
@@ -279,7 +278,6 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
         </DialogContent>
       </Dialog>
 
-      {/* New Dialog for Editing URL */}
       <Dialog open={isUrlEditDialogOpen} onOpenChange={setIsUrlEditDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
