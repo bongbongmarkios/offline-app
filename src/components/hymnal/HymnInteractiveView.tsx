@@ -10,7 +10,7 @@ import EditHymnForm from '@/components/hymnal/EditHymnForm';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import Link from 'next/link';
-import { ArrowLeft, FilePenLine, Music } from 'lucide-react';
+import { ArrowLeft, FilePenLine } from 'lucide-react'; // Removed Music icon
 import { useRouter } from 'next/navigation';
 import { initialSampleHymns } from '@/data/hymns';
 import { cn } from '@/lib/utils';
@@ -193,17 +193,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
 
   const headerActions = (
     <>
-      {hymn.externalUrl && hymn.externalUrl.trim() !== '' ? (
-        <Link href={hymn.externalUrl} passHref target="_blank" rel="noopener noreferrer">
-          <Button asChild variant="ghost" size="icon" aria-label="Open hymn URL (opens in new tab)">
-            <Music className={cn("h-6 w-6", isOnline ? "text-primary" : "text-muted-foreground")} />
-          </Button>
-        </Link>
-      ) : (
-        <Button variant="ghost" size="icon" aria-label="No external URL set" disabled>
-          <Music className={cn("h-6 w-6", "text-muted-foreground")} />
-        </Button>
-      )}
+      {/* Music icon section removed */}
       <Button variant="ghost" size="icon" aria-label="Edit hymn" onClick={() => setIsEditDialogOpen(true)}>
         <FilePenLine className="h-6 w-6 text-muted-foreground" />
       </Button>
