@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
-import { ArrowLeft, FilePenLine, Music, Play, Pause } from 'lucide-react'; // Added Pause icon
+import { ArrowLeft, FilePenLine, Music, Play, Pause } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { initialSampleHymns, updateSampleHymn } from '@/data/hymns';
 import { cn } from '@/lib/utils';
@@ -68,35 +68,22 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
         if (hymnFromStorage) {
           resolvedHymn = hymnFromStorage;
         } else {
-          // If not in storage but was passed from server (e.g., initial build), use server version
-          // Then, if a full list exists in storage, it means this specific hymn was deleted or ID changed.
-          // If no full list in storage, this is likely first load for this hymn post-build.
           resolvedHymn = hymnFromServer || null;
         }
       } else {
-        // localStorage is empty, prime it with initial data
         const allInitialHymnsForStorage = [...initialSampleHymns];
         localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allInitialHymnsForStorage));
-        
-        // Try to find the current hymn from this newly primed data
         const currentHymnFromPrimedData = allInitialHymnsForStorage.find(h => h && typeof h.id === 'string' && h.id === params.id);
-        if (currentHymnFromPrimedData) {
-            resolvedHymn = currentHymnFromPrimedData;
-        } else {
-            // Fallback to server prop if somehow still not found (should be rare)
-            resolvedHymn = hymnFromServer || null;
-        }
+        resolvedHymn = currentHymnFromPrimedData || hymnFromServer || null;
       }
     } catch (error) {
       console.error("Error loading hymn for interactive view:", error);
-      // Fallback to server data on any error
       resolvedHymn = hymnFromServer || null;
     }
 
     setHymn(resolvedHymn);
     setIsLoading(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id, hymnFromServer]); 
+  }, [params.id, hymnFromServer]);
 
 
   useEffect(() => {
@@ -112,7 +99,6 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       }
     }
     setShowLanguageSelector(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hymn]);
 
 
@@ -127,7 +113,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
   const handleEditSuccess = (updatedHymnData: Hymn) => {
     setHymn(updatedHymnData);
     setIsEditDialogOpen(false);
-    router.refresh(); 
+    router.refresh();
   };
 
   const handleOpenUrlEditDialog = () => {
@@ -152,68 +138,98 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
           allHymnsForStorage = JSON.parse(storedHymnsString);
         } catch (parseError) {
           console.error("Error parsing hymns from localStorage, re-initializing with initial set:", parseError);
-          allHymnsForStorage = [...initialSampleHymns]; 
+          allHymnsForStorage = [...initialSampleHymns];
         }
       } else {
-        allHymnsForStorage = [...initialSampleHymns]; 
+        allHymnsForStorage = [...initialSampleHymns];
       }
-      
+
       const hymnIndex = allHymnsForStorage.findIndex(h => h && typeof h.id === 'string' && h.id === hymn.id);
       if (hymnIndex > -1) {
         allHymnsForStorage[hymnIndex] = updatedHymnData;
       } else {
-        // Hymn not found in storage, add it (could happen if storage was cleared then a new hymn via server prop is viewed)
-        allHymnsForStorage.push(updatedHymnData); 
+        allHymnsForStorage.push(updatedHymnData);
       }
       localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allHymnsForStorage));
-      
-      // Also update the in-memory initialSampleHymns for consistency if it's the source
       updateSampleHymn(hymn.id, { externalUrl: newExternalUrl });
 
     } catch (error) {
       console.error("Error saving URL to localStorage:", error);
       toast({ title: "Storage Error", description: "Could not save URL to local storage. Please try again.", variant: "destructive" });
-      return; // Don't proceed if localStorage save failed
+      return;
     }
 
-    setHymn(updatedHymnData); // This will trigger the useEffect for audioRef.current.src
+    setHymn(updatedHymnData);
     toast({ title: "URL Updated", description: "The audio URL has been saved successfully." });
     setIsUrlEditDialogOpen(false);
+    // If URL was removed and audio was playing, it will be stopped by the useEffect below
+    // If a new URL was added, the useEffect below will load it.
   };
 
   const togglePlayPause = () => {
-    if (!audioRef.current || !hymn?.externalUrl) return;
+    if (!audioRef.current) return;
+
     if (isPlaying) {
       audioRef.current.pause();
+      setIsPlaying(false);
     } else {
-      audioRef.current.play().catch(error => {
-        console.error("Error playing audio:", error);
-        toast({ title: "Playback Error", description: "Could not play audio. Check URL or network.", variant: "destructive" });
-        setIsPlaying(false); // Reset state if play fails
-      });
+      if (hymn?.externalUrl) {
+        // Ensure src is current and load if necessary
+        if (audioRef.current.src !== hymn.externalUrl) {
+          audioRef.current.src = hymn.externalUrl;
+          audioRef.current.load(); // Important: load the source before attempting to play
+        }
+        audioRef.current.play()
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch(error => {
+            console.error("Error playing audio:", error);
+            toast({
+              title: "Playback Error",
+              description: "Could not play audio. Check URL, network, or browser permissions.",
+              variant: "destructive"
+            });
+            setIsPlaying(false);
+          });
+      } else {
+        // No URL, so open the dialog to add one
+        handleOpenUrlEditDialog();
+      }
     }
-    setIsPlaying(!isPlaying);
   };
+  
 
   useEffect(() => {
-    if (audioRef.current && hymn?.externalUrl) {
-      if (audioRef.current.src !== hymn.externalUrl) { // Only update if src changed
-        audioRef.current.src = hymn.externalUrl;
-        audioRef.current.load(); // Important to load new source
-        if (isPlaying) { // If it was playing, and URL changed, stop previous and play new one
-            audioRef.current.play().catch(console.error);
+    const audioElement = audioRef.current;
+    if (audioElement) {
+      if (hymn?.externalUrl) {
+        if (audioElement.src !== hymn.externalUrl) {
+          audioElement.src = hymn.externalUrl;
+          audioElement.load();
+          // If it was playing, and URL changed, we might want to stop it or attempt to play new one.
+          // For now, changing src and calling load() implies user might need to press play again.
+          // If audio was playing, and URL is removed, stop it.
+          if (isPlaying && !hymn.externalUrl) {
+            audioElement.pause();
+            setIsPlaying(false);
+          }
+        }
+      } else {
+        // No external URL, clear src and stop playback
+        audioElement.src = '';
+        if (isPlaying) {
+          audioElement.pause();
+          setIsPlaying(false);
         }
       }
-    } else if (audioRef.current) {
-      audioRef.current.src = ''; // Clear src if no URL
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      }
     }
-  // Ensure isPlaying is not in dependencies to avoid loops on play/pause
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hymn?.externalUrl]);
+  }, [hymn?.externalUrl]); // isPlaying is intentionally omitted from deps to avoid loops
+
+  const onAudioEnded = () => {
+    setIsPlaying(false);
+  };
 
 
   if (isLoading) {
@@ -349,9 +365,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
         </DialogContent>
       </Dialog>
       
-      {/* Invisible audio player controlled by the ref */}
-      <audio ref={audioRef} preload="metadata" onEnded={() => setIsPlaying(false)} />
+      <audio ref={audioRef} preload="metadata" onEnded={onAudioEnded} />
     </>
   );
 }
-
