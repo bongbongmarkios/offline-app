@@ -1,3 +1,4 @@
+
 import AppHeader from '@/components/layout/AppHeader';
 import AddHymnForm from '@/components/hymnal/AddHymnForm';
 import { Button } from '@/components/ui/button';
@@ -5,17 +6,23 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 export default function AddHymnPage() {
+  const headerTitleContent = (
+    <div className="flex items-center gap-3">
+      <Button asChild variant="outline" size="sm">
+        <Link href="/hymnal">
+          <ArrowLeft className="mr-2 h-4 w-4" /> Cancel
+        </Link>
+      </Button>
+      <h1 className="text-2xl font-headline font-semibold text-primary sm:text-3xl">
+        Add Hymn
+      </h1>
+    </div>
+  );
+
   return (
     <>
       <AppHeader 
-        title="Add New Hymn"
-        actions={
-          <Button asChild variant="outline" size="sm">
-            <Link href="/hymnal">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Cancel
-            </Link>
-          </Button>
-        }
+        title={headerTitleContent}
       />
       <div className="container mx-auto px-4 pb-8">
         <AddHymnForm />
