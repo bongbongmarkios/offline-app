@@ -60,16 +60,24 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
 
     try {
       const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
-      if (storedHymnsString) {
+      if (storedHymnsString) { 
         const storedHymns: Hymn[] = JSON.parse(storedHymnsString);
         const hymnFromStorage = storedHymns.find(h => h.id === params.id);
         if (hymnFromStorage) {
-          resolvedHymn = hymnFromStorage;
+          resolvedHymn = hymnFromStorage; 
         } else {
           resolvedHymn = hymnFromServer || null;
         }
-      } else {
-        resolvedHymn = hymnFromServer || null;
+      } else { 
+        const allInitialHymnsForStorage = [...initialSampleHymns]; 
+        localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allInitialHymnsForStorage));
+        
+        const currentHymnFromPrimedData = allInitialHymnsForStorage.find(h => h.id === params.id);
+        if (currentHymnFromPrimedData) {
+            resolvedHymn = currentHymnFromPrimedData;
+        } else {
+            resolvedHymn = hymnFromServer || null;
+        }
       }
     } catch (error) {
       console.error("Error loading hymn for interactive view:", error);
@@ -309,3 +317,4 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
     </>
   );
 }
+
