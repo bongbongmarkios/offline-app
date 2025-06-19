@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription }
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { addSampleHymn, initialSampleHymns } from '@/data/hymns'; 
 import type { Hymn } from '@/types';
+import { cn } from '@/lib/utils';
 
 interface AddHymnFormProps {
   onFormSubmit?: () => void;
@@ -141,27 +142,35 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
   const FormWrapper = onFormSubmit ? 'div' : Card;
   
   const formWrapperFinalClassName = onFormSubmit 
-    ? `${className || ''} flex flex-col`
-    : `max-w-2xl mx-auto shadow-lg ${className || ''}`;
+    ? cn(className, 'flex flex-col') // In dialog, AddHymnForm's root div is a flex column
+    : cn('max-w-2xl mx-auto shadow-lg', className); // Standalone page
 
-  const formProps = { className: formWrapperFinalClassName };
+  const formElementBaseClasses = "flex flex-col";
+  const formElementConditionalClasses = onFormSubmit ? "flex-1 min-h-0" : ""; // Form grows if in dialog
+  const formElementFinalClassName = cn(formElementBaseClasses, formElementConditionalClasses);
 
-  const formElementClassName = onFormSubmit ? "flex flex-col flex-1 min-h-0" : "";
-  const cardContentClassName = onFormSubmit ? "pt-4 flex-1 min-h-0 overflow-hidden" : "pt-4";
-  const scrollAreaClassName = onFormSubmit ? "h-full w-full" : "max-h-[60vh] w-full"; 
-  const cardFooterClassName = `flex-shrink-0 ${onFormSubmit ? "pt-6" : "pt-6"}`;
+  const cardContentBaseClasses = "pt-4 flex-1 min-h-0 overflow-hidden"; // Content area always grows and handles internal scroll
+  const cardContentConditionalClasses = !onFormSubmit ? "max-h-[60vh]" : ""; // Limit height in standalone page mode
+  const cardContentFinalClassName = cn(cardContentBaseClasses, cardContentConditionalClasses);
+  
+  const scrollAreaFinalClassName = "h-full w-full"; // ScrollArea always fills its parent (CardContent)
+
+  const cardFooterBaseClasses = "flex-shrink-0 flex-col items-stretch gap-2";
+  const cardFooterConditionalClasses = onFormSubmit ? "pt-6" : "pt-6"; // Keep original padding logic
+  const cardFooterFinalClassName = cn(cardFooterBaseClasses, cardFooterConditionalClasses);
+
 
   return (
-    <FormWrapper {...formProps}>
+    <FormWrapper {...(onFormSubmit ? {className: formWrapperFinalClassName} : {className: formWrapperFinalClassName})}>
       {onFormSubmit ? null : ( 
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Add New Hymn</CardTitle>
           <CardDescription>Fill in the details for the new hymn. Hiligaynon title and lyrics are required.</CardDescription>
         </CardHeader>
       )}
-      <form onSubmit={handleSubmit} className={formElementClassName}>
-        <CardContent className={cardContentClassName}>
-          <ScrollArea className={scrollAreaClassName}>
+      <form onSubmit={handleSubmit} className={formElementFinalClassName}>
+        <CardContent className={cardContentFinalClassName}>
+          <ScrollArea className={scrollAreaFinalClassName}>
             <div className="space-y-6 pr-4 pb-4">
               <div className="space-y-2">
                 <Label htmlFor="titleHiligaynon-dialog">Title (Hiligaynon)</Label>
@@ -208,7 +217,7 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
             </div>
           </ScrollArea>
         </CardContent>
-        <CardFooter className={`${cardFooterClassName} flex-col items-stretch gap-2`}>
+        <CardFooter className={cardFooterFinalClassName}>
           <Button type="submit" className="w-full">Add Hymn</Button>
           <Button type="button" variant="outline" onClick={handleCancel} className="w-full">
             Cancel
@@ -218,3 +227,5 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
     </FormWrapper>
   );
 }
+
+    
