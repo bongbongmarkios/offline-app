@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
-import { ArrowLeft, FilePenLine, Music } from 'lucide-react';
+import { ArrowLeft, FilePenLine, Music, Play } from 'lucide-react'; // Added Play icon
 import { useRouter } from 'next/navigation';
 import { initialSampleHymns, updateSampleHymn } from '@/data/hymns';
 import { cn } from '@/lib/utils';
@@ -61,37 +61,32 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
       if (storedHymnsString) {
         const storedHymns: Hymn[] = JSON.parse(storedHymnsString);
-        // Robust find: ensure hymn object and id are valid before comparing
         const hymnFromStorage = storedHymns.find(h => h && typeof h.id === 'string' && h.id === params.id);
         if (hymnFromStorage) {
           resolvedHymn = hymnFromStorage;
         } else {
-          // Hymn not found in localStorage, fallback to server/initial prop if available
           resolvedHymn = hymnFromServer || null;
         }
       } else {
-        // localStorage is empty for this key. Prime it with initialSampleHymns.
-        // Use a fresh copy of initialSampleHymns for priming.
-        const allInitialHymnsForStorage = [...initialSampleHymns]; // initialSampleHymns from import
+        const allInitialHymnsForStorage = [...initialSampleHymns];
         localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allInitialHymnsForStorage));
         
         const currentHymnFromPrimedData = allInitialHymnsForStorage.find(h => h && typeof h.id === 'string' && h.id === params.id);
         if (currentHymnFromPrimedData) {
             resolvedHymn = currentHymnFromPrimedData;
         } else {
-            resolvedHymn = hymnFromServer || null; // Fallback if not even in initial set
+            resolvedHymn = hymnFromServer || null;
         }
       }
     } catch (error) {
       console.error("Error loading hymn for interactive view:", error);
-      // Fallback to server/initial prop on error
       resolvedHymn = hymnFromServer || null;
     }
 
     setHymn(resolvedHymn);
     setIsLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id, hymnFromServer]); // Dependencies ensure reload if these critical props change
+  }, [params.id, hymnFromServer]); 
 
 
   useEffect(() => {
@@ -122,9 +117,6 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
   const handleEditSuccess = (updatedHymnData: Hymn) => {
     setHymn(updatedHymnData);
     setIsEditDialogOpen(false);
-    // The EditHymnForm already updates localStorage.
-    // We refresh the router to ensure server components that might depend on this data can re-fetch if necessary,
-    // although for hymn data, client-side localStorage is the primary source of truth after initial load.
     router.refresh(); 
   };
 
@@ -139,7 +131,6 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
     if (!hymn) return;
 
     const newExternalUrl = urlInputForDialog.trim() || undefined;
-    // This is the hymn object we want to save, with the new URL
     const updatedHymnData: Hymn = { ...hymn, externalUrl: newExternalUrl };
 
     try {
@@ -151,37 +142,28 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
           allHymnsForStorage = JSON.parse(storedHymnsString);
         } catch (parseError) {
           console.error("Error parsing hymns from localStorage, re-initializing with initial set:", parseError);
-          // If parsing fails, start from initial set to avoid corrupting further.
-          allHymnsForStorage = [...initialSampleHymns]; // From import
+          allHymnsForStorage = [...initialSampleHymns]; 
         }
       } else {
-        // localStorage is empty. Initialize with the base set of hymns.
-        allHymnsForStorage = [...initialSampleHymns]; // From import
+        allHymnsForStorage = [...initialSampleHymns]; 
       }
       
       const hymnIndex = allHymnsForStorage.findIndex(h => h && typeof h.id === 'string' && h.id === hymn.id);
       if (hymnIndex > -1) {
-        // Update the existing hymn
         allHymnsForStorage[hymnIndex] = updatedHymnData;
       } else {
-        // Hymn not found in the list (e.g., if initialSampleHymns didn't include it or list was corrupt/empty)
-        // Add it. This ensures the hymn is in the list.
         allHymnsForStorage.push(updatedHymnData); 
       }
-      // Save the modified list back to localStorage
       localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allHymnsForStorage));
       
-      // Also update the global in-memory initialSampleHymns for consistency during the current session,
-      // if other components might directly access it.
       updateSampleHymn(hymn.id, { externalUrl: newExternalUrl });
 
     } catch (error) {
       console.error("Error saving URL to localStorage:", error);
       toast({ title: "Storage Error", description: "Could not save URL to local storage. Please try again.", variant: "destructive" });
-      return; // Important: Do not proceed if storage failed
+      return; 
     }
 
-    // Update the local state for immediate UI reflection
     setHymn(updatedHymnData);
     toast({ title: "URL Updated", description: "The audio URL has been saved successfully." });
     setIsUrlEditDialogOpen(false);
@@ -232,9 +214,24 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
 
   const headerActions = (
     <>
-      <Button variant="ghost" size="icon" aria-label="Edit audio URL" onClick={handleOpenUrlEditDialog}>
-        <Music className={cn("h-6 w-6", hymn && hymn.externalUrl ? "text-primary" : "text-muted-foreground")} />
-      </Button>
+      {hymn && hymn.externalUrl ? (
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Play audio"
+          onClick={() => {
+            if (hymn.externalUrl) {
+              window.open(hymn.externalUrl, '_blank', 'noopener,noreferrer');
+            }
+          }}
+        >
+          <Play className="h-6 w-6 text-primary" />
+        </Button>
+      ) : (
+        <Button variant="ghost" size="icon" aria-label="Add/Edit audio URL" onClick={handleOpenUrlEditDialog}>
+          <Music className="h-6 w-6 text-muted-foreground" />
+        </Button>
+      )}
       <Button variant="ghost" size="icon" aria-label="Edit hymn details" onClick={() => setIsEditDialogOpen(true)}>
         <FilePenLine className="h-6 w-6 text-muted-foreground" />
       </Button>
