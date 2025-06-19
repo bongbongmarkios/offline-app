@@ -12,10 +12,6 @@ import { useRouter } from 'next/navigation';
 
 const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
 
-// Metadata cannot be exported from Client Components. 
-// The title in AppHeader will be set.
-// For browser tab title, alternative methods like useEffect would be needed if static export is not an option.
-
 export default function HymnUrlEditorPage() {
   const [hymns, setHymns] = useState<Hymn[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,7 +19,9 @@ export default function HymnUrlEditorPage() {
   const router = useRouter();
 
   const handleUrlUpdated = () => {
-    setHymnsVersion(v => v + 1); // Increment version to trigger useEffect, causing re-fetch from localStorage
+    // This function is called by StaticHymnListDisplay after a URL is saved.
+    // Incrementing hymnsVersion triggers the useEffect below to re-fetch from localStorage.
+    setHymnsVersion(v => v + 1); 
   };
 
   useEffect(() => {
@@ -33,6 +31,7 @@ export default function HymnUrlEditorPage() {
       const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
       if (storedHymnsString) {
         const parsedHymns: Hymn[] = JSON.parse(storedHymnsString);
+        // Filter for valid hymns (e.g., with an ID)
         loadedHymns = parsedHymns.filter(h => h && h.id && typeof h.id === 'string' && h.id.trim() !== "");
       } else {
         // If localStorage is empty, load initial hymns and prime localStorage
@@ -46,7 +45,7 @@ export default function HymnUrlEditorPage() {
       loadedHymns = initialSampleHymns.filter(h => h && h.id && typeof h.id === 'string' && h.id.trim() !== "");
     }
     
-    // Sort hymns, e.g., by page number
+    // Sort hymns, e.g., by page number or title
     const sortedHymns = [...loadedHymns].sort((a, b) => {
         const pageNumA = a.pageNumber ? parseInt(a.pageNumber, 10) : Infinity;
         const pageNumB = b.pageNumber ? parseInt(b.pageNumber, 10) : Infinity;
@@ -58,7 +57,7 @@ export default function HymnUrlEditorPage() {
 
     setHymns(sortedHymns);
     setIsLoading(false);
-  }, [hymnsVersion]); // Re-run when hymnsVersion changes (e.g., after a URL update)
+  }, [hymnsVersion]); // Re-run when hymnsVersion changes (e.g., after a URL update via onUrlUpdated callback)
 
   const headerTitleContent = (
     <div className="flex items-center w-full">

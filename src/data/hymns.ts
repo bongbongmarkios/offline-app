@@ -366,8 +366,11 @@ Makita ta Sia sa himaya Nia.`,
 export function updateSampleHymn(hymnId: string, updatedData: Partial<Omit<Hymn, 'id'>>): Hymn | null {
   const hymnIndex = initialSampleHymns.findIndex(h => h.id === hymnId);
   if (hymnIndex === -1) {
+    console.warn(`Hymn with ID ${hymnId} not found in initialSampleHymns for update.`);
     return null;
   }
+  // This directly mutates the initialSampleHymns array's element.
+  // Other parts of the app importing initialSampleHymns will see this change.
   initialSampleHymns[hymnIndex] = {
     ...initialSampleHymns[hymnIndex],
     ...updatedData,

@@ -34,24 +34,25 @@ export default function StaticHymnListDisplay({ hymns, onUrlUpdated }: StaticHym
   };
 
   const handleSaveClick = (hymnId: string) => {
-    if (!hymns) return;
-
-    const hymnIndex = hymns.findIndex(h => h.id === hymnId);
-    if (hymnIndex === -1) {
+    // The 'hymns' prop is the current list, sourced from localStorage by the parent page.
+    const hymnToUpdate = hymns.find(h => h.id === hymnId);
+    if (!hymnToUpdate) {
       toast({ title: "Error", description: "Hymn not found for saving URL.", variant: "destructive" });
       return;
     }
 
-    // Create a new array with the updated hymn
-    const updatedHymns = hymns.map(h =>
+    // Create a new array with the updated hymn based on the current list.
+    const updatedHymnsList = hymns.map(h =>
       h.id === hymnId ? { ...h, externalUrl: urlInputValue.trim() || undefined } : h
     );
 
     try {
-      // Update localStorage with the new array
-      localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(updatedHymns));
+      // Update localStorage with the new, complete list of hymns.
+      localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(updatedHymnsList));
       
-      // Also update in-memory initialSampleHymns (fallback data) for consistency during the session
+      // Also update in-memory initialSampleHymns (fallback/shared data) for consistency during the session.
+      // This ensures HymnInteractiveView (detail page) sees the update if it relies on 
+      // initialSampleHymns directly or as a fallback before its own localStorage load.
       updateSampleHymn(hymnId, { externalUrl: urlInputValue.trim() || undefined });
 
       toast({ title: "URL Saved", description: "The external URL has been updated." });
