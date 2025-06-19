@@ -16,7 +16,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogTrigger, 
 } from "@/components/ui/dialog";
 import {
   Popover,
@@ -27,6 +27,8 @@ import { useState, useEffect } from 'react';
 import DeleteHymnDialogContent from '@/components/hymnal/DeleteHymnDialogContent';
 import DeleteReadingDialogContent from '@/components/readings/DeleteReadingDialogContent';
 import ChatInterface from '@/components/ai/ChatInterface';
+import AddHymnForm from '@/components/hymnal/AddHymnForm'; 
+import AddReadingForm from '@/components/readings/AddReadingForm'; 
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
@@ -53,6 +55,8 @@ const initialSignalDetail: SignalDetail = {
 
 
 export default function AppHeader({ title, actions, hideDefaultActions }: AppHeaderProps) {
+  const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = useState(false); 
+  const [isAddReadingDialogOpen, setIsAddReadingDialogOpen] = useState(false); 
   const [isDeleteHymnDialogOpen, setIsDeleteHymnDialogOpen] = useState(false);
   const [isDeleteReadingDialogOpen, setIsDeleteReadingDialogOpen] = useState(false);
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
@@ -87,7 +91,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
             description = 'Average';
           } else if (mbps > 0.1) {
             level = 'weak';
-            description = 'Weak';
+            description = 'Poor';
           } else {
             level = 'weak';
             description = 'Poor';
@@ -102,7 +106,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
           } else if (effectiveType === '2g' || effectiveType === 'slow-2g') {
             level = 'weak';
             description = 'Poor (Cellular)';
-          } else if (effectiveType === 'wifi' && navigator.onLine) { // Added check for effectiveType 'wifi'
+          } else if (effectiveType === 'wifi' && navigator.onLine) { 
             description = 'Online (Wi-Fi - Speed details unavailable)';
             level = 'average';
           } else if (navigator.onLine) {
@@ -163,9 +167,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
     return label;
   }
 
-  const handleDeleteSuccess = () => {
-    // This function will trigger a re-render of the current page,
-    // which should re-fetch data from localStorage if components are designed to do so.
+  const handleDataChangeSuccess = () => {
     router.refresh();
   }
 
@@ -177,10 +179,8 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
             {typeof title === 'string' && title.length > 0 ? (
               <h1 className="text-2xl font-headline font-semibold text-primary sm:text-3xl">{title}</h1>
             ) : typeof title === 'string' && title.length === 0 ? (
-              // Explicitly handle empty string title to render nothing
               null
             ) : (
-              // Render title if it's a ReactNode (but not an empty string)
               title
             )}
           </div>
@@ -235,7 +235,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                         Ask questions or get help.
                       </DialogDescription>
                     </DialogHeader>
-                    <ChatInterface /> {/* This component will need to be created */}
+                    <ChatInterface /> 
                   </DialogContent>
                 </Dialog>
 
@@ -246,13 +246,17 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => router.push('/hymnal/add')}>
+                    <DropdownMenuItem onSelect={() => setIsAddHymnDialogOpen(true)}>
                       <FilePlus2 className="mr-2 h-4 w-4" />
                       <span>Add Hymn</span>
                     </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setIsAddReadingDialogOpen(true)}>
+                       <FilePlus2 className="mr-2 h-4 w-4" /> 
+                      <span>Add Reading</span>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => router.push('/hymn-url-editor')}>
                       <ListChecks className="mr-2 h-4 w-4" />
-                      <span>URL</span>
+                      <span>URL Management</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -271,7 +275,6 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                     </DropdownMenuItem>
                      <DropdownMenuItem
                       onSelect={() => router.push('/trash')}
-                      className="" // Not destructive by default
                     >
                       <Trash className="mr-2 h-4 w-4" />
                       <span>Trash</span>
@@ -293,39 +296,74 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
         </div>
       </header>
 
-      {/* Delete Hymn Dialog */}
+      <Dialog open={isAddHymnDialogOpen} onOpenChange={setIsAddHymnDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] h-[85vh] flex flex-col sm:rounded-[25px]">
+          <DialogHeader>
+            <DialogTitle>Add New Hymn</DialogTitle>
+            <DialogDescription>
+              Fill in the details for the new hymn. Hiligaynon title and lyrics are required.
+            </DialogDescription>
+          </DialogHeader>
+          <AddHymnForm
+            onFormSubmit={() => {
+              setIsAddHymnDialogOpen(false);
+              handleDataChangeSuccess();
+            }}
+            className="pt-0 flex-1 min-h-0"
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isAddReadingDialogOpen} onOpenChange={setIsAddReadingDialogOpen}>
+        <DialogContent className="sm:max-w-md"> 
+          <DialogHeader>
+            <DialogTitle>Add New Reading</DialogTitle>
+            <DialogDescription>
+              Fill in the details for the new responsive reading.
+            </DialogDescription>
+          </DialogHeader>
+          <AddReadingForm
+            onFormSubmit={() => {
+              setIsAddReadingDialogOpen(false);
+              handleDataChangeSuccess(); 
+            }}
+             className="pt-0" 
+          />
+        </DialogContent>
+      </Dialog>
+
+
       <Dialog open={isDeleteHymnDialogOpen} onOpenChange={setIsDeleteHymnDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete Hymns</DialogTitle>
+            <DialogTitle>Move Hymns to Trash</DialogTitle>
             <DialogDescription>
-              Select the hymns you want to move to trash. Items in trash will be permanently deleted after 30 days.
+              Select hymns to move to trash. They will be permanently deleted after 30 days.
             </DialogDescription>
           </DialogHeader>
           <DeleteHymnDialogContent
             onOpenChange={setIsDeleteHymnDialogOpen}
             onDeleteSuccess={() => {
-              setIsDeleteHymnDialogOpen(false); // Close dialog
-              handleDeleteSuccess(); // Refresh router, which should update lists
+              setIsDeleteHymnDialogOpen(false);
+              handleDataChangeSuccess();
             }}
           />
         </DialogContent>
       </Dialog>
 
-      {/* Delete Reading Dialog */}
       <Dialog open={isDeleteReadingDialogOpen} onOpenChange={setIsDeleteReadingDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete Readings</DialogTitle>
+            <DialogTitle>Delete Readings (Simulated)</DialogTitle>
             <DialogDescription>
-              Select the readings you want to delete. This action cannot be undone.
+              Select readings to "delete". This action is currently simulated.
             </DialogDescription>
           </DialogHeader>
           <DeleteReadingDialogContent
             onOpenChange={setIsDeleteReadingDialogOpen}
             onDeleteSuccess={() => {
-              setIsDeleteReadingDialogOpen(false); // Close dialog
-              handleDeleteSuccess(); // Refresh router
+              setIsDeleteReadingDialogOpen(false);
+              handleDataChangeSuccess();
             }}
           />
         </DialogContent>
