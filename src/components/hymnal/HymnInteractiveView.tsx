@@ -33,7 +33,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const router = useRouter();
-  const [isOnline, setIsOnline] = useState(true); 
+  // const [isOnline, setIsOnline] = useState(true); // Commented out as it wasn't used for link behavior
   const { toast } = useToast();
 
   const [isUrlEditDialogOpen, setIsUrlEditDialogOpen] = useState(false);
@@ -46,7 +46,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       case 'hiligaynon':
         return !!currentHymn.titleHiligaynon;
       case 'filipino':
-        return !!currentHymn.titleFilipino; 
+        return !!currentHymn.titleFilipino;
       case 'english':
         return !!currentHymn.titleEnglish;
       default:
@@ -60,16 +60,16 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
 
     try {
       const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
-      if (storedHymnsString) { 
+      if (storedHymnsString) {
         const storedHymns: Hymn[] = JSON.parse(storedHymnsString);
         const hymnFromStorage = storedHymns.find(h => h.id === params.id);
         if (hymnFromStorage) {
-          resolvedHymn = hymnFromStorage; 
+          resolvedHymn = hymnFromStorage;
         } else {
           resolvedHymn = hymnFromServer || null;
         }
-      } else { 
-        const allInitialHymnsForStorage = [...initialSampleHymns]; 
+      } else {
+        const allInitialHymnsForStorage = [...initialSampleHymns];
         localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allInitialHymnsForStorage));
         
         const currentHymnFromPrimedData = allInitialHymnsForStorage.find(h => h.id === params.id);
@@ -106,22 +106,22 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
   }, [hymn]);
 
 
-  useEffect(() => {
-    const updateOnlineStatus = () => {
-      if (typeof navigator !== 'undefined' && navigator.onLine !== undefined) {
-        setIsOnline(navigator.onLine);
-      } else {
-        setIsOnline(true); 
-      }
-    };
-    updateOnlineStatus(); 
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
-    return () => {
-      window.removeEventListener('online', updateOnlineStatus);
-      window.removeEventListener('offline', updateOnlineStatus);
-    };
-  }, []);
+  // useEffect(() => { // isOnline state was not used for link behavior, can be removed if not needed elsewhere
+  //   const updateOnlineStatus = () => {
+  //     if (typeof navigator !== 'undefined' && navigator.onLine !== undefined) {
+  //       setIsOnline(navigator.onLine);
+  //     } else {
+  //       setIsOnline(true);
+  //     }
+  //   };
+  //   updateOnlineStatus();
+  //   window.addEventListener('online', updateOnlineStatus);
+  //   window.addEventListener('offline', updateOnlineStatus);
+  //   return () => {
+  //     window.removeEventListener('online', updateOnlineStatus);
+  //     window.removeEventListener('offline', updateOnlineStatus);
+  //   };
+  // }, []);
 
 
   const toggleLanguageSelector = () => {
@@ -153,7 +153,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
     } catch (error) {
         console.error("Error saving edited hymn to localStorage:", error);
     }
-    router.refresh(); 
+    router.refresh();
   };
 
   const handleOpenUrlEditDialog = () => {
@@ -257,7 +257,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
             </Link>
           </Button>
         }
-        actions={hymn.pageNumber ? headerActions : null}
+        actions={hymn.pageNumber ? headerActions : null} // Only show actions if hymn has page number
         hideDefaultActions={true}
       />
       <div className="container mx-auto px-4 pb-8">
@@ -317,4 +317,3 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
     </>
   );
 }
-
