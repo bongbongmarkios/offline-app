@@ -375,12 +375,12 @@ Jesus, Savior and Almighty,
 Crown Him our King indeed.
 He will come as Conqueror,
 We will see Him in His glory.`, // English lyrics added
-    titleFilipino: undefined, 
-    lyricsFilipino: undefined, 
-    keySignature: '6/8', 
-    pageNumber: undefined, 
-    author: undefined, 
-    category: undefined, 
+    titleFilipino: undefined,
+    lyricsFilipino: undefined,
+    keySignature: '6/8',
+    pageNumber: undefined,
+    author: undefined,
+    category: undefined,
     externalUrl: undefined,
   },
 ];
@@ -416,9 +416,9 @@ export function addSampleHymn(hymnData: Omit<Hymn, 'id'>): Hymn {
       }
     }
   });
-  
+
   const newId = (maxId + 1).toString();
-  
+
   const newHymn: Hymn = {
     id: newId,
     ...hymnData,
