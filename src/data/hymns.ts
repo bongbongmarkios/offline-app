@@ -1,10 +1,10 @@
 
 import type { Hymn } from '@/types';
 
-// initialSampleHymns now contains a restored set of hymns.
+// initialSampleHymns now contains a restored set of hymns with updated IDs.
 export let initialSampleHymns: Hymn[] = [
   {
-    id: '1',
+    id: '10001', // Updated ID
     titleEnglish: 'How Great Thou Art',
     lyricsEnglish: `O Lord my God, when I in awesome wonder
 Consider all the worlds Thy Hands have made;
@@ -90,7 +90,7 @@ At ihahayag: "Diyos ko, dakila Ka, O Diyos!"`,
     externalUrl: undefined,
   },
   {
-    id: '2',
+    id: '10002', // Updated ID
     titleEnglish: 'God Will Take Care of You',
     lyricsEnglish: `Be not dismayed whate'er betide,
 God will take care of you;
@@ -176,7 +176,7 @@ Ang Diyos ang ingat sa \'yo.`,
     externalUrl: undefined,
   },
   {
-    id: '3',
+    id: '10003', // Updated ID
     titleEnglish: 'Amazing Grace',
     lyricsEnglish: `Amazing grace! How sweet the sound
 That saved a wretch like me!
@@ -244,7 +244,7 @@ Habang buhay ay nagtatagal.`,
     externalUrl: undefined,
   },
   {
-    id: '4',
+    id: '10004', // Updated ID
     titleEnglish: 'To God Be the Glory',
     lyricsEnglish: `To God be the glory, great things He hath done;
 So loved He the world that He gave us His Son,
@@ -321,7 +321,7 @@ Ang ating pagkamangha, ating kagalakan, kapag si Hesus ay ating makikita.`,
     externalUrl: undefined,
   },
   {
-    id: '5',
+    id: '10005', // Updated ID
     titleHiligaynon: 'DAYAWA SIA (Praise him, Praise Him)',
     lyricsHiligaynon: `Verse 1:
 Dayawa Sia, si Hesus nga Manunubos
@@ -351,13 +351,13 @@ Purongan Sia nga Hari gid naton
 Magakari Sia subong nga Mandadaos
 Makita ta Sia sa himaya Nia.`,
     titleEnglish: 'Praise Him, Praise Him',
-    lyricsEnglish: '', // No English lyrics provided by user for this hymn
-    titleFilipino: undefined, // No Filipino title provided
-    lyricsFilipino: undefined, // No Filipino lyrics provided
-    keySignature: '6/8', // From "Key of 6/8"
-    pageNumber: undefined, // No page number provided
-    author: undefined, // No author provided
-    category: undefined, // No category provided
+    lyricsEnglish: '', 
+    titleFilipino: undefined, 
+    lyricsFilipino: undefined, 
+    keySignature: '6/8', 
+    pageNumber: undefined, 
+    author: undefined, 
+    category: undefined, 
     externalUrl: undefined,
   },
 ];
@@ -369,8 +369,6 @@ export function updateSampleHymn(hymnId: string, updatedData: Partial<Omit<Hymn,
     console.warn(`Hymn with ID ${hymnId} not found in initialSampleHymns for update.`);
     return null;
   }
-  // This directly mutates the initialSampleHymns array's element.
-  // Other parts of the app importing initialSampleHymns will see this change.
   initialSampleHymns[hymnIndex] = {
     ...initialSampleHymns[hymnIndex],
     ...updatedData,
@@ -383,10 +381,20 @@ export function deleteSampleHymnsByIds(hymnIds: string[]): void {
   initialSampleHymns = initialSampleHymns.filter(hymn => !hymnIds.includes(hymn.id));
 }
 
-// Function to add a new hymn to the in-memory sample data
+// Function to add a new hymn to the in-memory sample data with new ID scheme
 export function addSampleHymn(hymnData: Omit<Hymn, 'id'>): Hymn {
-  const newIdNumber = Math.max(0, ...initialSampleHymns.map(h => parseInt(h.id, 10) || 0)) + 1;
-  const newId = newIdNumber.toString();
+  let maxId = 10000; // Base for hymn IDs (so first new ID will be 10001)
+  initialSampleHymns.forEach(hymn => {
+    const idNum = parseInt(hymn.id, 10);
+    // Consider only IDs in the hymn range (e.g., 10000-19999)
+    if (!isNaN(idNum) && idNum >= 10000 && idNum < 20000) {
+      if (idNum > maxId) {
+        maxId = idNum;
+      }
+    }
+  });
+  
+  const newId = (maxId + 1).toString();
   
   const newHymn: Hymn = {
     id: newId,

@@ -1,8 +1,9 @@
+
 import type { Reading } from '@/types';
 
 export const sampleReadings: Reading[] = [
   {
-    id: 'r1',
+    id: '20001', // Updated ID
     title: 'The Lord is My Shepherd (Psalm 23)',
     lyrics: `Leader: The Lord is my shepherd; I shall not want.
 People: He maketh me to lie down in green pastures:
@@ -15,7 +16,7 @@ All: Thou preparest a table before me in the presence of mine enemies: thou anoi
     source: 'Psalm 23',
   },
   {
-    id: 'r2',
+    id: '20002', // Updated ID
     title: 'A Call to True Worship (Isaiah 1:12-17)',
     lyrics: `Leader: When you come to appear before me, who has required of you this trampling of my courts?
 People: Bring no more vain offerings; incense is an abomination to me.
