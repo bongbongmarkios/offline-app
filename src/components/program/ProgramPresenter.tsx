@@ -1,3 +1,4 @@
+
 'use client';
 import type { Program, ProgramItem, Hymn, Reading } from '@/types';
 import { useState, useEffect, useMemo } from 'react';
@@ -7,7 +8,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useActivity } from '@/hooks/useActivityTracker';
 import { Progress } from '@/components/ui/progress';
 import Link from 'next/link';
-import { sampleHymns } from '@/data/hymns'; // For linking hymns
+import { initialSampleHymns } from '@/data/hymns'; // For linking hymns
 import { sampleReadings } from '@/data/readings'; // For linking readings
 
 interface ProgramPresenterProps {
@@ -28,7 +29,8 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
 
   const linkedHymn = useMemo(() => {
     if (currentItem?.hymnId) {
-      return sampleHymns.find(h => h.id === currentItem.hymnId);
+      // Use initialSampleHymns instead of sampleHymns
+      return initialSampleHymns.find(h => h.id === currentItem.hymnId);
     }
     return null;
   }, [currentItem]);
@@ -77,7 +79,7 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
             <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
                 <p className="text-sm text-muted-foreground mb-1">Featured Hymn:</p>
                 <Link href={`/hymnal/${linkedHymn.id}`} className="text-lg font-semibold text-accent hover:underline">
-                    {linkedHymn.title} {linkedHymn.number ? `(#${linkedHymn.number})` : ''}
+                    {linkedHymn.titleHiligaynon || linkedHymn.titleEnglish} {linkedHymn.pageNumber ? `(#${linkedHymn.pageNumber})` : ''}
                 </Link>
             </div>
         )}

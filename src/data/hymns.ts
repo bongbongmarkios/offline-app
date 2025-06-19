@@ -381,16 +381,14 @@ export function deleteSampleHymnsByIds(hymnIds: string[]): void {
 }
 
 // Function to add a new hymn to the in-memory sample data
-// This function is currently not used by the UI after removing add hymn functionality
-// export function addSampleHymn(hymnData: Omit<Hymn, 'id'>): Hymn {
-//   const newIdNumber = Math.max(0, ...initialSampleHymns.map(h => parseInt(h.id, 10) || 0)) + 1;
-//   const newId = newIdNumber.toString();
+export function addSampleHymn(hymnData: Omit<Hymn, 'id'>): Hymn {
+  const newIdNumber = Math.max(0, ...initialSampleHymns.map(h => parseInt(h.id, 10) || 0)) + 1;
+  const newId = newIdNumber.toString();
   
-//   const newHymn: Hymn = {
-//     id: newId,
-//     ...hymnData,
-//   };
-//   initialSampleHymns.push(newHymn);
-//   return newHymn;
-// }
-
+  const newHymn: Hymn = {
+    id: newId,
+    ...hymnData,
+  };
+  initialSampleHymns.push(newHymn);
+  return newHymn;
+}

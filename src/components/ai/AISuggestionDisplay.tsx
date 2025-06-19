@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, AlertTriangle, Wand2, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
-import { sampleHymns } from '@/data/hymns';
+import { initialSampleHymns } from '@/data/hymns'; // Use initialSampleHymns
 import { sampleReadings } from '@/data/readings';
 
 export default function AISuggestionDisplay() {
@@ -48,7 +48,8 @@ export default function AISuggestionDisplay() {
   // Finds item by English title for hymns, or original title for readings
   const findItemId = (title: string, type: 'hymn' | 'reading') => {
     if (type === 'hymn') {
-      const hymn = sampleHymns.find(h => h.titleEnglish === title);
+      // Use initialSampleHymns instead of sampleHymns
+      const hymn = initialSampleHymns.find(h => h.titleEnglish === title);
       return hymn ? `/hymnal/${hymn.id}` : null;
     }
     const reading = sampleReadings.find(r => r.title === title);
