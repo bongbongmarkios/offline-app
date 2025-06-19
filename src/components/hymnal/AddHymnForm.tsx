@@ -14,8 +14,8 @@ import type { Hymn } from '@/types';
 import { cn } from '@/lib/utils';
 
 interface AddHymnFormProps {
-  onFormSubmit?: () => void;
-  className?: string;
+  onFormSubmit?: () => void; // True if used in a dialog, false/undefined if standalone page
+  className?: string;       // Allows parent to pass additional classes to the root wrapper
 }
 
 const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
@@ -49,15 +49,15 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
     const newHymnData: Omit<Hymn, 'id'> = {
       titleHiligaynon: titleHiligaynon.trim(),
       titleFilipino: titleFilipino.trim() || undefined,
-      titleEnglish: titleEnglish.trim() || titleHiligaynon.trim(), // Fallback to Hiligaynon title if English is empty
+      titleEnglish: titleEnglish.trim() || titleHiligaynon.trim(), 
       
-      lyricsHiligaynon: lyricsHiligaynon, // Preserve original spacing, required to be non-empty by check above
-      lyricsFilipino: titleFilipino.trim() ? lyricsFilipino : undefined, // Save lyricsFilipino (can be "") if titleFilipino exists
-      lyricsEnglish: lyricsEnglish, // Save as is (can be "" if lyricsEnglish field is empty)
+      lyricsHiligaynon: lyricsHiligaynon, 
+      lyricsFilipino: titleFilipino.trim() ? lyricsFilipino : undefined, 
+      lyricsEnglish: lyricsEnglish, 
 
       pageNumber: pageNumber.trim() || undefined,
       keySignature: keySignature.trim() || undefined,
-      externalUrl: undefined, // Not editable in this form
+      externalUrl: undefined, 
     };
     
     const addedHymn = addSampleHymn(newHymnData);
@@ -104,7 +104,6 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
       description: `"${addedHymn.titleEnglish || addedHymn.titleHiligaynon}" has been added.`,
     });
 
-    // Reset form fields
     setTitleHiligaynon('');
     setTitleFilipino('');
     setTitleEnglish('');
@@ -139,43 +138,49 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
     }
   };
 
-  const FormWrapper = onFormSubmit ? 'div' : Card;
-  
-  const formWrapperFinalClassName = onFormSubmit 
-    ? cn(className, 'flex flex-col') // In dialog, AddHymnForm's root div is a flex column
-    : cn('max-w-2xl mx-auto shadow-lg', className); // Standalone page
+  const isDialogMode = !!onFormSubmit;
+  const idSuffix = isDialogMode ? 'dialog' : 'page';
 
-  const formElementBaseClasses = "flex flex-col";
-  const formElementConditionalClasses = onFormSubmit ? "flex-1 min-h-0" : ""; // Form grows if in dialog
-  const formElementFinalClassName = cn(formElementBaseClasses, formElementConditionalClasses);
+  const FormWrapper = isDialogMode ? 'div' : Card;
 
-  const cardContentBaseClasses = "pt-4 flex-1 min-h-0 overflow-hidden"; // Content area always grows and handles internal scroll
-  const cardContentConditionalClasses = !onFormSubmit ? "max-h-[60vh]" : ""; // Limit height in standalone page mode
-  const cardContentFinalClassName = cn(cardContentBaseClasses, cardContentConditionalClasses);
-  
-  const scrollAreaFinalClassName = "h-full w-full"; // ScrollArea always fills its parent (CardContent)
+  const formWrapperClasses = cn(
+    isDialogMode 
+      ? 'flex flex-col h-full' 
+      : 'max-w-2xl mx-auto shadow-lg flex flex-col max-h-[calc(100vh-12rem)] sm:max-h-[calc(100vh-10rem)]', 
+    className 
+  );
 
-  const cardFooterBaseClasses = "flex-shrink-0 flex-col items-stretch gap-2";
-  const cardFooterConditionalClasses = onFormSubmit ? "pt-6" : "pt-6"; // Keep original padding logic
-  const cardFooterFinalClassName = cn(cardFooterBaseClasses, cardFooterConditionalClasses);
+  const formClasses = cn(
+    'flex flex-col flex-1 min-h-0' 
+  );
 
+  const cardContentClasses = cn(
+    'pt-4 flex-1 min-h-0 overflow-hidden' 
+  );
+
+  const scrollAreaClasses = cn('h-full w-full');
+
+  const cardFooterClasses = cn(
+    'flex-shrink-0 flex flex-col items-stretch gap-2 pt-6'
+  );
 
   return (
-    <FormWrapper {...(onFormSubmit ? {className: formWrapperFinalClassName} : {className: formWrapperFinalClassName})}>
-      {onFormSubmit ? null : ( 
-        <CardHeader>
+    <FormWrapper className={formWrapperClasses}>
+      {!isDialogMode && (
+        <CardHeader className="flex-shrink-0"> 
           <CardTitle className="font-headline text-2xl">Add New Hymn</CardTitle>
           <CardDescription>Fill in the details for the new hymn. Hiligaynon title and lyrics are required.</CardDescription>
         </CardHeader>
       )}
-      <form onSubmit={handleSubmit} className={formElementFinalClassName}>
-        <CardContent className={cardContentFinalClassName}>
-          <ScrollArea className={scrollAreaFinalClassName}>
+      
+      <form onSubmit={handleSubmit} className={formClasses}>
+        <CardContent className={cardContentClasses}>
+          <ScrollArea className={scrollAreaClasses}>
             <div className="space-y-6 pr-4 pb-4">
               <div className="space-y-2">
-                <Label htmlFor="titleHiligaynon-dialog">Title (Hiligaynon)</Label>
+                <Label htmlFor={`titleHiligaynon-${idSuffix}`}>Title (Hiligaynon)</Label>
                 <Input 
-                  id="titleHiligaynon-dialog" 
+                  id={`titleHiligaynon-${idSuffix}`} 
                   value={titleHiligaynon} 
                   onChange={(e) => setTitleHiligaynon(e.target.value.toUpperCase())} 
                   placeholder="Hiligaynon Title"
@@ -183,41 +188,42 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="titleFilipino-dialog">Title (Filipino, Optional)</Label>
-                <Input id="titleFilipino-dialog" value={titleFilipino} onChange={(e) => setTitleFilipino(e.target.value)} placeholder="Filipino Title" />
+                <Label htmlFor={`titleFilipino-${idSuffix}`}>Title (Filipino, Optional)</Label>
+                <Input id={`titleFilipino-${idSuffix}`} value={titleFilipino} onChange={(e) => setTitleFilipino(e.target.value)} placeholder="Filipino Title" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="titleEnglish-dialog">Title (English, Optional)</Label>
-                <Input id="titleEnglish-dialog" value={titleEnglish} onChange={(e) => setTitleEnglish(e.target.value)} placeholder="English Title" />
+                <Label htmlFor={`titleEnglish-${idSuffix}`}>Title (English, Optional)</Label>
+                <Input id={`titleEnglish-${idSuffix}`} value={titleEnglish} onChange={(e) => setTitleEnglish(e.target.value)} placeholder="English Title" />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="pageNumber-dialog">Page Number (Optional)</Label>
-                  <Input id="pageNumber-dialog" value={pageNumber} onChange={(e) => setPageNumber(e.target.value)} placeholder="e.g., 123" />
+                  <Label htmlFor={`pageNumber-${idSuffix}`}>Page Number (Optional)</Label>
+                  <Input id={`pageNumber-${idSuffix}`} value={pageNumber} onChange={(e) => setPageNumber(e.target.value)} placeholder="e.g., 123" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="keySignature-dialog">Key Signature (Optional)</Label>
-                  <Input id="keySignature-dialog" value={keySignature} onChange={(e) => setKeySignature(e.target.value)} placeholder="e.g., C Major" />
+                  <Label htmlFor={`keySignature-${idSuffix}`}>Key Signature (Optional)</Label>
+                  <Input id={`keySignature-${idSuffix}`} value={keySignature} onChange={(e) => setKeySignature(e.target.value)} placeholder="e.g., C Major" />
                 </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="lyricsHiligaynon-dialog">Lyrics (Hiligaynon)</Label>
-                <Textarea id="lyricsHiligaynon-dialog" value={lyricsHiligaynon} onChange={(e) => setLyricsHiligaynon(e.target.value)} placeholder="Enter Hiligaynon lyrics..." rows={6} required />
+                <Label htmlFor={`lyricsHiligaynon-${idSuffix}`}>Lyrics (Hiligaynon)</Label>
+                <Textarea id={`lyricsHiligaynon-${idSuffix}`} value={lyricsHiligaynon} onChange={(e) => setLyricsHiligaynon(e.target.value)} placeholder="Enter Hiligaynon lyrics..." rows={6} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lyricsFilipino-dialog">Lyrics (Filipino, Optional)</Label>
-                <Textarea id="lyricsFilipino-dialog" value={lyricsFilipino} onChange={(e) => setLyricsFilipino(e.target.value)} placeholder="Enter Filipino lyrics..." rows={6} />
+                <Label htmlFor={`lyricsFilipino-${idSuffix}`}>Lyrics (Filipino, Optional)</Label>
+                <Textarea id={`lyricsFilipino-${idSuffix}`} value={lyricsFilipino} onChange={(e) => setLyricsFilipino(e.target.value)} placeholder="Enter Filipino lyrics..." rows={6} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lyricsEnglish-dialog">Lyrics (English, Optional)</Label>
-                <Textarea id="lyricsEnglish-dialog" value={lyricsEnglish} onChange={(e) => setLyricsEnglish(e.target.value)} placeholder="Enter English lyrics..." rows={6} />
+                <Label htmlFor={`lyricsEnglish-${idSuffix}`}>Lyrics (English, Optional)</Label>
+                <Textarea id={`lyricsEnglish-${idSuffix}`} value={lyricsEnglish} onChange={(e) => setLyricsEnglish(e.target.value)} placeholder="Enter English lyrics..." rows={6} />
               </div>
             </div>
           </ScrollArea>
         </CardContent>
-        <CardFooter className={cardFooterFinalClassName}>
+        
+        <CardFooter className={cardFooterClasses}>
           <Button type="submit" className="w-full">Add Hymn</Button>
           <Button type="button" variant="outline" onClick={handleCancel} className="w-full">
             Cancel
@@ -227,5 +233,3 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
     </FormWrapper>
   );
 }
-
-    
