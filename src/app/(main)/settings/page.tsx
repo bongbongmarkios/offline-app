@@ -7,8 +7,10 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { useTheme, type PrimaryColor } from '@/context/ThemeContext';
-import { Moon, Palette, Sun, Settings as SettingsIcon, Loader2 } from 'lucide-react';
+import { Moon, Palette, Sun, Settings as SettingsIcon, Loader2, ArrowLeft } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 
 const primaryColorOptions: { name: PrimaryColor, label: string, lightClass: string, darkClass: string }[] = [
@@ -21,6 +23,7 @@ const primaryColorOptions: { name: PrimaryColor, label: string, lightClass: stri
 
 export default function SettingsPage() {
   const { theme, setTheme, primaryColor, setPrimaryColor, isThemeReady } = useTheme();
+  const router = useRouter();
 
   const handleThemeChange = (checked: boolean) => {
     setTheme(checked ? 'dark' : 'light');
@@ -30,10 +33,21 @@ export default function SettingsPage() {
     setPrimaryColor(value as PrimaryColor);
   };
 
+  const headerTitleContent = (
+    <div className="flex items-center gap-3">
+      <Button variant="outline" size="icon" onClick={() => router.back()} aria-label="Go back">
+        <ArrowLeft className="h-5 w-5" />
+      </Button>
+      <h1 className="text-2xl font-headline font-semibold text-primary sm:text-3xl">
+        Settings
+      </h1>
+    </div>
+  );
+
   if (!isThemeReady) {
     return (
       <>
-        <AppHeader title="Settings" />
+        <AppHeader title={headerTitleContent} />
         <div className="container mx-auto px-4 pb-8">
           <Card className="mt-6">
             <CardHeader>
@@ -59,7 +73,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <AppHeader title="Settings" />
+      <AppHeader title={headerTitleContent} />
       <div className="container mx-auto px-4 pb-8">
         <Card className="mt-6 shadow-lg">
           <CardHeader>
