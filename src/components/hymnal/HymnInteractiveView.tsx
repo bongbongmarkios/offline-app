@@ -68,9 +68,18 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
         if (hymnFromStorage) {
           resolvedHymn = hymnFromStorage;
         } else {
-          resolvedHymn = hymnFromServer || null;
+          // Hymn not in storage, try server version, then add to storage if from server
+          if (hymnFromServer) {
+            resolvedHymn = hymnFromServer;
+            // Add to storage if it's a new hymn from server not yet in local
+            const newStorageHymns = [...storedHymns.filter(h => h.id !== hymnFromServer.id), hymnFromServer];
+            localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(newStorageHymns));
+          } else {
+            resolvedHymn = null;
+          }
         }
       } else {
+        // LocalStorage is empty, prime it with initialSampleHymns
         const allInitialHymnsForStorage = [...initialSampleHymns];
         localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allInitialHymnsForStorage));
         const currentHymnFromPrimedData = allInitialHymnsForStorage.find(h => h && typeof h.id === 'string' && h.id === params.id);
@@ -78,7 +87,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       }
     } catch (error) {
       console.error("Error loading hymn for interactive view:", error);
-      resolvedHymn = hymnFromServer || null;
+      resolvedHymn = hymnFromServer || null; // Fallback
     }
 
     setHymn(resolvedHymn);
@@ -113,7 +122,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
   const handleEditSuccess = (updatedHymnData: Hymn) => {
     setHymn(updatedHymnData);
     setIsEditDialogOpen(false);
-    router.refresh();
+    router.refresh(); 
   };
 
   const handleOpenUrlEditDialog = () => {
@@ -138,7 +147,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
           allHymnsForStorage = JSON.parse(storedHymnsString);
         } catch (parseError) {
           console.error("Error parsing hymns from localStorage, re-initializing with initial set:", parseError);
-          allHymnsForStorage = [...initialSampleHymns];
+          allHymnsForStorage = [...initialSampleHymns]; 
         }
       } else {
         allHymnsForStorage = [...initialSampleHymns];
@@ -148,22 +157,23 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       if (hymnIndex > -1) {
         allHymnsForStorage[hymnIndex] = updatedHymnData;
       } else {
+        // If hymn wasn't in localStorage (e.g. first time editing a server-provided hymn not yet in LS)
         allHymnsForStorage.push(updatedHymnData);
       }
       localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allHymnsForStorage));
+      
+      // Also update the in-memory initialSampleHymns if the hymn originated there
       updateSampleHymn(hymn.id, { externalUrl: newExternalUrl });
 
     } catch (error) {
       console.error("Error saving URL to localStorage:", error);
       toast({ title: "Storage Error", description: "Could not save URL to local storage. Please try again.", variant: "destructive" });
-      return;
+      return; 
     }
 
     setHymn(updatedHymnData);
     toast({ title: "URL Updated", description: "The audio URL has been saved successfully." });
     setIsUrlEditDialogOpen(false);
-    // If URL was removed and audio was playing, it will be stopped by the useEffect below
-    // If a new URL was added, the useEffect below will load it.
   };
 
   const togglePlayPause = () => {
@@ -177,7 +187,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
         // Ensure src is current and load if necessary
         if (audioRef.current.src !== hymn.externalUrl) {
           audioRef.current.src = hymn.externalUrl;
-          audioRef.current.load(); // Important: load the source before attempting to play
+          audioRef.current.load(); 
         }
         audioRef.current.play()
           .then(() => {
@@ -193,8 +203,9 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
             setIsPlaying(false);
           });
       } else {
-        // No URL, so open the dialog to add one
-        handleOpenUrlEditDialog();
+        // No URL, so open the dialog to add one (This case is handled by the button's onClick directly for the Music icon)
+        // This specific part of togglePlayPause is for when there *is* a URL but an issue occurred.
+        // If the button clicked was the Music icon (to open dialog), handleOpenUrlEditDialog is called directly.
       }
     }
   };
@@ -207,10 +218,8 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
         if (audioElement.src !== hymn.externalUrl) {
           audioElement.src = hymn.externalUrl;
           audioElement.load();
-          // If it was playing, and URL changed, we might want to stop it or attempt to play new one.
-          // For now, changing src and calling load() implies user might need to press play again.
-          // If audio was playing, and URL is removed, stop it.
-          if (isPlaying && !hymn.externalUrl) {
+          // If it was playing, and URL changed, stop it. User must press play again.
+          if (isPlaying) {
             audioElement.pause();
             setIsPlaying(false);
           }
@@ -369,3 +378,4 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
     </>
   );
 }
+
