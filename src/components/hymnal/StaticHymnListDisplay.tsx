@@ -42,20 +42,22 @@ export default function StaticHymnListDisplay({ hymns, onUrlUpdated }: StaticHym
     }
 
     // Create a new array with the updated hymn based on the current list.
+    // This ensures that only the specific hymn's externalUrl is modified.
     const updatedHymnsList = hymns.map(h =>
       h.id === hymnId ? { ...h, externalUrl: urlInputValue.trim() || undefined } : h
     );
 
     try {
       // Update localStorage with the new, complete list of hymns.
+      // This saves the change persistently in the browser.
       localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(updatedHymnsList));
       
-      // Also update in-memory initialSampleHymns (fallback/shared data) for consistency during the session.
-      // This ensures HymnInteractiveView (detail page) sees the update if it relies on 
-      // initialSampleHymns directly or as a fallback before its own localStorage load.
+      // Also update in-memory initialSampleHymns.
+      // This provides consistency if other parts of the app use initialSampleHymns
+      // as a fallback or for initial data within the same session.
       updateSampleHymn(hymnId, { externalUrl: urlInputValue.trim() || undefined });
 
-      toast({ title: "URL Saved", description: "The external URL has been updated." });
+      toast({ title: "URL Saved", description: "The external URL has been updated for this hymn." });
       setEditingHymnId(null);
       setUrlInputValue('');
       onUrlUpdated(); // Notify parent to refresh its hymn list from localStorage
