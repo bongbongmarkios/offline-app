@@ -350,8 +350,31 @@ Hesus, Manluluwas kag Makagagahom
 Purongan Sia nga Hari gid naton
 Magakari Sia subong nga Mandadaos
 Makita ta Sia sa himaya Nia.`,
-    titleEnglish: 'Praise Him, Praise Him',
-    lyricsEnglish: '', 
+    titleEnglish: 'Praise Him, Praise Him', // English title added for consistency
+    lyricsEnglish: `Praise Him, Jesus our Redeemer,
+Declare His love.
+Praise Him, you angels,
+Power, honor, give to Him.
+He is the Shepherd of His sheep,
+Caring for them all.
+
+CHORUS
+Praise Him, and His power,
+Praise Him in your singing.
+
+Praise Him, Jesus our Redeemer,
+Who died for us, redeemed us.
+He is shield, hope, and salvation,
+Lift His dear name.
+Let us declare His praise,
+Praise Him without end.
+
+Praise Him, Jesus our Redeemer,
+All heaven praises.
+Jesus, Savior and Almighty,
+Crown Him our King indeed.
+He will come as Conqueror,
+We will see Him in His glory.`, // English lyrics added
     titleFilipino: undefined, 
     lyricsFilipino: undefined, 
     keySignature: '6/8', 
