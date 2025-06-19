@@ -87,7 +87,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       }
     } catch (error) {
       console.error("Error loading hymn for interactive view:", error);
-      resolvedHymn = hymnFromServer || null; 
+      resolvedHymn = hymnFromServer || null;
     }
 
     setHymn(resolvedHymn);
@@ -132,15 +132,19 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       console.error("Audio Error in event listener:", e);
       setIsLoadingAudio(false);
       setIsPlaying(false);
-      // Prevent toast loop if error is due to empty src after clearing
-      if (audioElement.src && audioElement.src !== window.location.href) { // check if src is not empty or base URL
+      if (audioElement.src && audioElement.src !== window.location.href) {
         toast({
             title: "Audio Playback Error",
-            description: "Could not load the audio. Please check the URL.",
+            description: "Could not load the audio. Please check the URL or network.",
             variant: "destructive",
         });
       }
     };
+    const onAudioEnded = () => {
+        setIsPlaying(false);
+        setAudioCurrentTime(0);
+    };
+
 
     audioElement.addEventListener('loadedmetadata', handleLoadedMetadata);
     audioElement.addEventListener('timeupdate', handleTimeUpdate);
@@ -159,8 +163,9 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       }
     } else {
       if (audioElement.src) {
-         audioElement.removeAttribute('src'); // Completely remove src if no externalUrl
-         audioElement.load(); // This will ensure any previous source is unloaded
+         audioElement.pause();
+         audioElement.removeAttribute('src');
+         audioElement.load();
       }
       setIsPlaying(false);
       setAudioCurrentTime(0);
@@ -189,7 +194,6 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
   const handleEditSuccess = (updatedHymnData: Hymn) => {
     setHymn(updatedHymnData);
     setIsEditDialogOpen(false);
-    // No router.refresh() here to avoid full page reload, rely on state update
   };
 
   const handleOpenUrlEditDialog = () => {
@@ -214,7 +218,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
           allHymnsForStorage = JSON.parse(storedHymnsString);
         } catch (parseError) {
           console.error("Error parsing hymns from localStorage, re-initializing with initial set:", parseError);
-          allHymnsForStorage = [...initialSampleHymns]; 
+          allHymnsForStorage = [...initialSampleHymns];
         }
       } else {
         allHymnsForStorage = [...initialSampleHymns];
@@ -227,24 +231,25 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
         allHymnsForStorage.push(updatedHymnData);
       }
       localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allHymnsForStorage));
-      
+
       updateSampleHymn(hymn.id, { externalUrl: newExternalUrl });
 
     } catch (error) {
       console.error("Error saving URL to localStorage:", error);
       toast({ title: "Storage Error", description: "Could not save URL to local storage. Please try again.", variant: "destructive" });
-      return; 
+      return;
     }
 
-    setHymn(updatedHymnData); // This will trigger the useEffect for audio src update
+    setHymn(updatedHymnData);
     toast({ title: "URL Updated", description: "The audio URL has been saved successfully." });
     setIsUrlEditDialogOpen(false);
   };
 
-  const togglePlayPause = () => {
+ const togglePlayPause = () => {
     if (!audioRef.current) return;
-    if (isLoadingAudio && !audioRef.current.HAVE_METADATA) { 
-      toast({ title: "Audio Loading", description: "Please wait, audio is preparing."});
+
+    if (isLoadingAudio && !audioRef.current.HAVE_METADATA) {
+      toast({ title: "Audio Loading", description: "Please wait, audio is preparing." });
       return;
     }
 
@@ -252,33 +257,38 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      if (hymn?.externalUrl && audioRef.current.src) { // Ensure src is actually set
+      if (hymn?.externalUrl && audioRef.current.src) {
+        if (audioRef.current.readyState < audioRef.current.HAVE_METADATA) {
+            setIsLoadingAudio(true); // Ensure loading state is set if we force load
+            audioRef.current.load(); // Attempt to load if not ready
+        }
         audioRef.current.play()
           .then(() => {
             setIsPlaying(true);
+            setIsLoadingAudio(false);
           })
           .catch(error => {
             console.error("Error playing audio in togglePlayPause:", error);
+            setIsLoadingAudio(false);
+            setIsPlaying(false);
             toast({
               title: "Playback Error",
               description: "Could not play audio. Check URL, network, or browser permissions.",
               variant: "destructive"
             });
-            setIsPlaying(false);
           });
       } else if (!hymn?.externalUrl) {
          handleOpenUrlEditDialog();
       } else {
         // Fallback if src isn't set but URL exists (should be handled by useEffect)
-        toast({ title: "Audio Not Ready", description: "Audio source is not ready. Please try again shortly."});
+        toast({ title: "Audio Not Ready", description: "Audio source is not ready. Ensure the URL is correct and try again."});
+        if (hymn?.externalUrl && audioRef.current.src !== hymn.externalUrl) { // Force reload if src mismatch
+            audioRef.current.src = hymn.externalUrl;
+            setIsLoadingAudio(true);
+            audioRef.current.load();
+        }
       }
     }
-  };
-  
-
-  const onAudioEnded = () => {
-    setIsPlaying(false);
-    setAudioCurrentTime(0); // Optionally reset time to 0, or to audioDuration for "ended" state
   };
 
 
@@ -323,19 +333,19 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       </>
     );
   }
-  
+
   const progressPercentage = audioDuration > 0 ? (audioCurrentTime / audioDuration) * 100 : 0;
 
   const playerControlContent = (
     <div className="flex items-center gap-2">
-      {hymn.externalUrl && isPlaying && audioDuration > 0 && (
-        <div 
-          className="relative h-6 w-1.5 bg-muted rounded-full overflow-hidden" 
-          title={`Played: ${Math.round(progressPercentage)}%`}
+      {hymn.externalUrl && (
+        <div // Horizontal progress TRACK
+          className="relative h-2 w-24 bg-muted rounded-full overflow-hidden group"
+          title={audioDuration > 0 ? `Progress: ${Math.round(progressPercentage)}%` : "Audio track"}
         >
-          <div
-            className="absolute bottom-0 left-0 w-full bg-primary transition-all ease-linear"
-            style={{ height: `${progressPercentage}%` }}
+          <div // Horizontal progress FILL
+            className="absolute top-0 left-0 h-full bg-primary rounded-full transition-[width] ease-linear duration-150" // CSS transition for width
+            style={{ width: `${progressPercentage}%` }}
           />
         </div>
       )}
@@ -344,11 +354,12 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
         size="icon"
         onClick={togglePlayPause}
         aria-label={
-          hymn.externalUrl 
-            ? (isLoadingAudio && !audioRef.current?.HAVE_METADATA ? "Loading audio..." : isPlaying ? "Pause audio" : "Play audio") 
+          hymn.externalUrl
+            ? (isLoadingAudio && !audioRef.current?.HAVE_METADATA ? "Loading audio..." : isPlaying ? "Pause audio" : "Play audio")
             : "Add/Edit audio URL"
         }
         disabled={hymn.externalUrl && isLoadingAudio && !audioRef.current?.HAVE_METADATA && !isPlaying}
+        className="flex-shrink-0" // Ensure button maintains its size
       >
         {hymn.externalUrl ? (
           isPlaying ? <Pause className="h-6 w-6 text-primary" /> : <Play className="h-6 w-6 text-primary" />
@@ -437,8 +448,9 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       <audio ref={audioRef} preload="metadata" />
     </>
   );
 }
+
