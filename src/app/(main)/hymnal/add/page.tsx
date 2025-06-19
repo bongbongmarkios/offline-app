@@ -13,9 +13,6 @@ export default function AddHymnPage() {
           <ArrowLeft className="mr-2 h-4 w-4" /> Cancel
         </Link>
       </Button>
-      <h1 className="text-2xl font-headline font-semibold text-primary sm:text-3xl">
-        Add Hymn
-      </h1>
     </div>
   );
 
