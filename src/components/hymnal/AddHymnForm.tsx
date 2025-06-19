@@ -14,8 +14,8 @@ import type { Hymn } from '@/types';
 import { cn } from '@/lib/utils';
 
 interface AddHymnFormProps {
-  onFormSubmit?: () => void; // True if used in a dialog, false/undefined if standalone page
-  className?: string;       // Allows parent to pass additional classes to the root wrapper
+  onFormSubmit?: () => void; 
+  className?: string;       
 }
 
 const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
@@ -154,6 +154,10 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
     'flex flex-col flex-1 min-h-0' 
   );
 
+  const cardHeaderClasses = cn(
+    'flex-shrink-0' // Ensure header doesn't shrink
+  );
+  
   const cardContentClasses = cn(
     'pt-4 flex-1 min-h-0 overflow-hidden' 
   );
@@ -167,7 +171,7 @@ export default function AddHymnForm({ onFormSubmit, className }: AddHymnFormProp
   return (
     <FormWrapper className={formWrapperClasses}>
       {!isDialogMode && (
-        <CardHeader className="flex-shrink-0"> 
+        <CardHeader className={cardHeaderClasses}> 
           <CardTitle className="font-headline text-2xl">Add New Hymn</CardTitle>
           <CardDescription>Fill in the details for the new hymn. Hiligaynon title and lyrics are required.</CardDescription>
         </CardHeader>
