@@ -1,7 +1,7 @@
 
 'use client';
 import type { ReactNode } from 'react';
-import { Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, Wand2, ListChecks, Trash } from 'lucide-react';
+import { Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, Wand2, ListChecks, Trash, FilePlus2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -102,7 +102,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
           } else if (effectiveType === '2g' || effectiveType === 'slow-2g') {
             level = 'weak';
             description = 'Poor (Cellular)';
-          } else if (effectiveType === 'wifi' && navigator.onLine) {
+          } else if (effectiveType === 'wifi' && navigator.onLine) { // Added check for effectiveType 'wifi'
             description = 'Online (Wi-Fi - Speed details unavailable)';
             level = 'average';
           } else if (navigator.onLine) {
@@ -164,6 +164,8 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
   }
 
   const handleDeleteSuccess = () => {
+    // This function will trigger a re-render of the current page,
+    // which should re-fetch data from localStorage if components are designed to do so.
     router.refresh();
   }
 
@@ -175,8 +177,10 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
             {typeof title === 'string' && title.length > 0 ? (
               <h1 className="text-2xl font-headline font-semibold text-primary sm:text-3xl">{title}</h1>
             ) : typeof title === 'string' && title.length === 0 ? (
+              // Explicitly handle empty string title to render nothing
               null
             ) : (
+              // Render title if it's a ReactNode (but not an empty string)
               title
             )}
           </div>
@@ -231,7 +235,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                         Ask questions or get help.
                       </DialogDescription>
                     </DialogHeader>
-                    <ChatInterface />
+                    <ChatInterface /> {/* This component will need to be created */}
                   </DialogContent>
                 </Dialog>
 
@@ -242,6 +246,10 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => router.push('/hymnal/add')}>
+                      <FilePlus2 className="mr-2 h-4 w-4" />
+                      <span>Add Hymn</span>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => router.push('/hymn-url-editor')}>
                       <ListChecks className="mr-2 h-4 w-4" />
                       <span>URL</span>
@@ -263,7 +271,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                     </DropdownMenuItem>
                      <DropdownMenuItem
                       onSelect={() => router.push('/trash')}
-                      className="" 
+                      className="" // Not destructive by default
                     >
                       <Trash className="mr-2 h-4 w-4" />
                       <span>Trash</span>
@@ -297,8 +305,8 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
           <DeleteHymnDialogContent
             onOpenChange={setIsDeleteHymnDialogOpen}
             onDeleteSuccess={() => {
-              setIsDeleteHymnDialogOpen(false);
-              handleDeleteSuccess();
+              setIsDeleteHymnDialogOpen(false); // Close dialog
+              handleDeleteSuccess(); // Refresh router, which should update lists
             }}
           />
         </DialogContent>
@@ -316,8 +324,8 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
           <DeleteReadingDialogContent
             onOpenChange={setIsDeleteReadingDialogOpen}
             onDeleteSuccess={() => {
-              setIsDeleteReadingDialogOpen(false);
-              handleDeleteSuccess();
+              setIsDeleteReadingDialogOpen(false); // Close dialog
+              handleDeleteSuccess(); // Refresh router
             }}
           />
         </DialogContent>
