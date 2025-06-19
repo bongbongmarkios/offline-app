@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type MouseEvent } from 'react';
 import type { Hymn } from '@/types';
 import AppHeader from '@/components/layout/AppHeader';
 import HymnDetail from '@/components/hymnal/HymnDetail';
@@ -39,6 +39,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
   const [urlInputForDialog, setUrlInputForDialog] = useState('');
 
   const audioRef = useRef<HTMLAudioElement>(null);
+  const progressBarRef = useRef<HTMLDivElement>(null); // Ref for the progress bar track
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioDuration, setAudioDuration] = useState(0);
   const [audioCurrentTime, setAudioCurrentTime] = useState(0);
@@ -132,7 +133,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       console.error("Audio Error in event listener:", e);
       setIsLoadingAudio(false);
       setIsPlaying(false);
-      if (audioElement.src && audioElement.src !== window.location.href) {
+      if (audioElement.src && audioElement.src !== window.location.href) { // Avoid toast if src is just empty
         toast({
             title: "Audio Playback Error",
             description: "Could not load the audio. Please check the URL or network.",
@@ -142,7 +143,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
     };
     const onAudioEnded = () => {
         setIsPlaying(false);
-        setAudioCurrentTime(0);
+        setAudioCurrentTime(0); // Reset to beginning
     };
 
 
@@ -162,10 +163,10 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
         audioElement.load();
       }
     } else {
-      if (audioElement.src) {
+      if (audioElement.src) { // If there was a src, pause and clear it
          audioElement.pause();
          audioElement.removeAttribute('src');
-         audioElement.load();
+         audioElement.load(); // Important to reflect the removal of src
       }
       setIsPlaying(false);
       setAudioCurrentTime(0);
@@ -228,19 +229,21 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       if (hymnIndex > -1) {
         allHymnsForStorage[hymnIndex] = updatedHymnData;
       } else {
+        // This case should ideally not happen if hymn.id is valid and from the list
         allHymnsForStorage.push(updatedHymnData);
       }
       localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allHymnsForStorage));
 
+      // Also update the in-memory initialSampleHymns for session consistency if this instance came from there
       updateSampleHymn(hymn.id, { externalUrl: newExternalUrl });
 
     } catch (error) {
       console.error("Error saving URL to localStorage:", error);
       toast({ title: "Storage Error", description: "Could not save URL to local storage. Please try again.", variant: "destructive" });
-      return;
+      return; // Don't proceed if localStorage save fails
     }
 
-    setHymn(updatedHymnData);
+    setHymn(updatedHymnData); // This will trigger the useEffect for audio src update
     toast({ title: "URL Updated", description: "The audio URL has been saved successfully." });
     setIsUrlEditDialogOpen(false);
   };
@@ -248,7 +251,14 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
  const togglePlayPause = () => {
     if (!audioRef.current) return;
 
-    if (isLoadingAudio && !audioRef.current.HAVE_METADATA) {
+    // If no URL, open dialog to add one
+    if (!hymn?.externalUrl) {
+      handleOpenUrlEditDialog();
+      return;
+    }
+
+    // If URL exists but audio is still loading metadata, show toast
+    if (isLoadingAudio && audioRef.current.readyState < audioRef.current.HAVE_METADATA) {
       toast({ title: "Audio Loading", description: "Please wait, audio is preparing." });
       return;
     }
@@ -257,38 +267,49 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      if (hymn?.externalUrl && audioRef.current.src) {
-        if (audioRef.current.readyState < audioRef.current.HAVE_METADATA) {
-            setIsLoadingAudio(true); // Ensure loading state is set if we force load
-            audioRef.current.load(); // Attempt to load if not ready
-        }
-        audioRef.current.play()
-          .then(() => {
-            setIsPlaying(true);
-            setIsLoadingAudio(false);
-          })
-          .catch(error => {
-            console.error("Error playing audio in togglePlayPause:", error);
-            setIsLoadingAudio(false);
-            setIsPlaying(false);
-            toast({
-              title: "Playback Error",
-              description: "Could not play audio. Check URL, network, or browser permissions.",
-              variant: "destructive"
-            });
-          });
-      } else if (!hymn?.externalUrl) {
-         handleOpenUrlEditDialog();
-      } else {
-        // Fallback if src isn't set but URL exists (should be handled by useEffect)
-        toast({ title: "Audio Not Ready", description: "Audio source is not ready. Ensure the URL is correct and try again."});
-        if (hymn?.externalUrl && audioRef.current.src !== hymn.externalUrl) { // Force reload if src mismatch
-            audioRef.current.src = hymn.externalUrl;
-            setIsLoadingAudio(true);
-            audioRef.current.load();
-        }
+      // Ensure src is set before playing
+      if (audioRef.current.src !== hymn.externalUrl) {
+        audioRef.current.src = hymn.externalUrl;
+        setIsLoadingAudio(true); // Set loading true while it re-buffers
+        audioRef.current.load();
       }
+      
+      audioRef.current.play()
+        .then(() => {
+          setIsPlaying(true);
+          setIsLoadingAudio(false); // Loading done
+        })
+        .catch(error => {
+          console.error("Error playing audio in togglePlayPause:", error);
+          setIsLoadingAudio(false);
+          setIsPlaying(false);
+          toast({
+            title: "Playback Error",
+            description: "Could not play audio. Check URL, network, or browser permissions.",
+            variant: "destructive"
+          });
+        });
     }
+  };
+
+  const handleSeek = (event: MouseEvent<HTMLDivElement>) => {
+    if (!audioRef.current || !progressBarRef.current || audioDuration === 0) {
+      return;
+    }
+  
+    const progressBar = progressBarRef.current;
+    const rect = progressBar.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    const width = progressBar.offsetWidth;
+  
+    if (width === 0) return;
+  
+    let percentage = clickX / width;
+    percentage = Math.max(0, Math.min(1, percentage)); // Clamp between 0 and 1
+  
+    const newTime = percentage * audioDuration;
+    audioRef.current.currentTime = newTime;
+    setAudioCurrentTime(newTime); // Update UI immediately
   };
 
 
@@ -338,13 +359,15 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
 
   const playerControlContent = (
     <div className="flex items-center gap-2">
-      {hymn.externalUrl && (
-        <div // Horizontal progress TRACK
-          className="relative h-2 w-24 bg-muted rounded-full overflow-hidden group"
-          title={audioDuration > 0 ? `Progress: ${Math.round(progressPercentage)}%` : "Audio track"}
+      {hymn.externalUrl && audioDuration > 0 && ( // Only show if there's a URL and known duration
+        <div
+          ref={progressBarRef}
+          onClick={handleSeek}
+          className="relative h-2 w-24 bg-muted rounded-full overflow-hidden group cursor-pointer"
+          title={`Progress: ${Math.round(progressPercentage)}% (click to seek)`}
         >
-          <div // Horizontal progress FILL
-            className="absolute top-0 left-0 h-full bg-primary rounded-full transition-[width] ease-linear duration-150" // CSS transition for width
+          <div
+            className="absolute top-0 left-0 h-full bg-primary rounded-full transition-[width] ease-linear duration-150"
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
@@ -355,11 +378,11 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
         onClick={togglePlayPause}
         aria-label={
           hymn.externalUrl
-            ? (isLoadingAudio && !audioRef.current?.HAVE_METADATA ? "Loading audio..." : isPlaying ? "Pause audio" : "Play audio")
+            ? (isLoadingAudio && audioRef.current?.readyState < audioRef.current?.HAVE_METADATA ? "Loading audio..." : isPlaying ? "Pause audio" : "Play audio")
             : "Add/Edit audio URL"
         }
-        disabled={hymn.externalUrl && isLoadingAudio && !audioRef.current?.HAVE_METADATA && !isPlaying}
-        className="flex-shrink-0" // Ensure button maintains its size
+        disabled={hymn.externalUrl && isLoadingAudio && audioRef.current?.readyState < audioRef.current?.HAVE_METADATA && !isPlaying}
+        className="flex-shrink-0"
       >
         {hymn.externalUrl ? (
           isPlaying ? <Pause className="h-6 w-6 text-primary" /> : <Play className="h-6 w-6 text-primary" />
@@ -371,7 +394,7 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
   );
 
 
-  const headerActions = hymn.pageNumber ? (
+  const headerActions = hymn.pageNumber ? ( // Only show player/edit if it's a standard hymn with page number
     <>
       {playerControlContent}
       <Button variant="ghost" size="icon" aria-label="Edit hymn details" onClick={() => setIsEditDialogOpen(true)}>
@@ -449,8 +472,8 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
         </DialogContent>
       </Dialog>
 
+      {/* Audio element is kept mounted to retain its state/source */}
       <audio ref={audioRef} preload="metadata" />
     </>
   );
 }
-
