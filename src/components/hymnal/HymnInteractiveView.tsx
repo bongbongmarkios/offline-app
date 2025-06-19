@@ -8,12 +8,15 @@ import HymnDetail from '@/components/hymnal/HymnDetail';
 import HymnMultiLanguageDialog from '@/components/hymnal/HymnMultiLanguageDialog';
 import EditHymnForm from '@/components/hymnal/EditHymnForm';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import Link from 'next/link';
-import { ArrowLeft, FilePenLine, Music } from 'lucide-react'; // Added Music icon back
+import { ArrowLeft, FilePenLine, Music } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { initialSampleHymns } from '@/data/hymns';
+import { initialSampleHymns, updateSampleHymn } from '@/data/hymns';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 type LanguageOption = 'hiligaynon' | 'filipino' | 'english';
 const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
@@ -30,11 +33,14 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const router = useRouter();
-  const [isOnline, setIsOnline] = useState(true);
+  const [isOnline, setIsOnline] = useState(true); // Retained for potential future use, not directly affecting URL edit dialog button
+  const { toast } = useToast();
+
+  // State for URL editing dialog
+  const [isUrlEditDialogOpen, setIsUrlEditDialogOpen] = useState(false);
+  const [urlInputForDialog, setUrlInputForDialog] = useState('');
 
 
-  // Determines if a language option should be shown in the selector.
-  // Based *only* on the existence of the title for that language.
   const languageTitleIsAvailable = (lang: LanguageOption, currentHymn: Hymn | null): boolean => {
     if (!currentHymn) return false;
     switch (lang) {
@@ -101,12 +107,9 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
         setIsOnline(true); 
       }
     };
-
     updateOnlineStatus(); 
-
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
-
     return () => {
       window.removeEventListener('online', updateOnlineStatus);
       window.removeEventListener('offline', updateOnlineStatus);
@@ -125,7 +128,6 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
   const handleEditSuccess = (updatedHymnData: Hymn) => {
     setHymn(updatedHymnData);
     setIsEditDialogOpen(false);
-
     try {
       let allStoredHymns: Hymn[] = [];
       const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
@@ -134,7 +136,6 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
       } else {
         allStoredHymns = [...initialSampleHymns];
       }
-
       const hymnIndex = allStoredHymns.findIndex(h => h.id === updatedHymnData.id);
       if (hymnIndex > -1) {
         allStoredHymns[hymnIndex] = updatedHymnData;
@@ -146,6 +147,42 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
         console.error("Error saving edited hymn to localStorage:", error);
     }
     router.refresh(); 
+  };
+
+  const handleOpenUrlEditDialog = () => {
+    if (hymn) {
+      setUrlInputForDialog(hymn.externalUrl || '');
+      setIsUrlEditDialogOpen(true);
+    }
+  };
+
+  const handleSaveUrl = () => {
+    if (!hymn) return;
+
+    const newExternalUrl = urlInputForDialog.trim() || undefined;
+    const updatedHymnData: Hymn = { ...hymn, externalUrl: newExternalUrl };
+
+    updateSampleHymn(hymn.id, { externalUrl: newExternalUrl });
+
+    try {
+      const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
+      let allHymnsForStorage: Hymn[] = storedHymnsString ? JSON.parse(storedHymnsString) : [...initialSampleHymns];
+      
+      const hymnIndex = allHymnsForStorage.findIndex(h => h.id === hymn.id);
+      if (hymnIndex > -1) {
+        allHymnsForStorage[hymnIndex] = updatedHymnData;
+      } else {
+        allHymnsForStorage.push(updatedHymnData);
+      }
+      localStorage.setItem(LOCAL_STORAGE_HYMNS_KEY, JSON.stringify(allHymnsForStorage));
+    } catch (error) {
+      console.error("Error saving URL to localStorage from HymnInteractiveView:", error);
+      toast({ title: "Storage Error", description: "Could not save URL to local storage.", variant: "destructive" });
+    }
+
+    setHymn(updatedHymnData);
+    toast({ title: "URL Updated", description: "The audio URL has been saved successfully." });
+    setIsUrlEditDialogOpen(false);
   };
 
 
@@ -193,18 +230,10 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
 
   const headerActions = (
     <>
-      {hymn.externalUrl ? (
-        <Button asChild variant="ghost" size="icon" aria-label="Play hymn audio">
-          <a href={hymn.externalUrl} target="_blank" rel="noopener noreferrer">
-            <Music className={cn("h-6 w-6", isOnline ? "text-primary" : "text-muted-foreground")} />
-          </a>
-        </Button>
-      ) : (
-        <Button variant="ghost" size="icon" aria-label="Play hymn audio (disabled)" disabled>
-          <Music className="h-6 w-6 text-muted-foreground" />
-        </Button>
-      )}
-      <Button variant="ghost" size="icon" aria-label="Edit hymn" onClick={() => setIsEditDialogOpen(true)}>
+      <Button variant="ghost" size="icon" aria-label="Edit audio URL" onClick={handleOpenUrlEditDialog}>
+        <Music className={cn("h-6 w-6", hymn && hymn.externalUrl ? "text-primary" : "text-muted-foreground")} />
+      </Button>
+      <Button variant="ghost" size="icon" aria-label="Edit hymn details" onClick={() => setIsEditDialogOpen(true)}>
         <FilePenLine className="h-6 w-6 text-muted-foreground" />
       </Button>
       <HymnMultiLanguageDialog hymn={hymn} onToggle={toggleLanguageSelector} />
@@ -247,6 +276,36 @@ export default function HymnInteractiveView({ hymnFromServer, params }: HymnInte
             onCancel={() => setIsEditDialogOpen(false)}
             className="pt-0 flex-1 min-h-0"
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* New Dialog for Editing URL */}
+      <Dialog open={isUrlEditDialogOpen} onOpenChange={setIsUrlEditDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Audio URL</DialogTitle>
+            <DialogDescription>
+              Enter or update the MP3 URL for this hymn. Leave blank to remove the URL.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="hymn-url-edit-dialog" className="text-right col-span-1">
+                URL
+              </Label>
+              <Input
+                id="hymn-url-edit-dialog"
+                value={urlInputForDialog}
+                onChange={(e) => setUrlInputForDialog(e.target.value)}
+                placeholder="e.g., https://example.com/audio.mp3"
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsUrlEditDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveUrl}>Save URL</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
