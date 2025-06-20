@@ -35,7 +35,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   return (
     <>
       <AppHeader 
-        title={program.title}
+        title=""
         actions={
           <Button asChild variant="outline" size="sm">
             <Link href="/program">
@@ -45,6 +45,20 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
         }
       />
       <div className="container mx-auto px-4 pb-8">
+        <div className="text-center my-4 md:my-6">
+          <h1 className="text-3xl md:text-4xl font-headline font-bold text-primary break-words">
+            {program.title}
+          </h1>
+          {program.date && (
+            <p className="text-md md:text-lg text-muted-foreground mt-2">
+              {new Date(program.date).toLocaleDateString(undefined, {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </p>
+          )}
+        </div>
         <ProgramPresenter program={program} />
       </div>
     </>
