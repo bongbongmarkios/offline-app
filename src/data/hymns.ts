@@ -383,6 +383,45 @@ We will see Him in His glory.`, // English lyrics added
     category: undefined,
     externalUrl: undefined,
   },
+  {
+    id: 'TEST_HYMN_001',
+    titleEnglish: 'Sample Test Hymn Title',
+    lyricsEnglish: `This is the first verse of the sample test hymn.
+It has a few lines for testing purposes.
+
+Chorus:
+This is the sample test chorus.
+Repeating the chorus line.
+
+This is the second verse.
+More lines for testing.`,
+    titleHiligaynon: 'SAMPLO NGA AMBAHANON PAMATILAG',
+    lyricsHiligaynon: `Ini ang nahauna nga bersikulo sang sampol nga ambalanon.
+May pila ka linya para sa pagtilaw.
+
+Koro:
+Ini ang sampol nga koro sang pagtilaw.
+Ginasulit ang linya sang koro.
+
+Ini ang ikaduha nga bersikulo.
+Dugang nga mga linya para sa pagtilaw.`,
+    titleFilipino: 'HALIMBAWANG AWIT PANUBOK',
+    lyricsFilipino: `Ito ang unang talata ng halimbawang awit panubok.
+May ilang linya para sa pagsubok.
+
+Koro:
+Ito ang halimbawang koro panubok.
+Inuulit ang linya ng koro.
+
+Ito ang ikalawang talata.
+Marami pang linya para sa pagsubok.`,
+    pageNumber: 'T1',
+    keySignature: 'C Test',
+    externalUrl: 'https://example.com/sample-audio.mp3',
+    category: 'Test Category',
+    author: 'Test Author',
+    composer: 'Test Composer',
+  },
 ];
 
 // Function to update an existing hymn in the in-memory sample data
@@ -426,3 +465,4 @@ export function addSampleHymn(hymnData: Omit<Hymn, 'id'>): Hymn {
   initialSampleHymns.push(newHymn);
   return newHymn;
 }
+
