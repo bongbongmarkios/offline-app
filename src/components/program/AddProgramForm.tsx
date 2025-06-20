@@ -92,7 +92,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
         <div className="flex flex-col sm:flex-row gap-2">
             <Button
                 type="button"
-                variant="secondary" // Changed variant to secondary
+                variant="destructive" // Changed variant to destructive
                 onClick={handleSetToday}
                 disabled={isSubmitting}
                 className="flex-grow sm:flex-grow-0"
