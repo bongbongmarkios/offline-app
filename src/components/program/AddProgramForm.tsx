@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createNewProgramAction, type CreateProgramArgs } from '@/app/(main)/program/actions';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, ChevronRight, ChevronsUpDown, Check, Settings2, ListChecks } from "lucide-react";
+import { CalendarIcon, ChevronRight, Settings2, ListChecks } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { programItemTitles, type ProgramItemTitle } from '@/types';
@@ -36,6 +36,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [step, setStep] = useState<'details' | 'items'>('details');
   const [selectedItemTitles, setSelectedItemTitles] = useState<ProgramItemTitle[]>(defaultSelectedItems);
+  const [isCustomizing, setIsCustomizing] = useState(false);
 
   const handleProceedToItems = () => {
     if (!date) {
@@ -58,10 +59,13 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
       });
       return;
     }
-    if (selectedItemTitles.length === 0) {
+    
+    const itemsToCreate = isCustomizing ? selectedItemTitles : [...programItemTitles];
+
+    if (isCustomizing && itemsToCreate.length === 0) {
       toast({
         title: "Items Required",
-        description: "Please select at least one program item.",
+        description: "Please select at least one program item when customizing.",
         variant: "destructive",
       });
       return;
@@ -74,7 +78,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
     const programArgs: CreateProgramArgs = {
       title: programTitleToSubmit,
       date: format(date, "yyyy-MM-dd"),
-      itemTitles: selectedItemTitles,
+      itemTitles: itemsToCreate,
     };
 
     try {
@@ -90,6 +94,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
         setDate(new Date());
         setSelectedItemTitles(defaultSelectedItems);
         setStep('details');
+        setIsCustomizing(false);
 
       } else {
         throw new Error(result?.error || "Failed to create program.");
@@ -187,6 +192,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
               </Popover>
             </div>
           </div>
+          <div className="flex-grow"></div>
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
               Cancel
@@ -199,50 +205,71 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
       )}
 
       {step === 'items' && (
-        <>
+        <div className="flex flex-col flex-grow min-h-0">
           <div className="space-y-1 mb-3 p-3 border rounded-md bg-muted/50">
             <h3 className="text-sm font-medium text-muted-foreground">Review Details:</h3>
             <p className="text-md font-semibold">{title.trim() === '' ? "Sunday Service" : title.trim()}</p>
             {date && <p className="text-sm text-muted-foreground">{format(date, "PPP")}</p>}
           </div>
 
-          <Label className="font-semibold text-md pt-2 block flex items-center">
-            <ListChecks className="mr-2 h-5 w-5 text-primary"/> Select Items to Include:
-          </Label>
-          <p className="text-xs text-muted-foreground -mt-4">
-            Common items are selected by default. Adjust as needed.
-          </p>
-
-          <ScrollArea className="h-[350px] w-full rounded-md border p-3">
-            <div className="space-y-2">
-              {programItemTitles.map((item) => (
-                <div key={item} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`item-${item.replace(/\s+/g, '-')}`}
-                    checked={selectedItemTitles.includes(item)}
-                    onCheckedChange={(checked) => handleItemSelection(item, checked)}
-                    disabled={isSubmitting}
-                  />
-                  <Label
-                    htmlFor={`item-${item.replace(/\s+/g, '-')}`}
-                    className="text-sm font-normal cursor-pointer flex-grow"
-                  >
-                    {item}
+          <div className="space-y-3 p-3 border rounded-md">
+            {!isCustomizing ? (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+                <p className="text-sm text-muted-foreground flex-grow">All standard program items will be included by default.</p>
+                <Button type="button" variant="secondary" onClick={() => setIsCustomizing(true)}>
+                  <Settings2 className="mr-2 h-4 w-4" />
+                  Customize Selection
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="flex justify-between items-center">
+                  <Label className="font-semibold text-md flex items-center">
+                    <ListChecks className="mr-2 h-5 w-5 text-primary"/> Select Items to Include:
                   </Label>
+                  <Button type="button" variant="link" onClick={() => setIsCustomizing(false)} className="text-xs h-auto p-0">
+                    Revert to Default
+                  </Button>
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
+                <p className="text-xs text-muted-foreground -mt-4">
+                  Common items are selected by default. Adjust as needed.
+                </p>
+
+                <ScrollArea className="h-[350px] w-full rounded-md border p-3">
+                  <div className="space-y-2">
+                    {programItemTitles.map((item) => (
+                      <div key={item} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`item-${item.replace(/\s+/g, '-')}`}
+                          checked={selectedItemTitles.includes(item)}
+                          onCheckedChange={(checked) => handleItemSelection(item, checked)}
+                          disabled={isSubmitting}
+                        />
+                        <Label
+                          htmlFor={`item-${item.replace(/\s+/g, '-')}`}
+                          className="text-sm font-normal cursor-pointer flex-grow"
+                        >
+                          {item}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </>
+            )}
+          </div>
           
-          <div className="flex justify-between gap-2 pt-4">
+          <div className="flex-grow"></div>
+
+          <div className="flex justify-between gap-2 pt-4 flex-shrink-0">
             <Button type="button" variant="outline" onClick={() => setStep('details')} disabled={isSubmitting}>
               Back
             </Button>
-            <Button type="submit" disabled={isSubmitting || selectedItemTitles.length === 0}>
+            <Button type="submit" disabled={isSubmitting || (isCustomizing && selectedItemTitles.length === 0)}>
               {isSubmitting ? 'Creating...' : 'Create Program'}
             </Button>
           </div>
-        </>
+        </div>
       )}
     </form>
   );
