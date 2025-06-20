@@ -46,7 +46,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
       />
       <div className="container mx-auto px-4 pb-8">
         <div className="text-center my-4 md:my-6">
-          <h1 className="text-2xl md:text-3xl font-headline font-bold text-primary break-words">
+          <h1 className="text-xl md:text-2xl font-headline font-bold text-primary break-words">
             {program.title}
           </h1>
           {program.date && (
