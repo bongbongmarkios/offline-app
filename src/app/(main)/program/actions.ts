@@ -3,13 +3,12 @@
 
 import { revalidatePath } from 'next/cache';
 import { addSampleProgram, deleteSampleProgramById, samplePrograms } from '@/data/programs';
-import type { Program, ProgramItem, ProgramItemTitle } from '@/types'; // Added ProgramItemTitle
-// import { programItemTitles } from '@/types'; // No longer needed here directly
+import type { Program, ProgramItem, ProgramItemTitle } from '@/types';
 
 export interface CreateProgramArgs {
   title: string;
   date: string; // Expected in YYYY-MM-DD format
-  itemTitles: ProgramItemTitle[]; // Array of selected item titles
+  items: Omit<ProgramItem, 'id'>[]; // Array of detailed items, not just titles
 }
 
 export async function createNewProgramAction(args: CreateProgramArgs) {
@@ -20,10 +19,8 @@ export async function createNewProgramAction(args: CreateProgramArgs) {
 
   let addedProgram: Program | null = null;
   try {
-    // Use the itemTitles passed from the form, or an empty array if none (though form should validate for at least one)
-    const itemsToCreate = args.itemTitles.length > 0 ? args.itemTitles : [];
-    
-    addedProgram = addSampleProgram(newProgramData, itemsToCreate);
+    // The items are now passed directly with their details from the form
+    addedProgram = addSampleProgram(newProgramData, args.items);
 
   } catch (error) {
     console.error('Failed to create new program:', error);

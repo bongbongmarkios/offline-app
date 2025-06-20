@@ -4,7 +4,7 @@ import { programItemTitles } from '@/types';
 
 let itemIdCounter = 0;
 
-// Ensure createProgramItems is correctly defined and usable
+// This function is kept for seeding initial samplePrograms
 const createProgramItems = (titles: ProgramItem['title'][]): ProgramItem[] => {
   return titles.map(title => ({
     id: `item-${itemIdCounter++}`,
@@ -53,12 +53,12 @@ export let samplePrograms: Program[] = [
 // Function to add a new program to the in-memory sample data
 export function addSampleProgram(
   programData: Omit<Program, 'id' | 'items'>,
-  defaultItemTitles: ProgramItem['title'][] = []
+  itemsToCreate: Omit<ProgramItem, 'id'>[] // New parameter signature for detailed items
 ): Program {
   let maxId = 30000; // Base for program IDs
   samplePrograms.forEach(program => {
     const idNum = parseInt(program.id, 10);
-    if (!isNaN(idNum) && idNum >= 30000 && idNum < 40000) { // Check if ID is in the 30000-39999 range
+    if (!isNaN(idNum) && idNum >= 30000 && idNum < 40000) {
       if (idNum > maxId) {
         maxId = idNum;
       }
@@ -69,14 +69,16 @@ export function addSampleProgram(
   const newProgram: Program = {
     id: newId,
     ...programData,
-    items: createProgramItems(defaultItemTitles),
+    items: itemsToCreate.map(item => ({
+      id: `item-${itemIdCounter++}`,
+      ...item,
+    })),
   };
   samplePrograms.push(newProgram);
-  // Sort programs by date after adding, most recent first
   samplePrograms.sort((a, b) => {
     const dateA = a.date ? new Date(a.date).getTime() : 0;
     const dateB = b.date ? new Date(b.date).getTime() : 0;
-    return dateB - dateA; // Sort descending by date
+    return dateB - dateA;
   });
   return newProgram;
 }

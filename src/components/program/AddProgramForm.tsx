@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, type FormEvent, useEffect } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,12 +9,22 @@ import { useToast } from '@/hooks/use-toast';
 import { createNewProgramAction, type CreateProgramArgs } from '@/app/(main)/program/actions';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, ChevronRight, Settings2, ListChecks } from "lucide-react";
+import { CalendarIcon, ChevronRight, Settings2, ListChecks, ChevronLeft } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { programItemTitles, type ProgramItemTitle } from '@/types';
+import { programItemTitles, type ProgramItemTitle, type ProgramItem } from '@/types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { initialSampleHymns } from '@/data/hymns';
+import { sampleReadings } from '@/data/readings';
+
 
 interface AddProgramFormProps {
   onFormSubmitSuccess: () => void;
@@ -28,15 +38,24 @@ const defaultSelectedItems: ProgramItemTitle[] = [
   programItemTitles[12], // Closing Hymn
 ];
 
+const isHymnItem = (title: ProgramItemTitle): boolean => title.toLowerCase().includes('hymn');
+const isReadingItem = (title: ProgramItemTitle): boolean => title.toLowerCase().includes('reading');
+const isContentItem = (title: ProgramItemTitle): boolean => !isHymnItem(title) && !isReadingItem(title);
+
 export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddProgramFormProps) {
   const [title, setTitle] = useState('');
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [step, setStep] = useState<'details' | 'items'>('details');
+  
+  const [step, setStep] = useState<'details' | 'items' | 'fillDetails'>('details');
   const [selectedItemTitles, setSelectedItemTitles] = useState<ProgramItemTitle[]>(defaultSelectedItems);
+  const [programItems, setProgramItems] = useState<Omit<ProgramItem, 'id'>[]>([]);
   const [isCustomizing, setIsCustomizing] = useState(false);
+
+  const hymns = initialSampleHymns;
+  const readings = sampleReadings;
 
   const handleProceedToItems = () => {
     if (!date) {
@@ -50,22 +69,33 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
     setStep('items');
   };
 
+  const handleProceedToFillDetails = () => {
+    const itemsToCreate = isCustomizing ? selectedItemTitles : [...programItemTitles];
+    if (isCustomizing && itemsToCreate.length === 0) {
+      toast({
+        title: "Items Required",
+        description: "Please select at least one program item.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setProgramItems(itemsToCreate.map(title => ({ title })));
+    setStep('fillDetails');
+  };
+  
+  const handleUpdateProgramItem = (index: number, newDetails: Partial<Omit<ProgramItem, 'id' | 'title'>>) => {
+    setProgramItems(currentItems => {
+      const newItems = [...currentItems];
+      newItems[index] = { ...newItems[index], ...newDetails };
+      return newItems;
+    });
+  };
+
   const handleFinalSubmit = async () => {
     if (!date) { 
       toast({
         title: "Error",
         description: "Program date is required.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    const itemsToCreate = isCustomizing ? selectedItemTitles : [...programItemTitles];
-
-    if (isCustomizing && itemsToCreate.length === 0) {
-      toast({
-        title: "Items Required",
-        description: "Please select at least one program item when customizing.",
         variant: "destructive",
       });
       return;
@@ -78,7 +108,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
     const programArgs: CreateProgramArgs = {
       title: programTitleToSubmit,
       date: format(date, "yyyy-MM-dd"),
-      itemTitles: itemsToCreate,
+      items: programItems,
     };
 
     try {
@@ -95,7 +125,6 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
         setSelectedItemTitles(defaultSelectedItems);
         setStep('details');
         setIsCustomizing(false);
-
       } else {
         throw new Error(result?.error || "Failed to create program.");
       }
@@ -113,13 +142,10 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
   
   const handleFormSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (step === 'items') {
-      handleFinalSubmit();
-    } else if (step === 'details') {
-      handleProceedToItems();
-    }
+    if (step === 'details') handleProceedToItems();
+    if (step === 'items') handleProceedToFillDetails();
+    if (step === 'fillDetails') handleFinalSubmit();
   };
-
 
   const handleSetToday = () => {
     setDate(new Date());
@@ -197,7 +223,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
             <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button type="button" onClick={handleProceedToItems} disabled={isSubmitting || !date}>
+            <Button type="submit" disabled={isSubmitting || !date}>
               Next: Select Items <ChevronRight className="ml-1 h-4 w-4"/>
             </Button>
           </div>
@@ -206,67 +232,100 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
 
       {step === 'items' && (
         <div className="flex flex-col flex-grow min-h-0 space-y-4">
-          <div className="space-y-1 p-3 border rounded-md bg-muted/50 flex-shrink-0">
-            <h3 className="text-sm font-medium text-muted-foreground">Review Details:</h3>
-            <p className="text-md font-semibold">{title.trim() === '' ? "Sunday Service" : title.trim()}</p>
-            {date && <p className="text-sm text-muted-foreground">{format(date, "PPP")}</p>}
-          </div>
-
-          <div className="space-y-3 p-3 border rounded-md flex-1 flex flex-col min-h-0">
-            {!isCustomizing ? (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-                <p className="text-sm text-muted-foreground flex-grow">All standard program items will be included by default.</p>
-                <Button type="button" variant="secondary" onClick={() => setIsCustomizing(true)}>
-                  <Settings2 className="mr-2 h-4 w-4" />
-                  Customize Selection
-                </Button>
-              </div>
-            ) : (
-              <>
-                <div className="flex justify-between items-center flex-shrink-0">
-                  <Label className="font-semibold text-md flex items-center">
-                    <ListChecks className="mr-2 h-5 w-5 text-primary"/> Select Items to Include:
-                  </Label>
-                  <Button type="button" variant="link" onClick={() => setIsCustomizing(false)} className="text-xs h-auto p-0">
+            <div className="flex-shrink-0">
+                 <p className="text-sm text-muted-foreground">Choose which items to include in the program.</p>
+            </div>
+            <div className="flex justify-between items-center flex-shrink-0">
+                <Label className="font-semibold text-md flex items-center">
+                <ListChecks className="mr-2 h-5 w-5 text-primary"/> Program Items:
+                </Label>
+                <Button type="button" variant="link" onClick={() => setIsCustomizing(false)} className="text-xs h-auto p-0">
                     Revert to Default
-                  </Button>
+                </Button>
+            </div>
+            <ScrollArea className="flex-1 w-full rounded-md border p-3">
+                <div className="space-y-2">
+                {programItemTitles.map((item) => (
+                    <div key={item} className="flex items-center space-x-2">
+                    <Checkbox
+                        id={`item-${item.replace(/\s+/g, '-')}`}
+                        checked={selectedItemTitles.includes(item)}
+                        onCheckedChange={(checked) => handleItemSelection(item, checked)}
+                        disabled={isSubmitting}
+                    />
+                    <Label
+                        htmlFor={`item-${item.replace(/\s+/g, '-')}`}
+                        className="text-sm font-normal cursor-pointer flex-grow"
+                    >
+                        {item}
+                    </Label>
+                    </div>
+                ))}
                 </div>
-                <p className="text-xs text-muted-foreground -mt-2 flex-shrink-0">
-                  Common items are selected by default. Adjust as needed.
-                </p>
-
-                <ScrollArea className="flex-1 w-full rounded-md border p-3 mt-2">
-                  <div className="space-y-2">
-                    {programItemTitles.map((item) => (
-                      <div key={item} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`item-${item.replace(/\s+/g, '-')}`}
-                          checked={selectedItemTitles.includes(item)}
-                          onCheckedChange={(checked) => handleItemSelection(item, checked)}
-                          disabled={isSubmitting}
-                        />
-                        <Label
-                          htmlFor={`item-${item.replace(/\s+/g, '-')}`}
-                          className="text-sm font-normal cursor-pointer flex-grow"
-                        >
-                          {item}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </>
-            )}
-          </div>
-          
+            </ScrollArea>
           <div className="flex justify-between gap-2 pt-2 flex-shrink-0">
             <Button type="button" variant="outline" onClick={() => setStep('details')} disabled={isSubmitting}>
               Back
             </Button>
-            <Button type="submit" disabled={isSubmitting || (isCustomizing && selectedItemTitles.length === 0)}>
-              {isSubmitting ? 'Creating...' : 'Create Program'}
+            <Button type="submit" disabled={isSubmitting || selectedItemTitles.length === 0}>
+              Next: Fill Details <ChevronRight className="ml-1 h-4 w-4"/>
             </Button>
           </div>
+        </div>
+      )}
+
+      {step === 'fillDetails' && (
+        <div className="flex flex-col flex-grow min-h-0 space-y-4">
+            <div className="flex-shrink-0">
+                <h3 className="font-semibold">Fill Program Details</h3>
+                <p className="text-sm text-muted-foreground">Assign specific content to your selected program items.</p>
+            </div>
+            <ScrollArea className="flex-1 w-full rounded-md border p-2">
+                <div className="space-y-3 p-1">
+                {programItems.map((item, index) => (
+                    <div key={index} className="p-3 border rounded-md space-y-2 bg-muted/20">
+                        <Label className="font-medium text-primary">{item.title}</Label>
+                        {isHymnItem(item.title) && (
+                            <Select onValueChange={(hymnId) => handleUpdateProgramItem(index, { hymnId: hymnId === 'none' ? undefined : hymnId })}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Assign a Hymn..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">-- No Hymn --</SelectItem>
+                                    {hymns.map(hymn => <SelectItem key={hymn.id} value={hymn.id}>{hymn.titleEnglish || hymn.titleHiligaynon}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        )}
+                        {isReadingItem(item.title) && (
+                             <Select onValueChange={(readingId) => handleUpdateProgramItem(index, { readingId: readingId === 'none' ? undefined : readingId })}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Assign a Reading..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                   <SelectItem value="none">-- No Reading --</SelectItem>
+                                    {readings.map(reading => <SelectItem key={reading.id} value={reading.id}>{reading.title}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        )}
+                         {isContentItem(item.title) && (
+                            <Input 
+                                placeholder="Add details (e.g., Speaker's Name)" 
+                                onChange={(e) => handleUpdateProgramItem(index, { content: e.target.value })} 
+                                className="bg-background"
+                            />
+                         )}
+                    </div>
+                ))}
+                </div>
+            </ScrollArea>
+            <div className="flex justify-between gap-2 pt-2 flex-shrink-0">
+                <Button type="button" variant="outline" onClick={() => setStep('items')} disabled={isSubmitting}>
+                   <ChevronLeft className="mr-1 h-4 w-4"/> Back
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Creating...' : 'Create Program'}
+                </Button>
+            </div>
         </div>
       )}
     </form>
