@@ -1,7 +1,7 @@
 
 'use client';
 import type { ReactNode } from 'react';
-import { Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, Wand2, ListChecks, Trash } from 'lucide-react';
+import { Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, Bot, ListChecks, Trash, FilePlus2 } from 'lucide-react'; // Added Bot, FilePlus2, removed Wand2
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -16,7 +16,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"; // Removed DialogTrigger as it's not used for Chat only
+  DialogTrigger, // Ensured DialogTrigger is imported
+} from "@/components/ui/dialog";
 import {
   Popover,
   PopoverContent,
@@ -26,6 +27,8 @@ import { useState, useEffect } from 'react';
 import DeleteHymnDialogContent from '@/components/hymnal/DeleteHymnDialogContent';
 import DeleteReadingDialogContent from '@/components/readings/DeleteReadingDialogContent';
 import ChatInterface from '@/components/ai/ChatInterface';
+import AddHymnForm from '@/components/hymnal/AddHymnForm'; // For Add Hymn Dialog
+import AddReadingForm from '@/components/readings/AddReadingForm'; // For Add Reading Dialog
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
@@ -55,6 +58,9 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
   const [isDeleteHymnDialogOpen, setIsDeleteHymnDialogOpen] = useState(false);
   const [isDeleteReadingDialogOpen, setIsDeleteReadingDialogOpen] = useState(false);
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
+  const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = useState(false); // State for Add Hymn Dialog
+  const [isAddReadingDialogOpenStandalone, setIsAddReadingDialogOpenStandalone] = useState(false); // State for Add Reading Dialog
+
   const router = useRouter();
 
   const [currentSignal, setCurrentSignal] = useState<SignalDetail>(initialSignalDetail);
@@ -216,23 +222,21 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                   </PopoverContent>
                 </Popover>
 
-
                 <Dialog open={isChatDialogOpen} onOpenChange={setIsChatDialogOpen}>
-                  {/* DialogTrigger is now directly part of the Dialog component in ShadCN */}
-                  <Button asChild variant="ghost" size="icon" aria-label="Open AI Chat" onClick={() => setIsChatDialogOpen(true)}>
-                     <Wand2 className="h-6 w-6" />
-                  </Button>
-                  {isChatDialogOpen && ( // Conditionally render DialogContent
-                    <DialogContent className="sm:max-w-[600px] h-[70vh] flex flex-col">
-                      <DialogHeader>
-                        <DialogTitle>Chat with SBC Church App AI</DialogTitle>
-                        <DialogDescription>
-                          Ask questions or get help.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <ChatInterface />
-                    </DialogContent>
-                  )}
+                  <DialogTrigger asChild>
+                     <Button variant="ghost" size="icon" aria-label="Open AI Chat">
+                        <Bot className="h-6 w-6" />
+                     </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[600px] h-[70vh] flex flex-col">
+                    <DialogHeader>
+                      <DialogTitle>Chat with SBC Church App AI</DialogTitle>
+                      <DialogDescription>
+                        Ask questions or get help.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <ChatInterface />
+                  </DialogContent>
                 </Dialog>
 
                 <DropdownMenu>
@@ -242,6 +246,14 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => setIsAddHymnDialogOpen(true)}>
+                      <FilePlus2 className="mr-2 h-4 w-4" />
+                      <span>Add Hymn</span>
+                    </DropdownMenuItem>
+                     <DropdownMenuItem onSelect={() => setIsAddReadingDialogOpenStandalone(true)}>
+                        <ListChecks className="mr-2 h-4 w-4" /> {/* Or another suitable icon */}
+                        <span>Add Reading</span>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => router.push('/hymn-url-editor')}>
                       <ListChecks className="mr-2 h-4 w-4" />
                       <span>URL Management</span>
@@ -283,6 +295,44 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
           </div>
         </div>
       </header>
+
+      {/* Add Hymn Dialog */}
+      <Dialog open={isAddHymnDialogOpen} onOpenChange={setIsAddHymnDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] h-[85vh] flex flex-col sm:rounded-[25px]">
+          <DialogHeader>
+            <DialogTitle>Add New Hymn</DialogTitle>
+            <DialogDescription>
+              Fill in the details for the new hymn. Hiligaynon title and lyrics are required.
+            </DialogDescription>
+          </DialogHeader>
+          <AddHymnForm
+            className="pt-0 flex-1 min-h-0" // Ensure form takes available space and handles its own scroll
+            onFormSubmit={() => {
+              setIsAddHymnDialogOpen(false);
+              handleDataChangeSuccess();
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Reading Dialog */}
+      <Dialog open={isAddReadingDialogOpenStandalone} onOpenChange={setIsAddReadingDialogOpenStandalone}>
+        <DialogContent className="sm:max-w-lg"> {/* Adjusted width if needed */}
+          <DialogHeader>
+            <DialogTitle>Add New Reading</DialogTitle>
+            <DialogDescription>
+              Fill in the details for the new responsive reading. This is a simulated action.
+            </DialogDescription>
+          </DialogHeader>
+          <AddReadingForm
+             className="pt-2" // Adjust styling as needed
+             onFormSubmit={() => {
+                setIsAddReadingDialogOpenStandalone(false);
+                // handleDataChangeSuccess(); // If it actually modified data
+             }}
+          />
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isDeleteHymnDialogOpen} onOpenChange={setIsDeleteHymnDialogOpen}>
         <DialogContent className="sm:max-w-md">
