@@ -1,4 +1,3 @@
-
 'use client';
 
 import AppHeader from '@/components/layout/AppHeader';
@@ -61,8 +60,13 @@ export default function ProgramListPage() {
   };
 
   const handleProgramAddedSuccess = () => {
+    // This now only refreshes the data in the background.
+    // The form itself controls when the dialog closes.
+    handleProgramDataChanged();
+  };
+
+  const closeAddProgramDialog = () => {
     setIsAddProgramDialogOpen(false);
-    handleProgramDataChanged(); 
   };
 
 
@@ -104,7 +108,7 @@ export default function ProgramListPage() {
           </DialogHeader>
           <AddProgramForm
             onFormSubmitSuccess={handleProgramAddedSuccess}
-            onCancel={() => setIsAddProgramDialogOpen(false)}
+            onCancel={closeAddProgramDialog}
           />
         </DialogContent>
       </Dialog>

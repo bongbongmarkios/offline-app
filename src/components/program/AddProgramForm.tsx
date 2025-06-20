@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, type FormEvent } from 'react';
@@ -9,10 +8,10 @@ import { useToast } from '@/hooks/use-toast';
 import { createNewProgramAction, type CreateProgramArgs } from '@/app/(main)/program/actions';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, ChevronRight, ListChecks, ChevronLeft, RotateCcw, BookOpenCheck, Music, NotebookText } from "lucide-react"; // Import new icons
+import { CalendarIcon, ChevronRight, ListChecks, ChevronLeft, RotateCcw, BookOpenCheck, Music, NotebookText, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { programItemTitles, type ProgramItemTitle, type ProgramItem } from '@/types';
+import { programItemTitles, type ProgramItemTitle, type ProgramItem, type Program } from '@/types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -26,6 +25,7 @@ import { initialSampleHymns } from '@/data/hymns';
 import { sampleReadings } from '@/data/readings';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Textarea } from '../ui/textarea';
+import { useRouter } from 'next/navigation';
 
 
 interface AddProgramFormProps {
@@ -63,11 +63,13 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const router = useRouter();
   
-  const [step, setStep] = useState<'details' | 'items' | 'fillDetails' | 'preview'>('details'); // Add 'preview' step
+  const [step, setStep] = useState<'details' | 'items' | 'fillDetails' | 'preview' | 'success'>('details');
   const [selectedItemTitles, setSelectedItemTitles] = useState<ProgramItemTitle[]>(defaultSelectedItems);
   const [programItems, setProgramItems] = useState<Omit<ProgramItem, 'id'>[]>([]);
   const [isCustomizing, setIsCustomizing] = useState(false); // Default to NOT customizing
+  const [newlyCreatedProgram, setNewlyCreatedProgram] = useState<Program | null>(null);
 
   const hymns = initialSampleHymns;
   const readings = sampleReadings;
@@ -115,6 +117,16 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
     setStep('preview');
   }
 
+  const resetForm = () => {
+    setTitle('');
+    setDate(new Date());
+    setSelectedItemTitles(defaultSelectedItems);
+    setProgramItems([]);
+    setIsCustomizing(false);
+    setNewlyCreatedProgram(null);
+    setStep('details');
+  };
+
   const handleFinalSubmit = async () => {
     if (!date) { 
       toast({
@@ -137,18 +149,14 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
 
     try {
       const result = await createNewProgramAction(programArgs);
-      if (result?.success) {
+      if (result?.success && result.newProgram) {
         toast({
           title: "Program Added",
           description: `"${programArgs.title}" has been successfully created.`,
         });
-        onFormSubmitSuccess();
-        // Reset form for next time
-        setTitle('');
-        setDate(new Date());
-        setSelectedItemTitles(defaultSelectedItems);
-        setStep('details');
-        setIsCustomizing(false);
+        setNewlyCreatedProgram(result.newProgram);
+        setStep('success');
+        onFormSubmitSuccess(); // This refreshes the list in the background
       } else {
         throw new Error(result?.error || "Failed to create program.");
       }
@@ -461,6 +469,40 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
               {isSubmitting ? 'Creating...' : 'Create Program'}
             </Button>
           </div>
+        </div>
+      )}
+
+      {step === 'success' && newlyCreatedProgram && (
+        <div className="flex flex-col flex-grow min-h-0">
+            <div className="flex-grow flex flex-col items-center justify-center text-center p-4">
+                <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                <h3 className="text-2xl font-semibold">Program Created!</h3>
+                <p className="text-muted-foreground mt-2">
+                    "{newlyCreatedProgram.title}" is now ready.
+                </p>
+            </div>
+            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 flex-shrink-0">
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                        onCancel(); // Closes the dialog
+                        resetForm();
+                    }}
+                >
+                    Add to List
+                </Button>
+                <Button
+                    type="button"
+                    onClick={() => {
+                        onCancel(); // Closes the dialog
+                        router.push(`/program/${newlyCreatedProgram.id}`);
+                        resetForm();
+                    }}
+                >
+                    Start Presentation <ChevronRight className="ml-1 h-4 w-4"/>
+                </Button>
+            </div>
         </div>
       )}
     </form>
