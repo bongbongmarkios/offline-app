@@ -1,7 +1,7 @@
 
 'use client';
 import type { ReactNode } from 'react';
-import { Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, Wand2, ListChecks, Trash, FilePlus2 } from 'lucide-react';
+import { Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, Wand2, ListChecks, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -16,7 +16,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger, 
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Popover,
@@ -27,8 +27,6 @@ import { useState, useEffect } from 'react';
 import DeleteHymnDialogContent from '@/components/hymnal/DeleteHymnDialogContent';
 import DeleteReadingDialogContent from '@/components/readings/DeleteReadingDialogContent';
 import ChatInterface from '@/components/ai/ChatInterface';
-import AddHymnForm from '@/components/hymnal/AddHymnForm'; 
-import AddReadingForm from '@/components/readings/AddReadingForm'; 
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
@@ -55,8 +53,6 @@ const initialSignalDetail: SignalDetail = {
 
 
 export default function AppHeader({ title, actions, hideDefaultActions }: AppHeaderProps) {
-  const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = useState(false); 
-  const [isAddReadingDialogOpen, setIsAddReadingDialogOpen] = useState(false); 
   const [isDeleteHymnDialogOpen, setIsDeleteHymnDialogOpen] = useState(false);
   const [isDeleteReadingDialogOpen, setIsDeleteReadingDialogOpen] = useState(false);
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
@@ -106,7 +102,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
           } else if (effectiveType === '2g' || effectiveType === 'slow-2g') {
             level = 'weak';
             description = 'Poor (Cellular)';
-          } else if (effectiveType === 'wifi' && navigator.onLine) { 
+          } else if (effectiveType === 'wifi' && navigator.onLine) {
             description = 'Online (Wi-Fi - Speed details unavailable)';
             level = 'average';
           } else if (navigator.onLine) {
@@ -235,7 +231,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                         Ask questions or get help.
                       </DialogDescription>
                     </DialogHeader>
-                    <ChatInterface /> 
+                    <ChatInterface />
                   </DialogContent>
                 </Dialog>
 
@@ -246,13 +242,9 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => setIsAddHymnDialogOpen(true)}>
-                      <FilePlus2 className="mr-2 h-4 w-4" />
-                      <span>Add Hymn</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setIsAddReadingDialogOpen(true)}>
-                       <FilePlus2 className="mr-2 h-4 w-4" /> 
-                      <span>Add Reading</span>
+                    {/* "Add Hymn" and "Add Reading" menu items removed */}
+                    <DropdownMenuItem onSelect={() => router.push('/hymnal/add')}>
+                      Add Hymn (Page)
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => router.push('/hymn-url-editor')}>
                       <ListChecks className="mr-2 h-4 w-4" />
@@ -296,42 +288,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
         </div>
       </header>
 
-      <Dialog open={isAddHymnDialogOpen} onOpenChange={setIsAddHymnDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] h-[85vh] flex flex-col sm:rounded-[25px]">
-          <DialogHeader>
-            <DialogTitle>Add New Hymn</DialogTitle>
-            <DialogDescription>
-              Fill in the details for the new hymn. Hiligaynon title and lyrics are required.
-            </DialogDescription>
-          </DialogHeader>
-          <AddHymnForm
-            onFormSubmit={() => {
-              setIsAddHymnDialogOpen(false);
-              handleDataChangeSuccess();
-            }}
-            className="pt-0 flex-1 min-h-0"
-          />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isAddReadingDialogOpen} onOpenChange={setIsAddReadingDialogOpen}>
-        <DialogContent className="sm:max-w-md"> 
-          <DialogHeader>
-            <DialogTitle>Add New Reading</DialogTitle>
-            <DialogDescription>
-              Fill in the details for the new responsive reading.
-            </DialogDescription>
-          </DialogHeader>
-          <AddReadingForm
-            onFormSubmit={() => {
-              setIsAddReadingDialogOpen(false);
-              handleDataChangeSuccess(); 
-            }}
-             className="pt-0" 
-          />
-        </DialogContent>
-      </Dialog>
-
+      {/* "Add Hymn" and "Add Reading" Dialog components removed */}
 
       <Dialog open={isDeleteHymnDialogOpen} onOpenChange={setIsDeleteHymnDialogOpen}>
         <DialogContent className="sm:max-w-md">
