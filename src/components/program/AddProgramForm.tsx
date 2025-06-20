@@ -38,9 +38,22 @@ const defaultSelectedItems: ProgramItemTitle[] = [
   programItemTitles[12], // Closing Hymn
 ];
 
+// Titles that do not require a user-input content field.
+const contentlessItemTitles: ProgramItemTitle[] = [
+  "Doxology",
+  "Rice for Mission offering with children's choir",
+  "Pastoral Prayer",
+  "Prayer of Benediction",
+];
+
 const isHymnItem = (title: ProgramItemTitle): boolean => title.toLowerCase().includes('hymn');
 const isReadingItem = (title: ProgramItemTitle): boolean => title.toLowerCase().includes('reading');
-const isContentItem = (title: ProgramItemTitle): boolean => !isHymnItem(title) && !isReadingItem(title);
+// A "content item" is one that is not a hymn, not a reading, and not content-less. It needs an input field.
+const isContentItem = (title: ProgramItemTitle): boolean => 
+  !isHymnItem(title) && 
+  !isReadingItem(title) && 
+  !contentlessItemTitles.includes(title);
+
 
 export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddProgramFormProps) {
   const [title, setTitle] = useState('');
@@ -271,7 +284,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
             </div>
 
             {isCustomizing && (
-                <ScrollArea className="flex-1 w-full rounded-md border p-3">
+                <ScrollArea className="flex-1 w-full rounded-md border p-3 min-h-0">
                     <div className="space-y-2">
                     {programItemTitles.map((item) => (
                         <div key={item} className="flex items-center space-x-2">
@@ -312,7 +325,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
                 <h3 className="font-semibold">Fill Program Details</h3>
                 <p className="text-sm text-muted-foreground">Assign specific content to your selected program items.</p>
             </div>
-            <ScrollArea className="flex-1 w-full rounded-md border p-2">
+            <ScrollArea className="flex-1 w-full rounded-md border p-2 min-h-0">
                 <div className="space-y-3 p-1">
                 {programItems.map((item, index) => (
                     <div key={index} className="p-3 border rounded-md space-y-2 bg-muted/20">
