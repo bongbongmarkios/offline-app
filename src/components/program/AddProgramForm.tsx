@@ -19,25 +19,29 @@ interface AddProgramFormProps {
 }
 
 export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddProgramFormProps) {
-  const [title, setTitle] = useState(`New Program - ${new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`);
+  const [title, setTitle] = useState(''); // Initial title is now empty
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !date) {
+    if (!date) { // Only date is strictly required now
       toast({
         title: "Error",
-        description: "Program title and date are required.",
+        description: "Program date is required.",
         variant: "destructive",
       });
       return;
     }
 
     setIsSubmitting(true);
+    
+    // Default title to formatted date if user leaves it blank
+    const programTitleToSubmit = title.trim() === '' ? format(date, "MMMM d, yyyy") : title.trim();
+
     const programArgs: CreateProgramArgs = {
-      title: title.trim(),
+      title: programTitleToSubmit,
       date: format(date, "yyyy-MM-dd"), // Format date to YYYY-MM-DD string
     };
 
@@ -67,13 +71,12 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
   return (
     <form onSubmit={handleSubmit} className="space-y-6 py-4">
       <div className="space-y-2">
-        <Label htmlFor="program-title">Program Title</Label>
+        <Label htmlFor="program-title">Program Title (Optional)</Label>
         <Input
           id="program-title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g., Sunday Worship Service"
-          required
+          placeholder="e.g., Sunday Worship Service or leave blank for date"
           disabled={isSubmitting}
         />
       </div>
@@ -109,7 +112,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
           Cancel
         </Button>
-        <Button type="submit" disabled={isSubmitting || !title.trim() || !date}>
+        <Button type="submit" disabled={isSubmitting || !date}>
           {isSubmitting ? 'Creating...' : 'Create Program'}
         </Button>
       </div>
