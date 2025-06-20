@@ -61,6 +61,7 @@ export default function ProgramList({ programs, onProgramDeleted }: ProgramListP
         toast({
           title: "Program Moved to Trash",
           description: `"${result.deletedProgram.title}" has been moved to trash.`,
+          duration: 1000, // Make toast disappear quickly
         });
       } catch (e) {
         console.error("Error moving program to localStorage trash:", e);
