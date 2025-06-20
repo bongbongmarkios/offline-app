@@ -1,7 +1,7 @@
 
 'use client';
 import type { ReactNode } from 'react';
-import { Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, Bot, ListChecks, Trash, FilePlus2 } from 'lucide-react'; // Added Bot, FilePlus2, removed Wand2
+import { Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, Bot, ListChecks, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -16,7 +16,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger, // Ensured DialogTrigger is imported
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Popover,
@@ -27,8 +27,9 @@ import { useState, useEffect } from 'react';
 import DeleteHymnDialogContent from '@/components/hymnal/DeleteHymnDialogContent';
 import DeleteReadingDialogContent from '@/components/readings/DeleteReadingDialogContent';
 import ChatInterface from '@/components/ai/ChatInterface';
-import AddHymnForm from '@/components/hymnal/AddHymnForm'; // For Add Hymn Dialog
-import AddReadingForm from '@/components/readings/AddReadingForm'; // For Add Reading Dialog
+// AddHymnForm and AddReadingForm are not used directly in this version of AppHeader based on last requests
+// import AddHymnForm from '@/components/hymnal/AddHymnForm';
+// import AddReadingForm from '@/components/readings/AddReadingForm';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
@@ -58,8 +59,9 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
   const [isDeleteHymnDialogOpen, setIsDeleteHymnDialogOpen] = useState(false);
   const [isDeleteReadingDialogOpen, setIsDeleteReadingDialogOpen] = useState(false);
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
-  const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = useState(false); // State for Add Hymn Dialog
-  const [isAddReadingDialogOpenStandalone, setIsAddReadingDialogOpenStandalone] = useState(false); // State for Add Reading Dialog
+  // State for Add Hymn/Reading Dialogs removed as per last request
+  // const [isAddHymnDialogOpen, setIsAddHymnDialogOpen] = useState(false);
+  // const [isAddReadingDialogOpenStandalone, setIsAddReadingDialogOpenStandalone] = useState(false);
 
   const router = useRouter();
 
@@ -107,13 +109,14 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
           } else if (effectiveType === '2g' || effectiveType === 'slow-2g') {
             level = 'weak';
             description = 'Poor (Cellular)';
-          } else if (effectiveType === 'wifi' && navigator.onLine) {
+          } else if (effectiveType === 'wifi' && navigator.onLine) { // Added wifi check based on navigator.onLine
             description = 'Online (Wi-Fi - Speed details unavailable)';
-            level = 'average';
+            level = 'average'; // Default to average if specific Wi-Fi speed isn't available but online
           } else if (navigator.onLine) {
             description = 'Online (Speed details unavailable)';
-            level = 'average';
+            level = 'average'; // Default if online but no other details
           } else {
+            // This case might be redundant if !navigator.onLine is caught first, but good for clarity
             description = 'Offline';
             level = 'none';
           }
@@ -149,7 +152,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
       case 'weak':
         return 'text-red-500';
       case 'none':
-        return 'text-slate-400 dark:text-slate-600';
+        return 'text-slate-400 dark:text-slate-600'; // Adjusted for visibility in dark mode
       case 'unknown':
       default:
         return 'text-muted-foreground';
@@ -246,14 +249,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => setIsAddHymnDialogOpen(true)}>
-                      <FilePlus2 className="mr-2 h-4 w-4" />
-                      <span>Add Hymn</span>
-                    </DropdownMenuItem>
-                     <DropdownMenuItem onSelect={() => setIsAddReadingDialogOpenStandalone(true)}>
-                        <ListChecks className="mr-2 h-4 w-4" /> {/* Or another suitable icon */}
-                        <span>Add Reading</span>
-                    </DropdownMenuItem>
+                    {/* Add Hymn and Add Reading items removed as per user request */}
                     <DropdownMenuItem onSelect={() => router.push('/hymn-url-editor')}>
                       <ListChecks className="mr-2 h-4 w-4" />
                       <span>URL Management</span>
@@ -296,44 +292,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
         </div>
       </header>
 
-      {/* Add Hymn Dialog */}
-      <Dialog open={isAddHymnDialogOpen} onOpenChange={setIsAddHymnDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] h-[85vh] flex flex-col sm:rounded-[25px]">
-          <DialogHeader>
-            <DialogTitle>Add New Hymn</DialogTitle>
-            <DialogDescription>
-              Fill in the details for the new hymn. Hiligaynon title and lyrics are required.
-            </DialogDescription>
-          </DialogHeader>
-          <AddHymnForm
-            className="pt-0 flex-1 min-h-0" // Ensure form takes available space and handles its own scroll
-            onFormSubmit={() => {
-              setIsAddHymnDialogOpen(false);
-              handleDataChangeSuccess();
-            }}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Reading Dialog */}
-      <Dialog open={isAddReadingDialogOpenStandalone} onOpenChange={setIsAddReadingDialogOpenStandalone}>
-        <DialogContent className="sm:max-w-lg"> {/* Adjusted width if needed */}
-          <DialogHeader>
-            <DialogTitle>Add New Reading</DialogTitle>
-            <DialogDescription>
-              Fill in the details for the new responsive reading. This is a simulated action.
-            </DialogDescription>
-          </DialogHeader>
-          <AddReadingForm
-             className="pt-2" // Adjust styling as needed
-             onFormSubmit={() => {
-                setIsAddReadingDialogOpenStandalone(false);
-                // handleDataChangeSuccess(); // If it actually modified data
-             }}
-          />
-        </DialogContent>
-      </Dialog>
-
+      {/* Dialogs for deleting hymns/readings. Add Hymn/Reading dialogs are removed. */}
       <Dialog open={isDeleteHymnDialogOpen} onOpenChange={setIsDeleteHymnDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -364,7 +323,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
             onOpenChange={setIsDeleteReadingDialogOpen}
             onDeleteSuccess={() => {
               setIsDeleteReadingDialogOpen(false);
-              handleDataChangeSuccess();
+              // handleDataChangeSuccess(); // Uncomment if actual data change occurs
             }}
           />
         </DialogContent>
