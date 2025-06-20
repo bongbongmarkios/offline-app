@@ -6,12 +6,15 @@ import { addSampleProgram, deleteSampleProgramById } from '@/data/programs';
 import type { Program } from '@/types';
 import { programItemTitles } from '@/types';
 
-export async function createNewProgramAction() {
-  const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+export interface CreateProgramArgs {
+  title: string;
+  date: string; // Expected in YYYY-MM-DD format
+}
 
+export async function createNewProgramAction(args: CreateProgramArgs) {
   const newProgramData: Omit<Program, 'id' | 'items'> = {
-    title: `New Program - ${new Date().toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}`,
-    date: currentDate,
+    title: args.title,
+    date: args.date,
   };
 
   try {
@@ -31,6 +34,7 @@ export async function createNewProgramAction() {
   }
 
   revalidatePath('/program');
+  return { success: true };
 }
 
 export async function deleteProgramAction(programId: string) {
