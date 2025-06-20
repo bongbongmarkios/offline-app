@@ -56,15 +56,10 @@ export default function ProgramListPage() {
     fetchPrograms();
   }, [fetchPrograms]);
 
-  // This function is called after a program is successfully added via the form
-  // or after a program is "deleted" (moved to trash).
   const handleProgramDataChanged = () => {
     fetchPrograms(); 
-    // Additionally, if server action uses revalidatePath, Next.js should handle data refetching for server components.
-    // For client components relying on localStorage, this explicit fetch ensures UI sync.
   };
 
-  // This specific handler is for when a program is successfully added via the AddProgramForm
   const handleProgramAddedSuccess = () => {
     setIsAddProgramDialogOpen(false);
     handleProgramDataChanged(); 
@@ -100,11 +95,11 @@ export default function ProgramListPage() {
             <Plus className="h-7 w-7" />
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-xl h-[80vh] sm:h-[75vh] flex flex-col"> {/* Increased width and height */}
           <DialogHeader>
             <DialogTitle>Add New Program</DialogTitle>
             <DialogDescription>
-              Enter the details for the new program.
+              Enter details and select items for the new program.
             </DialogDescription>
           </DialogHeader>
           <AddProgramForm

@@ -3,12 +3,13 @@
 
 import { revalidatePath } from 'next/cache';
 import { addSampleProgram, deleteSampleProgramById, samplePrograms } from '@/data/programs';
-import type { Program, ProgramItem } from '@/types';
-import { programItemTitles } from '@/types';
+import type { Program, ProgramItem, ProgramItemTitle } from '@/types'; // Added ProgramItemTitle
+// import { programItemTitles } from '@/types'; // No longer needed here directly
 
 export interface CreateProgramArgs {
   title: string;
   date: string; // Expected in YYYY-MM-DD format
+  itemTitles: ProgramItemTitle[]; // Array of selected item titles
 }
 
 export async function createNewProgramAction(args: CreateProgramArgs) {
@@ -19,18 +20,10 @@ export async function createNewProgramAction(args: CreateProgramArgs) {
 
   let addedProgram: Program | null = null;
   try {
-    const defaultItemsForNewProgram: ProgramItem['title'][] = [
-      programItemTitles[2], // Opening Hymn
-      programItemTitles[3], // Opening Prayer
-      programItemTitles[10], // Message
-      programItemTitles[12], // Closing Hymn
-    ];
+    // Use the itemTitles passed from the form, or an empty array if none (though form should validate for at least one)
+    const itemsToCreate = args.itemTitles.length > 0 ? args.itemTitles : [];
     
-    addedProgram = addSampleProgram(newProgramData, defaultItemsForNewProgram);
-
-    // Update localStorage on the server if possible (this is tricky and usually client-side)
-    // For consistency with client-side loading, we'll primarily rely on client updating localStorage.
-    // The revalidatePath will help refresh client components that fetch.
+    addedProgram = addSampleProgram(newProgramData, itemsToCreate);
 
   } catch (error) {
     console.error('Failed to create new program:', error);
@@ -38,15 +31,15 @@ export async function createNewProgramAction(args: CreateProgramArgs) {
   }
 
   revalidatePath('/program');
-  return { success: true, newProgram: addedProgram }; // Return the new program
+  return { success: true, newProgram: addedProgram };
 }
 
 export async function deleteProgramAction(programId: string) {
   try {
-    const deletedProgram = deleteSampleProgramById(programId); // Now returns the deleted program or null
+    const deletedProgram = deleteSampleProgramById(programId);
     if (deletedProgram) {
       revalidatePath('/program');
-      return { success: true, deletedProgram }; // Return the deleted program data
+      return { success: true, deletedProgram };
     }
     return { error: 'Program not found or already deleted.'}
   } catch (error) {
