@@ -30,7 +30,7 @@ export const programItemTitles = [
   "Pastoral Prayer", 
   "Choir", 
   "Message", 
-  "Giving of tithe's or pledges and offering to the lord", 
+  "Giving of tithes or pledges and offering to the lord", 
   "Closing Hymn", 
   "Prayer of Benediction"
 ] as const;
