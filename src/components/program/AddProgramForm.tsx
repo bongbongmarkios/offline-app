@@ -223,7 +223,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
           </div>
           
           <Label className="font-semibold text-md">Select Program Items:</Label>
-          <ScrollArea className="h-[250px] w-full rounded-md border p-3">
+          <ScrollArea className="h-[350px] w-full rounded-md border p-3">
             <div className="space-y-2">
               {programItemTitles.map((item) => (
                 <div key={item} className="flex items-center space-x-2">
