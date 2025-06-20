@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, type FormEvent } from 'react';
@@ -5,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { createNewProgramAction, type CreateProgramArgs } from '@/app/(main)/program/actions';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, ChevronRight, ListChecks, ChevronLeft, RotateCcw, BookOpenCheck, Music, NotebookText, CheckCircle2 } from "lucide-react";
@@ -26,12 +26,15 @@ import { sampleReadings } from '@/data/readings';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Textarea } from '../ui/textarea';
 import { useRouter } from 'next/navigation';
+import { samplePrograms as initialSamplePrograms } from '@/data/programs';
 
 
 interface AddProgramFormProps {
   onFormSubmitSuccess: () => void;
   onCancel: () => void;
 }
+
+const LOCAL_STORAGE_PROGRAMS_KEY = 'graceNotesPrograms';
 
 const defaultSelectedItems: ProgramItemTitle[] = [
   programItemTitles[2], // Opening Hymn
@@ -127,7 +130,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
     setStep('details');
   };
 
-  const handleFinalSubmit = async () => {
+  const handleFinalSubmit = () => {
     if (!date) { 
       toast({
         title: "Error",
@@ -136,30 +139,47 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
       });
       return;
     }
-
     setIsSubmitting(true);
     
-    const programTitleToSubmit = title.trim() === '' ? "Sunday Service" : title.trim();
-    
-    const programArgs: CreateProgramArgs = {
-      title: programTitleToSubmit,
-      date: format(date, "yyyy-MM-dd"),
-      items: programItems,
-    };
-
     try {
-      const result = await createNewProgramAction(programArgs);
-      if (result?.success && result.newProgram) {
-        toast({
-          title: "Program Added",
-          description: `"${programArgs.title}" has been successfully created.`,
-        });
-        setNewlyCreatedProgram(result.newProgram);
-        setStep('success');
-        onFormSubmitSuccess(); // This refreshes the list in the background
-      } else {
-        throw new Error(result?.error || "Failed to create program.");
-      }
+      const programTitleToSubmit = title.trim() === '' ? "Sunday Service" : title.trim();
+      
+      const storedProgramsString = localStorage.getItem(LOCAL_STORAGE_PROGRAMS_KEY);
+      let allPrograms: Program[] = storedProgramsString ? JSON.parse(storedProgramsString) : [...initialSamplePrograms];
+
+      let maxId = 30000;
+      allPrograms.forEach(program => {
+        const idNum = parseInt(program.id, 10);
+        if (!isNaN(idNum) && idNum >= 30000 && idNum < 40000) {
+          if (idNum > maxId) maxId = idNum;
+        }
+      });
+      const newId = (maxId + 1).toString();
+
+      let itemCounter = Date.now();
+      const finalProgramItems: ProgramItem[] = programItems.map(item => ({
+        ...item,
+        id: `item-${newId}-${itemCounter++}`,
+      }));
+
+      const newProgram: Program = {
+        id: newId,
+        title: programTitleToSubmit,
+        date: format(date, "yyyy-MM-dd"),
+        items: finalProgramItems,
+      };
+
+      allPrograms.push(newProgram);
+      allPrograms.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+      localStorage.setItem(LOCAL_STORAGE_PROGRAMS_KEY, JSON.stringify(allPrograms));
+
+      toast({
+        title: "Program Added",
+        description: `"${newProgram.title}" has been successfully created.`,
+      });
+      setNewlyCreatedProgram(newProgram);
+      setStep('success');
+      onFormSubmitSuccess();
     } catch (error: any) {
       console.error("Error creating program:", error);
       toast({

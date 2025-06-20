@@ -16,7 +16,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { deleteProgramAction } from '@/app/(main)/program/actions';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 
@@ -40,24 +39,25 @@ export default function ProgramList({ programs, onProgramDeleted }: ProgramListP
     setIsConfirmDeleteDialogOpen(true);
   };
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = () => {
     if (!programToConfirmDelete) return;
+    const programToDelete = programToConfirmDelete;
 
-    const result = await deleteProgramAction(programToConfirmDelete.id);
-    
-    if (result?.success && result.deletedProgram) {
-      const deletedProgramData = result.deletedProgram;
-      try {
-        // Step 1: Remove from active programs in localStorage
+    try {
         const activeProgramsString = localStorage.getItem(LOCAL_STORAGE_PROGRAMS_KEY);
         let activePrograms: Program[] = activeProgramsString ? JSON.parse(activeProgramsString) : [];
-        activePrograms = activePrograms.filter(p => p.id !== deletedProgramData.id);
+
+        const programIndex = activePrograms.findIndex(p => p.id === programToDelete.id);
+        if (programIndex === -1) {
+            toast({ title: "Error", description: "Program to delete was not found in local storage.", variant: "destructive" });
+            return;
+        }
+
+        const [deletedProgramData] = activePrograms.splice(programIndex, 1);
         localStorage.setItem(LOCAL_STORAGE_PROGRAMS_KEY, JSON.stringify(activePrograms));
 
-        // Step 2: Add to localStorage trash
         const storedTrashString = localStorage.getItem(LOCAL_STORAGE_TRASH_KEY);
         let currentTrash: AnyTrashedItem[] = storedTrashString ? JSON.parse(storedTrashString) : [];
-        
         const trashedProgramEntry: TrashedProgram = {
           originalId: deletedProgramData.id,
           itemType: 'program',
@@ -70,28 +70,22 @@ export default function ProgramList({ programs, onProgramDeleted }: ProgramListP
         toast({
           title: "Program Moved to Trash",
           description: `"${deletedProgramData.title}" has been moved to trash.`,
-          duration: 1000, 
         });
-      } catch (e) {
+        
+        if (onProgramDeleted) {
+          onProgramDeleted(); 
+        }
+    } catch (e) {
         console.error("Error managing program in localStorage:", e);
         toast({
             title: "Storage Error",
-            description: `"${deletedProgramData.title}" was removed from active list, but there was an issue with trash/storage.`,
+            description: `Could not move program to trash due to a storage issue.`,
             variant: "destructive"
         });
-      }
-      if (onProgramDeleted) {
-        onProgramDeleted(); 
-      }
-    } else {
-      toast({
-        title: "Error",
-        description: result?.error || "Could not delete program.",
-        variant: "destructive",
-      });
+    } finally {
+        setIsConfirmDeleteDialogOpen(false);
+        setProgramToConfirmDelete(null);
     }
-    setIsConfirmDeleteDialogOpen(false);
-    setProgramToConfirmDelete(null);
   };
 
   if (!programs || programs.length === 0) {
