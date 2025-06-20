@@ -4,7 +4,7 @@ import type { Program, ProgramItem, Hymn, Reading } from '@/types';
 import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { ArrowLeft, ArrowRight, CheckCircle2, NotebookText } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, NotebookText, Eraser } from 'lucide-react';
 import { useActivity } from '@/hooks/useActivityTracker';
 import { Progress } from '@/components/ui/progress';
 import Link from 'next/link';
@@ -18,6 +18,17 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -113,6 +124,16 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
         setIsNotesDialogOpen(false);
     }
   };
+  
+  const handleDeleteNote = () => {
+    if (typeof window !== 'undefined' && currentItem) {
+        const notesKey = getNotesKey(program.id, currentItem.id);
+        localStorage.removeItem(notesKey);
+        setDisplayedNote(null);
+        setCurrentItemHasNote(false);
+        toast({ title: 'Note Deleted', description: `The note for "${currentItem.title}" has been deleted.` });
+    }
+  };
 
   const progressPercentage = ((currentIndex + 1) / program.items.length) * 100;
 
@@ -126,7 +147,32 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
     <>
       <Card className="w-full max-w-2xl mx-auto shadow-xl flex flex-col min-h-[60vh]">
         <CardHeader className="text-center pb-2 relative">
-           <div className="absolute top-4 right-4">
+           <div className="absolute top-4 right-4 flex items-center gap-2">
+              {currentItemHasNote && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      aria-label="Erase note for this item"
+                    >
+                      <Eraser className="h-5 w-5" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete the note for &quot;{currentItem.title}&quot;. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteNote}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
               <Button
                   variant={currentItemHasNote ? 'default' : 'outline'}
                   size="icon"
