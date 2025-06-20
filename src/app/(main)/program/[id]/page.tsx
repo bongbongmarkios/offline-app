@@ -1,3 +1,4 @@
+
 import AppHeader from '@/components/layout/AppHeader';
 import ProgramPresenter from '@/components/program/ProgramPresenter';
 import { samplePrograms } from '@/data/programs';
@@ -35,8 +36,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   return (
     <>
       <AppHeader 
-        title=""
-        actions={
+        title={
           <Button asChild variant="outline" size="sm">
             <Link href="/program">
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Programs
