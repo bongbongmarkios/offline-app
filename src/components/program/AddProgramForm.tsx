@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createNewProgramAction, type CreateProgramArgs } from '@/app/(main)/program/actions';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, ChevronRight, Settings2, ListChecks, ChevronLeft } from "lucide-react";
+import { CalendarIcon, ChevronRight, Settings2, ListChecks, ChevronLeft, RotateCcw } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { programItemTitles, type ProgramItemTitle, type ProgramItem } from '@/types';
@@ -52,7 +52,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
   const [step, setStep] = useState<'details' | 'items' | 'fillDetails'>('details');
   const [selectedItemTitles, setSelectedItemTitles] = useState<ProgramItemTitle[]>(defaultSelectedItems);
   const [programItems, setProgramItems] = useState<Omit<ProgramItem, 'id'>[]>([]);
-  const [isCustomizing, setIsCustomizing] = useState(false);
+  const [isCustomizing, setIsCustomizing] = useState(false); // Default to NOT customizing
 
   const hymns = initialSampleHymns;
   const readings = sampleReadings;
@@ -74,7 +74,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
     if (isCustomizing && itemsToCreate.length === 0) {
       toast({
         title: "Items Required",
-        description: "Please select at least one program item.",
+        description: "Please select at least one program item when customizing.",
         variant: "destructive",
       });
       return;
@@ -161,6 +161,11 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
       );
     }
   };
+  
+  const handleRevertToDefault = () => {
+    setIsCustomizing(false);
+    setSelectedItemTitles(defaultSelectedItems);
+  }
 
   return (
     <form onSubmit={handleFormSubmit} className="space-y-6 py-2 flex flex-col flex-grow min-h-0">
@@ -187,7 +192,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
                 disabled={isSubmitting}
                 className="flex-grow sm:flex-grow-0"
               >
-                Use Today&apos;s Date
+                Use Today's Date
               </Button>
               <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                 <PopoverTrigger asChild>
@@ -233,44 +238,71 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
       {step === 'items' && (
         <div className="flex flex-col flex-grow min-h-0 space-y-4">
             <div className="flex-shrink-0">
-                 <p className="text-sm text-muted-foreground">Choose which items to include in the program.</p>
+                 <h3 className="font-semibold">Review Details</h3>
+                 <p className="text-sm text-muted-foreground">
+                    Title: <span className="font-medium text-foreground">{title.trim() === '' ? "Sunday Service" : title}</span>
+                 </p>
+                 {date && (
+                    <p className="text-sm text-muted-foreground">
+                        Date: <span className="font-medium text-foreground">{format(date, "PPP")}</span>
+                    </p>
+                 )}
             </div>
-            <div className="flex justify-between items-center flex-shrink-0">
+
+            <div className="flex-shrink-0">
                 <Label className="font-semibold text-md flex items-center">
-                <ListChecks className="mr-2 h-5 w-5 text-primary"/> Program Items:
+                    <Settings2 className="mr-2 h-5 w-5 text-primary"/> Content Configuration
                 </Label>
-                <Button type="button" variant="link" onClick={() => setIsCustomizing(false)} className="text-xs h-auto p-0">
-                    Revert to Default
+                {!isCustomizing ? (
+                    <div className="p-3 mt-2 bg-muted/50 rounded-md text-sm text-muted-foreground border">
+                        All standard program items will be included by default.
+                        <Button type="button" variant="link" onClick={() => setIsCustomizing(true)} className="text-xs h-auto p-0 ml-2">
+                            Customize Selection
+                        </Button>
+                    </div>
+                ) : (
+                     <div className="p-3 mt-2 bg-accent/20 rounded-md text-sm text-accent-foreground border border-accent flex justify-between items-center">
+                        <span>Select the items to include below.</span>
+                        <Button type="button" variant="link" onClick={handleRevertToDefault} className="text-xs h-auto p-0 text-accent-foreground underline">
+                            <RotateCcw className="mr-1 h-3 w-3"/> Revert to Default
+                        </Button>
+                    </div>
+                )}
+            </div>
+
+            {isCustomizing && (
+                <ScrollArea className="flex-1 w-full rounded-md border p-3">
+                    <div className="space-y-2">
+                    {programItemTitles.map((item) => (
+                        <div key={item} className="flex items-center space-x-2">
+                        <Checkbox
+                            id={`item-${item.replace(/\s+/g, '-')}`}
+                            checked={selectedItemTitles.includes(item)}
+                            onCheckedChange={(checked) => handleItemSelection(item, checked)}
+                            disabled={isSubmitting}
+                        />
+                        <Label
+                            htmlFor={`item-${item.replace(/\s+/g, '-')}`}
+                            className="text-sm font-normal cursor-pointer flex-grow"
+                        >
+                            {item}
+                        </Label>
+                        </div>
+                    ))}
+                    </div>
+                </ScrollArea>
+            )}
+            
+            {!isCustomizing && <div className="flex-grow"></div>}
+
+            <div className="flex justify-between gap-2 pt-2 flex-shrink-0">
+                <Button type="button" variant="outline" onClick={() => setStep('details')} disabled={isSubmitting}>
+                   <ChevronLeft className="mr-1 h-4 w-4"/> Back
+                </Button>
+                <Button type="submit" disabled={isSubmitting || (isCustomizing && selectedItemTitles.length === 0)}>
+                  Next: Fill Details <ChevronRight className="ml-1 h-4 w-4"/>
                 </Button>
             </div>
-            <ScrollArea className="flex-1 w-full rounded-md border p-3">
-                <div className="space-y-2">
-                {programItemTitles.map((item) => (
-                    <div key={item} className="flex items-center space-x-2">
-                    <Checkbox
-                        id={`item-${item.replace(/\s+/g, '-')}`}
-                        checked={selectedItemTitles.includes(item)}
-                        onCheckedChange={(checked) => handleItemSelection(item, checked)}
-                        disabled={isSubmitting}
-                    />
-                    <Label
-                        htmlFor={`item-${item.replace(/\s+/g, '-')}`}
-                        className="text-sm font-normal cursor-pointer flex-grow"
-                    >
-                        {item}
-                    </Label>
-                    </div>
-                ))}
-                </div>
-            </ScrollArea>
-          <div className="flex justify-between gap-2 pt-2 flex-shrink-0">
-            <Button type="button" variant="outline" onClick={() => setStep('details')} disabled={isSubmitting}>
-              Back
-            </Button>
-            <Button type="submit" disabled={isSubmitting || selectedItemTitles.length === 0}>
-              Next: Fill Details <ChevronRight className="ml-1 h-4 w-4"/>
-            </Button>
-          </div>
         </div>
       )}
 
