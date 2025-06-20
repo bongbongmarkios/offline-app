@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { Program } from '@/types';
+import type { Program, TrashedProgram, AnyTrashedItem } from '@/types';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,16 +22,19 @@ import { useState } from 'react';
 
 interface ProgramListProps {
   programs: Program[];
+  onProgramDeleted?: () => void; // Optional callback to refresh list
 }
 
-export default function ProgramList({ programs }: ProgramListProps) {
+const LOCAL_STORAGE_TRASH_KEY = 'graceNotesTrash';
+
+export default function ProgramList({ programs, onProgramDeleted }: ProgramListProps) {
   const { toast } = useToast();
   const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] = useState(false);
   const [programToConfirmDelete, setProgramToConfirmDelete] = useState<Program | null>(null);
 
   const handleDeleteInitiate = (program: Program, event: React.MouseEvent) => {
-    event.preventDefault(); // Stop link navigation if button is somehow part of it
-    event.stopPropagation(); // Stop event bubbling
+    event.preventDefault(); 
+    event.stopPropagation(); 
     setProgramToConfirmDelete(program);
     setIsConfirmDeleteDialogOpen(true);
   };
@@ -40,11 +43,36 @@ export default function ProgramList({ programs }: ProgramListProps) {
     if (!programToConfirmDelete) return;
 
     const result = await deleteProgramAction(programToConfirmDelete.id);
-    if (result?.success) {
-      toast({
-        title: "Program Deleted",
-        description: `"${programToConfirmDelete.title}" has been deleted.`,
-      });
+    
+    if (result?.success && result.deletedProgram) {
+      try {
+        const storedTrashString = localStorage.getItem(LOCAL_STORAGE_TRASH_KEY);
+        let currentTrash: AnyTrashedItem[] = storedTrashString ? JSON.parse(storedTrashString) : [];
+        
+        const trashedProgramEntry: TrashedProgram = {
+          originalId: result.deletedProgram.id,
+          itemType: 'program',
+          data: result.deletedProgram,
+          trashedAt: new Date().toISOString(),
+        };
+        currentTrash.push(trashedProgramEntry);
+        localStorage.setItem(LOCAL_STORAGE_TRASH_KEY, JSON.stringify(currentTrash));
+
+        toast({
+          title: "Program Moved to Trash",
+          description: `"${result.deletedProgram.title}" has been moved to trash.`,
+        });
+      } catch (e) {
+        console.error("Error moving program to localStorage trash:", e);
+        toast({
+            title: "Program Deleted (Not Trashed)",
+            description: `"${result.deletedProgram.title}" was removed, but failed to move to trash.`,
+            variant: "destructive"
+        });
+      }
+      if (onProgramDeleted) {
+        onProgramDeleted(); // Call parent callback to refresh
+      }
     } else {
       toast({
         title: "Error",
@@ -54,7 +82,7 @@ export default function ProgramList({ programs }: ProgramListProps) {
     }
     setIsConfirmDeleteDialogOpen(false);
     setProgramToConfirmDelete(null);
-    // Revalidation by server action should refresh the list
+    // Server action revalidation should also trigger a refresh of the program list page
   };
 
   if (!programs || programs.length === 0) {
@@ -66,7 +94,6 @@ export default function ProgramList({ programs }: ProgramListProps) {
       <div className="space-y-4">
         {programs.map((program) => (
           <Card key={program.id} className="hover:shadow-md transition-shadow duration-200 relative">
-            {/* Delete Button - Positioned absolutely within the card */}
             <div className="absolute top-2 right-2 z-10">
               <Button
                 variant="ghost"
@@ -79,9 +106,8 @@ export default function ProgramList({ programs }: ProgramListProps) {
               </Button>
             </div>
             
-            {/* Link wraps the content area */}
             <Link href={`/program/${program.id}`} className="block hover:no-underline p-0" aria-label={`View program ${program.title}`}>
-              <CardHeader className="pr-12 pt-4 pb-4 pl-4"> {/* Add padding-right to CardHeader to avoid text overlap with button */}
+              <CardHeader className="pr-12 pt-4 pb-4 pl-4"> 
                 <CardTitle className="font-headline text-xl group-hover:text-primary">{program.title}</CardTitle>
                 {program.date && (
                   <CardDescription className="text-sm text-muted-foreground pt-1 flex items-center">
@@ -95,14 +121,13 @@ export default function ProgramList({ programs }: ProgramListProps) {
         ))}
       </div>
 
-      {/* Confirmation Dialog */}
       {programToConfirmDelete && (
         <AlertDialog open={isConfirmDeleteDialogOpen} onOpenChange={setIsConfirmDeleteDialogOpen}>
-          <AlertDialogContent onClick={(e) => e.stopPropagation()}> {/* Prevent card click if dialog overlaps */}
+          <AlertDialogContent onClick={(e) => e.stopPropagation()}> 
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogTitle>Move to Trash?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the program titled &quot;{programToConfirmDelete.title}&quot;.
+                Are you sure you want to move the program &quot;{programToConfirmDelete.title}&quot; to the trash? It can be restored later.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -111,7 +136,7 @@ export default function ProgramList({ programs }: ProgramListProps) {
                 onClick={handleConfirmDelete}
                 className="bg-destructive hover:bg-destructive/90"
               >
-                Delete
+                Move to Trash
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

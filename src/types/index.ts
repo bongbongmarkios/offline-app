@@ -67,7 +67,7 @@ export type UserActivity = {
 };
 
 // For Trashed Items
-export type ItemType = 'hymn' | 'reading' | 'program';
+export type ItemType = 'hymn' | 'reading' | 'program'; // Added 'program'
 
 export interface TrashedItemBase {
   originalId: string; // Original ID of the item
@@ -85,9 +85,9 @@ export interface TrashedReading extends TrashedItemBase {
   data: Reading;
 }
 
-export interface TrashedProgram extends TrashedItemBase {
+export interface TrashedProgram extends TrashedItemBase { // New interface for trashed programs
   itemType: 'program';
   data: Program;
 }
 
-export type AnyTrashedItem = TrashedHymn | TrashedReading | TrashedProgram;
+export type AnyTrashedItem = TrashedHymn | TrashedReading | TrashedProgram; // Added TrashedProgram

@@ -5,8 +5,8 @@ import { useEffect, useState } from 'react';
 import AppHeader from '@/components/layout/AppHeader';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArchiveRestore, Trash2, Info, AlertTriangle, RotateCcw, CalendarX2, Layers, Eraser, ArrowLeft } from 'lucide-react';
-import type { AnyTrashedItem, TrashedHymn, Hymn } from '@/types';
+import { ArchiveRestore, Trash2, Info, AlertTriangle, RotateCcw, CalendarX2, Layers, Eraser, ArrowLeft, ListChecks } from 'lucide-react';
+import type { AnyTrashedItem, TrashedHymn, Hymn, TrashedProgram, Program, TrashedReading, Reading } from '@/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   AlertDialog,
@@ -23,6 +23,9 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
 const LOCAL_STORAGE_TRASH_KEY = 'graceNotesTrash';
+const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
+const LOCAL_STORAGE_PROGRAMS_KEY = 'graceNotesPrograms'; // Key for active programs
+const LOCAL_STORAGE_READINGS_KEY = 'graceNotesReadings'; // Placeholder for active readings
 const TRASH_EXPIRY_DAYS = 30;
 
 export default function TrashPage() {
@@ -71,29 +74,56 @@ export default function TrashPage() {
   }, []);
 
   const handleRestoreItem = (itemToRestore: AnyTrashedItem) => {
-    console.log("Attempting to restore:", itemToRestore);
-
     try {
-        if (itemToRestore.itemType === 'hymn') {
-            const activeItemsKey = 'graceNotesHymns';
-            const activeItemsString = localStorage.getItem(activeItemsKey);
-            let activeItems: Hymn[] = activeItemsString ? JSON.parse(activeItemsString) : [];
-            
-            if (!activeItems.find(h => h.id === (itemToRestore.data as Hymn).id)) {
-                 activeItems.push(itemToRestore.data as Hymn);
-            }
-            localStorage.setItem(activeItemsKey, JSON.stringify(activeItems));
-        }
-        // Add logic for other item types (readings, programs) here if needed
+      let activeItemsKey = '';
+      let activeItems: any[] = [];
+      let itemDataToPush: any = itemToRestore.data;
 
-        const updatedTrash = trashedItems.filter(item => item.originalId !== itemToRestore.originalId || item.itemType !== itemToRestore.itemType);
-        localStorage.setItem(LOCAL_STORAGE_TRASH_KEY, JSON.stringify(updatedTrash));
-        setTrashedItems(updatedTrash);
+      switch (itemToRestore.itemType) {
+        case 'hymn':
+          activeItemsKey = LOCAL_STORAGE_HYMNS_KEY;
+          const hymnsString = localStorage.getItem(activeItemsKey);
+          activeItems = hymnsString ? JSON.parse(hymnsString) : [];
+          if (!activeItems.find(h => h.id === (itemDataToPush as Hymn).id)) {
+            activeItems.push(itemDataToPush as Hymn);
+          }
+          break;
+        case 'program':
+          activeItemsKey = LOCAL_STORAGE_PROGRAMS_KEY;
+          const programsString = localStorage.getItem(activeItemsKey);
+          activeItems = programsString ? JSON.parse(programsString) : [];
+           if (!activeItems.find(p => p.id === (itemDataToPush as Program).id)) {
+            activeItems.push(itemDataToPush as Program);
+          }
+          break;
+        case 'reading':
+          // Placeholder: Reading restoration logic
+          activeItemsKey = LOCAL_STORAGE_READINGS_KEY; // Assuming a key for active readings
+          const readingsString = localStorage.getItem(activeItemsKey);
+          activeItems = readingsString ? JSON.parse(readingsString) : [];
+           if (!activeItems.find(r => r.id === (itemDataToPush as Reading).id)) {
+            activeItems.push(itemDataToPush as Reading);
+          }
+          toast({ title: "Note", description: "Reading restoration is basic. Full data might not be available yet.", variant: "default"});
+          break;
+        default:
+          toast({ title: "Error", description: "Unknown item type for restoration.", variant: "destructive" });
+          return;
+      }
 
-        toast({
-            title: "Item Restored",
-            description: `"${(itemToRestore.data as Hymn).titleEnglish || (itemToRestore.data as Hymn).titleHiligaynon || 'Item'}" has been restored.`,
-        });
+      if (activeItemsKey) {
+        localStorage.setItem(activeItemsKey, JSON.stringify(activeItems));
+      }
+
+      const updatedTrash = trashedItems.filter(item => !(item.originalId === itemToRestore.originalId && item.itemType === itemToRestore.itemType));
+      localStorage.setItem(LOCAL_STORAGE_TRASH_KEY, JSON.stringify(updatedTrash));
+      setTrashedItems(updatedTrash);
+
+      const title = (itemToRestore.data as any).titleEnglish || (itemToRestore.data as any).titleHiligaynon || (itemToRestore.data as any).title || 'Item';
+      toast({
+          title: "Item Restored",
+          description: `"${title}" has been restored.`,
+      });
 
     } catch (error) {
         console.error("Error restoring item:", error);
@@ -102,14 +132,14 @@ export default function TrashPage() {
   };
 
   const handlePermanentlyDeleteItem = (itemToDelete: AnyTrashedItem) => {
-    console.log("Attempting to permanently delete:", itemToDelete);
     try {
-        const updatedTrash = trashedItems.filter(item => item.originalId !== itemToDelete.originalId || item.itemType !== itemToDelete.itemType);
+        const updatedTrash = trashedItems.filter(item => !(item.originalId === itemToDelete.originalId && item.itemType === itemToDelete.itemType));
         localStorage.setItem(LOCAL_STORAGE_TRASH_KEY, JSON.stringify(updatedTrash));
         setTrashedItems(updatedTrash);
+        const title = (itemToDelete.data as any).titleEnglish || (itemToDelete.data as any).titleHiligaynon || (itemToDelete.data as any).title || 'Item';
         toast({
             title: "Item Deleted Permanently",
-            description: `"${(itemToDelete.data as Hymn).titleEnglish || (itemToDelete.data as Hymn).titleHiligaynon || 'Item'}" has been permanently deleted.`,
+            description: `"${title}" has been permanently deleted.`,
         });
     } catch (error) {
         console.error("Error permanently deleting item:", error);
@@ -122,17 +152,42 @@ export default function TrashPage() {
     try {
         let restoredCount = 0;
         trashedItems.forEach(itemToRestore => {
-            if (itemToRestore.itemType === 'hymn') {
-                const activeItemsKey = 'graceNotesHymns';
-                const activeItemsString = localStorage.getItem(activeItemsKey);
-                let activeItems: Hymn[] = activeItemsString ? JSON.parse(activeItemsString) : [];
-                if (!activeItems.find(h => h.id === (itemToRestore.data as Hymn).id)) {
-                    activeItems.push(itemToRestore.data as Hymn);
-                }
-                localStorage.setItem(activeItemsKey, JSON.stringify(activeItems));
-                restoredCount++;
+            let activeItemsKey = '';
+            let activeItems: any[] = [];
+            let itemDataToPush: any = itemToRestore.data;
+
+            switch (itemToRestore.itemType) {
+                case 'hymn':
+                    activeItemsKey = LOCAL_STORAGE_HYMNS_KEY;
+                    const hymnsString = localStorage.getItem(activeItemsKey);
+                    activeItems = hymnsString ? JSON.parse(hymnsString) : [];
+                    if (!activeItems.find(h => h.id === (itemDataToPush as Hymn).id)) {
+                        activeItems.push(itemDataToPush as Hymn);
+                        restoredCount++;
+                    }
+                    break;
+                case 'program':
+                    activeItemsKey = LOCAL_STORAGE_PROGRAMS_KEY;
+                    const programsString = localStorage.getItem(activeItemsKey);
+                    activeItems = programsString ? JSON.parse(programsString) : [];
+                    if (!activeItems.find(p => p.id === (itemDataToPush as Program).id)) {
+                        activeItems.push(itemDataToPush as Program);
+                        restoredCount++;
+                    }
+                    break;
+                case 'reading':
+                     activeItemsKey = LOCAL_STORAGE_READINGS_KEY;
+                     const readingsString = localStorage.getItem(activeItemsKey);
+                     activeItems = readingsString ? JSON.parse(readingsString) : [];
+                     if (!activeItems.find(r => r.id === (itemDataToPush as Reading).id)) {
+                        activeItems.push(itemDataToPush as Reading);
+                        restoredCount++;
+                     }
+                    break;
             }
-            // Add logic for other item types (readings, programs) here
+            if (activeItemsKey) {
+                localStorage.setItem(activeItemsKey, JSON.stringify(activeItems));
+            }
         });
 
         localStorage.setItem(LOCAL_STORAGE_TRASH_KEY, JSON.stringify([]));
@@ -171,6 +226,27 @@ export default function TrashPage() {
     return Math.max(0, Math.ceil(TRASH_EXPIRY_DAYS - daysInTrash));
   };
 
+  const getItemDisplayTitle = (item: AnyTrashedItem): string => {
+    if (item.itemType === 'hymn') {
+      return (item.data as Hymn).titleEnglish || (item.data as Hymn).titleHiligaynon || 'Hymn';
+    } else if (item.itemType === 'program') {
+      return (item.data as Program).title || 'Program';
+    } else if (item.itemType === 'reading') {
+      return (item.data as Reading).title || 'Reading';
+    }
+    return 'Unknown Item';
+  };
+
+  const getItemIcon = (itemType: ItemType) => {
+    switch (itemType) {
+      case 'hymn': return <Info className="mr-1.5 h-3.5 w-3.5" />; // Placeholder, consider Music icon
+      case 'program': return <ListChecks className="mr-1.5 h-3.5 w-3.5" />;
+      case 'reading': return <Info className="mr-1.5 h-3.5 w-3.5" />; // Placeholder, consider BookOpenText
+      default: return <Info className="mr-1.5 h-3.5 w-3.5" />;
+    }
+  };
+
+
   const headerTitleContent = (
     <div className="flex items-center w-full">
         <Button variant="outline" size="sm" onClick={() => router.back()} className="flex-shrink-0">
@@ -180,7 +256,7 @@ export default function TrashPage() {
         <h1 className="flex-grow text-center text-2xl font-headline font-semibold text-primary sm:text-3xl">
             Trash
         </h1>
-        <div className="invisible flex-shrink-0"> {/* Spacer to balance the Back button for centering H1 */}
+        <div className="invisible flex-shrink-0"> 
             <Button variant="outline" size="sm">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back
@@ -201,7 +277,7 @@ export default function TrashPage() {
             </CardTitle>
             <CardDescription>
               Items moved to trash are stored here for {TRASH_EXPIRY_DAYS} days before permanent deletion.
-              You can restore them or delete them permanently before they expire.
+              You can restore them or delete them permanently.
             </CardDescription>
             <div className="mt-4 flex flex-col sm:flex-row gap-2">
                 <AlertDialog>
@@ -258,23 +334,19 @@ export default function TrashPage() {
                 <p className="text-sm">Deleted items will appear here.</p>
               </div>
             ) : (
-              <ScrollArea className="h-[calc(100vh-25rem)] pr-3"> {/* Adjusted height as needed */}
+              <ScrollArea className="h-[calc(100vh-25rem)] pr-3"> 
                 <div className="space-y-3">
                 {trashedItems.map((item) => {
                   const daysRemaining = getDaysRemaining(item.trashedAt);
-                  const itemTitle = item.itemType === 'hymn' 
-                    ? (item.data as Hymn).titleEnglish || (item.data as Hymn).titleHiligaynon
-                    : item.itemType === 'reading' 
-                    ? (item.data as any).title // Assuming Reading has a title
-                    : 'Unknown Item';
+                  const itemTitle = getItemDisplayTitle(item);
 
                   return (
                     <Card key={`${item.itemType}-${item.originalId}`} className="bg-muted/20">
                       <CardHeader className="pb-2 pt-3 px-4">
-                        <CardTitle className="text-lg">
-                          {itemTitle}
+                        <CardTitle className="text-lg flex items-center">
+                           {getItemIcon(item.itemType)} {itemTitle}
                         </CardTitle>
-                        <CardDescription className="text-xs capitalize">
+                        <CardDescription className="text-xs capitalize pl-1"> {/* Adjusted padding to align with icon */}
                           Type: {item.itemType}
                         </CardDescription>
                       </CardHeader>
@@ -322,7 +394,7 @@ export default function TrashPage() {
                     <div>
                         <h4 className="font-semibold text-accent">Note:</h4>
                         <p className="text-sm text-muted-foreground">
-                        Currently, only hymn deletion moves items to trash. Support for readings and programs will be added later.
+                        Deletion for hymns and programs moves items to this trash. Reading deletion is currently basic.
                         </p>
                          <p className="text-sm text-muted-foreground mt-1">
                          Items older than {TRASH_EXPIRY_DAYS} days are automatically purged when this page is visited.

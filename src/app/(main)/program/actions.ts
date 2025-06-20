@@ -2,8 +2,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { addSampleProgram, deleteSampleProgramById } from '@/data/programs';
-import type { Program } from '@/types';
+import { addSampleProgram, deleteSampleProgramById, samplePrograms } from '@/data/programs';
+import type { Program, ProgramItem } from '@/types';
 import { programItemTitles } from '@/types';
 
 export interface CreateProgramArgs {
@@ -17,8 +17,8 @@ export async function createNewProgramAction(args: CreateProgramArgs) {
     date: args.date,
   };
 
+  let addedProgram: Program | null = null;
   try {
-    // Add a few default items to the new program
     const defaultItemsForNewProgram: ProgramItem['title'][] = [
       programItemTitles[2], // Opening Hymn
       programItemTitles[3], // Opening Prayer
@@ -26,23 +26,27 @@ export async function createNewProgramAction(args: CreateProgramArgs) {
       programItemTitles[12], // Closing Hymn
     ];
     
-    addSampleProgram(newProgramData, defaultItemsForNewProgram);
-    // console.log('New program added. Current programs count:', samplePrograms.length);
+    addedProgram = addSampleProgram(newProgramData, defaultItemsForNewProgram);
+
+    // Update localStorage on the server if possible (this is tricky and usually client-side)
+    // For consistency with client-side loading, we'll primarily rely on client updating localStorage.
+    // The revalidatePath will help refresh client components that fetch.
+
   } catch (error) {
     console.error('Failed to create new program:', error);
     return { error: 'Failed to create program.' };
   }
 
   revalidatePath('/program');
-  return { success: true };
+  return { success: true, newProgram: addedProgram }; // Return the new program
 }
 
 export async function deleteProgramAction(programId: string) {
   try {
-    const deleted = deleteSampleProgramById(programId);
-    if (deleted) {
+    const deletedProgram = deleteSampleProgramById(programId); // Now returns the deleted program or null
+    if (deletedProgram) {
       revalidatePath('/program');
-      return { success: true };
+      return { success: true, deletedProgram }; // Return the deleted program data
     }
     return { error: 'Program not found or already deleted.'}
   } catch (error) {

@@ -3,9 +3,9 @@
 
 import AppHeader from '@/components/layout/AppHeader';
 import ProgramList from '@/components/program/ProgramList';
-import { samplePrograms } from '@/data/programs';
+import { samplePrograms as initialSamplePrograms } from '@/data/programs'; // Renamed for clarity
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -15,43 +15,68 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import AddProgramForm from '@/components/program/AddProgramForm';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Program } from '@/types';
+
+const LOCAL_STORAGE_PROGRAMS_KEY = 'graceNotesPrograms';
 
 export default function ProgramListPage() {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddProgramDialogOpen, setIsAddProgramDialogOpen] = useState(false);
 
-  // Function to fetch and sort programs
-  const fetchPrograms = () => {
-    // Directly use samplePrograms for this example.
-    // In a real app, this might involve fetching from an API or localStorage.
-    const sortedPrograms = [...samplePrograms].sort((a, b) => {
+  const fetchPrograms = useCallback(() => {
+    setIsLoading(true);
+    let loadedPrograms: Program[] = [];
+    try {
+      const storedProgramsString = localStorage.getItem(LOCAL_STORAGE_PROGRAMS_KEY);
+      if (storedProgramsString) {
+        loadedPrograms = JSON.parse(storedProgramsString);
+      } else {
+        // Prime localStorage with initial programs if it's empty
+        loadedPrograms = [...initialSamplePrograms];
+        localStorage.setItem(LOCAL_STORAGE_PROGRAMS_KEY, JSON.stringify(loadedPrograms));
+      }
+    } catch (error) {
+      console.error("Error loading programs from localStorage:", error);
+      // Fallback to initialSamplePrograms on error
+      loadedPrograms = [...initialSamplePrograms];
+    }
+
+    const sortedPrograms = [...loadedPrograms].sort((a, b) => {
       const dateA = a.date ? new Date(a.date).getTime() : 0;
       const dateB = b.date ? new Date(b.date).getTime() : 0;
       return dateB - dateA; // Sort descending by date (most recent first)
     });
     setPrograms(sortedPrograms);
     setIsLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
     fetchPrograms();
-  }, []);
+  }, [fetchPrograms]);
 
-  const handleProgramAdded = () => {
-    setIsAddProgramDialogOpen(false);
-    fetchPrograms(); // Re-fetch programs to include the new one
-    // Server action revalidation should also trigger an update,
-    // but client-side refresh ensures UI consistency immediately.
+  // This function is called after a program is successfully added via the form
+  // or after a program is "deleted" (moved to trash).
+  const handleProgramDataChanged = () => {
+    fetchPrograms(); 
+    // Additionally, if server action uses revalidatePath, Next.js should handle data refetching for server components.
+    // For client components relying on localStorage, this explicit fetch ensures UI sync.
   };
+
+  // This specific handler is for when a program is successfully added via the AddProgramForm
+  const handleProgramAddedSuccess = () => {
+    setIsAddProgramDialogOpen(false);
+    handleProgramDataChanged(); 
+  };
+
 
   if (isLoading) {
     return (
       <>
         <AppHeader title="Programs" />
         <div className="container mx-auto px-4 pb-8 text-center py-10">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
           <p className="text-muted-foreground">Loading programs...</p>
         </div>
       </>
@@ -62,7 +87,7 @@ export default function ProgramListPage() {
     <>
       <AppHeader title="Programs" />
       <div className="container mx-auto px-4 pb-8">
-        <ProgramList programs={programs} />
+        <ProgramList programs={programs} onProgramDeleted={handleProgramDataChanged} />
       </div>
 
       <Dialog open={isAddProgramDialogOpen} onOpenChange={setIsAddProgramDialogOpen}>
@@ -83,7 +108,7 @@ export default function ProgramListPage() {
             </DialogDescription>
           </DialogHeader>
           <AddProgramForm
-            onFormSubmitSuccess={handleProgramAdded}
+            onFormSubmitSuccess={handleProgramAddedSuccess}
             onCancel={() => setIsAddProgramDialogOpen(false)}
           />
         </DialogContent>

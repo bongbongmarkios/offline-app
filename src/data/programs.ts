@@ -81,9 +81,13 @@ export function addSampleProgram(
   return newProgram;
 }
 
-// Function to delete a program by its ID from the in-memory sample data
-export function deleteSampleProgramById(programId: string): boolean {
-  const initialLength = samplePrograms.length;
-  samplePrograms = samplePrograms.filter(p => p.id !== programId);
-  return samplePrograms.length < initialLength; // Return true if an item was deleted
+// Function to "delete" a program by its ID from the in-memory sample data
+// It now returns the deleted program object, or null if not found.
+export function deleteSampleProgramById(programId: string): Program | null {
+  const programIndex = samplePrograms.findIndex(p => p.id === programId);
+  if (programIndex > -1) {
+    const deletedProgram = samplePrograms.splice(programIndex, 1)[0];
+    return deletedProgram;
+  }
+  return null; // Program not found
 }
