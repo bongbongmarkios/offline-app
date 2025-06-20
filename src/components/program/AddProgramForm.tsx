@@ -36,18 +36,6 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [step, setStep] = useState<'details' | 'items'>('details');
   const [selectedItemTitles, setSelectedItemTitles] = useState<ProgramItemTitle[]>(defaultSelectedItems);
-  const [isCustomizingItems, setIsCustomizingItems] = useState(false);
-
-  useEffect(() => {
-    // When switching to 'items' step, ensure customization is off and default selections are ready if needed.
-    if (step === 'items') {
-      // setIsCustomizingItems(false); // Customization starts off by default
-      if (selectedItemTitles.length === 0 && isCustomizingItems) { // Or if customizing is on and selection is empty
-        setSelectedItemTitles(defaultSelectedItems);
-      }
-    }
-  }, [step, isCustomizingItems]); // Removed selectedItemTitles from deps to avoid loop with its own setter
-
 
   const handleProceedToItems = () => {
     if (!date) {
@@ -59,7 +47,6 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
       return;
     }
     setStep('items');
-    // Do not reset isCustomizingItems here, let it persist if user goes back and forth
   };
 
   const handleFinalSubmit = async () => {
@@ -71,11 +58,10 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
       });
       return;
     }
-    // If customizing, at least one item must be selected. If not customizing, all items are used.
-    if (isCustomizingItems && selectedItemTitles.length === 0) {
+    if (selectedItemTitles.length === 0) {
       toast({
         title: "Items Required",
-        description: "Please select at least one program item when customizing.",
+        description: "Please select at least one program item.",
         variant: "destructive",
       });
       return;
@@ -84,12 +70,11 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
     setIsSubmitting(true);
     
     const programTitleToSubmit = title.trim() === '' ? "Sunday Service" : title.trim();
-    const itemsToCreate = isCustomizingItems ? selectedItemTitles : [...programItemTitles]; // Use all if not customizing
-
+    
     const programArgs: CreateProgramArgs = {
       title: programTitleToSubmit,
       date: format(date, "yyyy-MM-dd"),
-      itemTitles: itemsToCreate,
+      itemTitles: selectedItemTitles,
     };
 
     try {
@@ -104,7 +89,6 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
         setTitle('');
         setDate(new Date());
         setSelectedItemTitles(defaultSelectedItems);
-        setIsCustomizingItems(false); // Reset customization state
         setStep('details');
 
       } else {
@@ -145,18 +129,6 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
           : prev.filter(title => title !== itemTitle)
       );
     }
-  };
-
-  const toggleCustomization = () => {
-    setIsCustomizingItems(prev => {
-      const newCustomizingState = !prev;
-      if (newCustomizingState && selectedItemTitles.length === 0) {
-        // If turning customization ON and no items are selected, apply defaults
-        setSelectedItemTitles(defaultSelectedItems);
-      }
-      // If turning customization OFF, selectedItemTitles are cleared or ignored by handleFinalSubmit
-      return newCustomizingState;
-    });
   };
 
   return (
@@ -233,58 +205,40 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
             <p className="text-md font-semibold">{title.trim() === '' ? "Sunday Service" : title.trim()}</p>
             {date && <p className="text-sm text-muted-foreground">{format(date, "PPP")}</p>}
           </div>
-          
-          <div className="space-y-3 border p-3 rounded-md">
-            <Label className="font-semibold text-md flex items-center">
-              <ListChecks className="mr-2 h-5 w-5 text-primary"/> Program Content Configuration
-            </Label>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={toggleCustomization}
-              className="w-full"
-            >
-              <Settings2 className="mr-2 h-4 w-4" />
-              {isCustomizingItems ? "Revert to Standard (Auto-Include All)" : "Customize Item Selection"}
-            </Button>
-            <p className="text-xs text-muted-foreground">
-              {isCustomizingItems
-                ? "Select the items to include in your program below:"
-                : "The program will be created with all standard items by default."}
-            </p>
-          </div>
 
-          {isCustomizingItems && (
-            <>
-            <Label className="font-semibold text-md pt-2 block">Select Items to Include:</Label>
-            <ScrollArea className="h-[350px] w-full rounded-md border p-3">
-              <div className="space-y-2">
-                {programItemTitles.map((item) => (
-                  <div key={item} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`item-${item.replace(/\s+/g, '-')}`}
-                      checked={selectedItemTitles.includes(item)}
-                      onCheckedChange={(checked) => handleItemSelection(item, checked)}
-                      disabled={isSubmitting}
-                    />
-                    <Label
-                      htmlFor={`item-${item.replace(/\s+/g, '-')}`}
-                      className="text-sm font-normal cursor-pointer flex-grow"
-                    >
-                      {item}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-            </>
-          )}
+          <Label className="font-semibold text-md pt-2 block flex items-center">
+            <ListChecks className="mr-2 h-5 w-5 text-primary"/> Select Items to Include:
+          </Label>
+          <p className="text-xs text-muted-foreground -mt-4">
+            Common items are selected by default. Adjust as needed.
+          </p>
+
+          <ScrollArea className="h-[350px] w-full rounded-md border p-3">
+            <div className="space-y-2">
+              {programItemTitles.map((item) => (
+                <div key={item} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`item-${item.replace(/\s+/g, '-')}`}
+                    checked={selectedItemTitles.includes(item)}
+                    onCheckedChange={(checked) => handleItemSelection(item, checked)}
+                    disabled={isSubmitting}
+                  />
+                  <Label
+                    htmlFor={`item-${item.replace(/\s+/g, '-')}`}
+                    className="text-sm font-normal cursor-pointer flex-grow"
+                  >
+                    {item}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+          
           <div className="flex justify-between gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setStep('details')} disabled={isSubmitting}>
               Back
             </Button>
-            <Button type="submit" disabled={isSubmitting || (isCustomizingItems && selectedItemTitles.length === 0)}>
+            <Button type="submit" disabled={isSubmitting || selectedItemTitles.length === 0}>
               {isSubmitting ? 'Creating...' : 'Create Program'}
             </Button>
           </div>
