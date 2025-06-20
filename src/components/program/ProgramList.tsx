@@ -26,6 +26,7 @@ interface ProgramListProps {
 }
 
 const LOCAL_STORAGE_TRASH_KEY = 'graceNotesTrash';
+const LOCAL_STORAGE_PROGRAMS_KEY = 'graceNotesPrograms'; // Key for active programs
 
 export default function ProgramList({ programs, onProgramDeleted }: ProgramListProps) {
   const { toast } = useToast();
@@ -45,14 +46,22 @@ export default function ProgramList({ programs, onProgramDeleted }: ProgramListP
     const result = await deleteProgramAction(programToConfirmDelete.id);
     
     if (result?.success && result.deletedProgram) {
+      const deletedProgramData = result.deletedProgram;
       try {
+        // Step 1: Remove from active programs in localStorage
+        const activeProgramsString = localStorage.getItem(LOCAL_STORAGE_PROGRAMS_KEY);
+        let activePrograms: Program[] = activeProgramsString ? JSON.parse(activeProgramsString) : [];
+        activePrograms = activePrograms.filter(p => p.id !== deletedProgramData.id);
+        localStorage.setItem(LOCAL_STORAGE_PROGRAMS_KEY, JSON.stringify(activePrograms));
+
+        // Step 2: Add to localStorage trash
         const storedTrashString = localStorage.getItem(LOCAL_STORAGE_TRASH_KEY);
         let currentTrash: AnyTrashedItem[] = storedTrashString ? JSON.parse(storedTrashString) : [];
         
         const trashedProgramEntry: TrashedProgram = {
-          originalId: result.deletedProgram.id,
+          originalId: deletedProgramData.id,
           itemType: 'program',
-          data: result.deletedProgram,
+          data: deletedProgramData,
           trashedAt: new Date().toISOString(),
         };
         currentTrash.push(trashedProgramEntry);
@@ -60,19 +69,19 @@ export default function ProgramList({ programs, onProgramDeleted }: ProgramListP
 
         toast({
           title: "Program Moved to Trash",
-          description: `"${result.deletedProgram.title}" has been moved to trash.`,
-          duration: 1000, // Make toast disappear quickly
+          description: `"${deletedProgramData.title}" has been moved to trash.`,
+          duration: 1000, 
         });
       } catch (e) {
-        console.error("Error moving program to localStorage trash:", e);
+        console.error("Error managing program in localStorage:", e);
         toast({
-            title: "Program Deleted (Not Trashed)",
-            description: `"${result.deletedProgram.title}" was removed, but failed to move to trash.`,
+            title: "Storage Error",
+            description: `"${deletedProgramData.title}" was removed from active list, but there was an issue with trash/storage.`,
             variant: "destructive"
         });
       }
       if (onProgramDeleted) {
-        onProgramDeleted(); // Call parent callback to refresh
+        onProgramDeleted(); 
       }
     } else {
       toast({
@@ -83,7 +92,6 @@ export default function ProgramList({ programs, onProgramDeleted }: ProgramListP
     }
     setIsConfirmDeleteDialogOpen(false);
     setProgramToConfirmDelete(null);
-    // Server action revalidation should also trigger a refresh of the program list page
   };
 
   if (!programs || programs.length === 0) {
