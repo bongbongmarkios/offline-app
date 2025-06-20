@@ -205,14 +205,14 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
       )}
 
       {step === 'items' && (
-        <div className="flex flex-col flex-grow min-h-0">
-          <div className="space-y-1 mb-3 p-3 border rounded-md bg-muted/50">
+        <div className="flex flex-col flex-grow min-h-0 space-y-4">
+          <div className="space-y-1 p-3 border rounded-md bg-muted/50 flex-shrink-0">
             <h3 className="text-sm font-medium text-muted-foreground">Review Details:</h3>
             <p className="text-md font-semibold">{title.trim() === '' ? "Sunday Service" : title.trim()}</p>
             {date && <p className="text-sm text-muted-foreground">{format(date, "PPP")}</p>}
           </div>
 
-          <div className="space-y-3 p-3 border rounded-md">
+          <div className="space-y-3 p-3 border rounded-md flex-1 flex flex-col min-h-0">
             {!isCustomizing ? (
               <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
                 <p className="text-sm text-muted-foreground flex-grow">All standard program items will be included by default.</p>
@@ -223,7 +223,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
               </div>
             ) : (
               <>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center flex-shrink-0">
                   <Label className="font-semibold text-md flex items-center">
                     <ListChecks className="mr-2 h-5 w-5 text-primary"/> Select Items to Include:
                   </Label>
@@ -231,11 +231,11 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
                     Revert to Default
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground -mt-4">
+                <p className="text-xs text-muted-foreground -mt-2 flex-shrink-0">
                   Common items are selected by default. Adjust as needed.
                 </p>
 
-                <ScrollArea className="h-[350px] w-full rounded-md border p-3">
+                <ScrollArea className="flex-1 w-full rounded-md border p-3 mt-2">
                   <div className="space-y-2">
                     {programItemTitles.map((item) => (
                       <div key={item} className="flex items-center space-x-2">
@@ -259,9 +259,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
             )}
           </div>
           
-          <div className="flex-grow"></div>
-
-          <div className="flex justify-between gap-2 pt-4 flex-shrink-0">
+          <div className="flex justify-between gap-2 pt-2 flex-shrink-0">
             <Button type="button" variant="outline" onClick={() => setStep('details')} disabled={isSubmitting}>
               Back
             </Button>
