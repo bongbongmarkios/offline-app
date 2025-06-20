@@ -80,3 +80,10 @@ export function addSampleProgram(
   });
   return newProgram;
 }
+
+// Function to delete a program by its ID from the in-memory sample data
+export function deleteSampleProgramById(programId: string): boolean {
+  const initialLength = samplePrograms.length;
+  samplePrograms = samplePrograms.filter(p => p.id !== programId);
+  return samplePrograms.length < initialLength; // Return true if an item was deleted
+}

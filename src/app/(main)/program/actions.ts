@@ -2,7 +2,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { addSampleProgram } from '@/data/programs';
+import { addSampleProgram, deleteSampleProgramById } from '@/data/programs';
 import type { Program } from '@/types';
 import { programItemTitles } from '@/types';
 
@@ -31,4 +31,18 @@ export async function createNewProgramAction() {
   }
 
   revalidatePath('/program');
+}
+
+export async function deleteProgramAction(programId: string) {
+  try {
+    const deleted = deleteSampleProgramById(programId);
+    if (deleted) {
+      revalidatePath('/program');
+      return { success: true };
+    }
+    return { error: 'Program not found or already deleted.'}
+  } catch (error) {
+    console.error('Failed to delete program:', error);
+    return { error: 'Failed to delete program.' };
+  }
 }
