@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createNewProgramAction, type CreateProgramArgs } from '@/app/(main)/program/actions';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, ChevronRight, Settings2, ListChecks, ChevronLeft, RotateCcw } from "lucide-react";
+import { CalendarIcon, ChevronRight, ListChecks, ChevronLeft, RotateCcw, BookOpenCheck, Music } from "lucide-react"; // Import new icons
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { programItemTitles, type ProgramItemTitle, type ProgramItem } from '@/types';
@@ -62,7 +62,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
   const { toast } = useToast();
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   
-  const [step, setStep] = useState<'details' | 'items' | 'fillDetails'>('details');
+  const [step, setStep] = useState<'details' | 'items' | 'fillDetails' | 'preview'>('details'); // Add 'preview' step
   const [selectedItemTitles, setSelectedItemTitles] = useState<ProgramItemTitle[]>(defaultSelectedItems);
   const [programItems, setProgramItems] = useState<Omit<ProgramItem, 'id'>[]>([]);
   const [isCustomizing, setIsCustomizing] = useState(false); // Default to NOT customizing
@@ -103,6 +103,10 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
       return newItems;
     });
   };
+
+  const handleProceedToPreview = () => {
+    setStep('preview');
+  }
 
   const handleFinalSubmit = async () => {
     if (!date) { 
@@ -157,7 +161,8 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
     e.preventDefault();
     if (step === 'details') handleProceedToItems();
     if (step === 'items') handleProceedToFillDetails();
-    if (step === 'fillDetails') handleFinalSubmit();
+    if (step === 'fillDetails') handleProceedToPreview();
+    if (step === 'preview') handleFinalSubmit();
   };
 
   const handleSetToday = () => {
@@ -264,7 +269,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
 
             <div className="flex-shrink-0">
                 <Label className="font-semibold text-md flex items-center">
-                    <Settings2 className="mr-2 h-5 w-5 text-primary"/> Content Configuration
+                    <ListChecks className="mr-2 h-5 w-5 text-primary"/> Program Items
                 </Label>
                 {!isCustomizing ? (
                     <div className="p-3 mt-2 bg-muted/50 rounded-md text-sm text-muted-foreground border">
@@ -368,9 +373,60 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
                    <ChevronLeft className="mr-1 h-4 w-4"/> Back
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Creating...' : 'Create Program'}
+                    Next: Preview Program <ChevronRight className="ml-1 h-4 w-4"/>
                 </Button>
             </div>
+        </div>
+      )}
+
+      {step === 'preview' && (
+        <div className="flex flex-col flex-grow min-h-0 space-y-4">
+          <div className="flex-shrink-0">
+            <h3 className="font-semibold">Preview Program</h3>
+            <p className="text-sm text-muted-foreground">Review the program details below before creating.</p>
+             <div className="mt-2 text-sm">
+                <p><strong>Title:</strong> {title.trim() === '' ? "Sunday Service" : title}</p>
+                {date && <p><strong>Date:</strong> {format(date, "PPP")}</p>}
+            </div>
+          </div>
+          <ScrollArea className="flex-1 w-full rounded-md border p-2 min-h-0">
+            <div className="space-y-3 p-1">
+              {programItems.map((item, index) => {
+                  const hymn = item.hymnId ? hymns.find(h => h.id === item.hymnId) : null;
+                  const reading = item.readingId ? readings.find(r => r.id === item.readingId) : null;
+                  return (
+                    <div key={index} className="p-3 border rounded-md space-y-1 bg-muted/20">
+                        <p className="font-medium text-primary">{index + 1}. {item.title}</p>
+                        {hymn && (
+                            <div className="pl-4 text-sm text-muted-foreground flex items-center">
+                                <Music className="mr-2 h-4 w-4"/>
+                                <span>{hymn.titleEnglish || hymn.titleHiligaynon}</span>
+                            </div>
+                        )}
+                        {reading && (
+                             <div className="pl-4 text-sm text-muted-foreground flex items-center">
+                                <BookOpenCheck className="mr-2 h-4 w-4"/>
+                                <span>{reading.title}</span>
+                            </div>
+                        )}
+                         {item.content && (
+                           <div className="pl-4 text-sm text-muted-foreground">
+                                <span className="italic">{item.content}</span>
+                           </div>
+                         )}
+                    </div>
+                  );
+                })}
+            </div>
+          </ScrollArea>
+          <div className="flex justify-between gap-2 pt-2 flex-shrink-0">
+            <Button type="button" variant="outline" onClick={() => setStep('fillDetails')} disabled={isSubmitting}>
+              <ChevronLeft className="mr-1 h-4 w-4"/> Back to Edit
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Creating...' : 'Create Program'}
+            </Button>
+          </div>
         </div>
       )}
     </form>
