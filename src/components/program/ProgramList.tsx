@@ -65,13 +65,13 @@ export default function ProgramList({ programs }: ProgramListProps) {
     <>
       <div className="space-y-4">
         {programs.map((program) => (
-          <Card key={program.id} className="hover:shadow-md transition-shadow duration-200 group relative">
+          <Card key={program.id} className="hover:shadow-md transition-shadow duration-200 relative">
             {/* Delete Button - Positioned absolutely within the card */}
             <div className="absolute top-2 right-2 z-10">
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity rounded-full"
+                className="text-muted-foreground hover:text-destructive transition-opacity rounded-full"
                 onClick={(e) => handleDeleteInitiate(program, e)}
                 aria-label={`Delete program ${program.title}`}
               >
