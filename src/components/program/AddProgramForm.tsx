@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createNewProgramAction, type CreateProgramArgs } from '@/app/(main)/program/actions';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, ChevronRight, ChevronsUpDown, Check } from "lucide-react";
+import { CalendarIcon, ChevronRight, ChevronsUpDown, Check, Settings2, ListChecks } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { programItemTitles, type ProgramItemTitle } from '@/types';
@@ -36,16 +36,17 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [step, setStep] = useState<'details' | 'items'>('details');
   const [selectedItemTitles, setSelectedItemTitles] = useState<ProgramItemTitle[]>(defaultSelectedItems);
+  const [isCustomizingItems, setIsCustomizingItems] = useState(false);
 
   useEffect(() => {
-    // Reset to default selections if going back to details step or on initial load for 'items'
-    if (step === 'details') {
-        // No need to reset selectedItemTitles here, preserve them if user goes back and forth
-    } else if (step === 'items' && selectedItemTitles.length === 0) {
-        // If items step is shown and no selection yet (e.g. direct state set), initialize
+    // When switching to 'items' step, ensure customization is off and default selections are ready if needed.
+    if (step === 'items') {
+      // setIsCustomizingItems(false); // Customization starts off by default
+      if (selectedItemTitles.length === 0 && isCustomizingItems) { // Or if customizing is on and selection is empty
         setSelectedItemTitles(defaultSelectedItems);
+      }
     }
-  }, [step]);
+  }, [step, isCustomizingItems]); // Removed selectedItemTitles from deps to avoid loop with its own setter
 
 
   const handleProceedToItems = () => {
@@ -57,14 +58,12 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
       });
       return;
     }
-    if (selectedItemTitles.length === 0) { // Initialize if empty when moving to items
-        setSelectedItemTitles(defaultSelectedItems);
-    }
     setStep('items');
+    // Do not reset isCustomizingItems here, let it persist if user goes back and forth
   };
 
   const handleFinalSubmit = async () => {
-    if (!date) { // Should be caught by handleProceedToItems, but good to double check
+    if (!date) { 
       toast({
         title: "Error",
         description: "Program date is required.",
@@ -72,10 +71,11 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
       });
       return;
     }
-    if (selectedItemTitles.length === 0) {
+    // If customizing, at least one item must be selected. If not customizing, all items are used.
+    if (isCustomizingItems && selectedItemTitles.length === 0) {
       toast({
         title: "Items Required",
-        description: "Please select at least one program item.",
+        description: "Please select at least one program item when customizing.",
         variant: "destructive",
       });
       return;
@@ -84,11 +84,12 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
     setIsSubmitting(true);
     
     const programTitleToSubmit = title.trim() === '' ? format(date, "MMMM d, yyyy") : title.trim();
+    const itemsToCreate = isCustomizingItems ? selectedItemTitles : [...programItemTitles]; // Use all if not customizing
 
     const programArgs: CreateProgramArgs = {
       title: programTitleToSubmit,
       date: format(date, "yyyy-MM-dd"),
-      itemTitles: selectedItemTitles,
+      itemTitles: itemsToCreate,
     };
 
     try {
@@ -103,6 +104,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
         setTitle('');
         setDate(new Date());
         setSelectedItemTitles(defaultSelectedItems);
+        setIsCustomizingItems(false); // Reset customization state
         setStep('details');
 
       } else {
@@ -125,8 +127,6 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
     if (step === 'items') {
       handleFinalSubmit();
     } else if (step === 'details') {
-      // This case should ideally not happen if "Next" button is type="button"
-      // but as a fallback, proceed to items.
       handleProceedToItems();
     }
   };
@@ -145,6 +145,18 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
           : prev.filter(title => title !== itemTitle)
       );
     }
+  };
+
+  const toggleCustomization = () => {
+    setIsCustomizingItems(prev => {
+      const newCustomizingState = !prev;
+      if (newCustomizingState && selectedItemTitles.length === 0) {
+        // If turning customization ON and no items are selected, apply defaults
+        setSelectedItemTitles(defaultSelectedItems);
+      }
+      // If turning customization OFF, selectedItemTitles are cleared or ignored by handleFinalSubmit
+      return newCustomizingState;
+    });
   };
 
   return (
@@ -222,32 +234,57 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
             {date && <p className="text-sm text-muted-foreground">{format(date, "PPP")}</p>}
           </div>
           
-          <Label className="font-semibold text-md">Select Program Items:</Label>
-          <ScrollArea className="h-[350px] w-full rounded-md border p-3">
-            <div className="space-y-2">
-              {programItemTitles.map((item) => (
-                <div key={item} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`item-${item.replace(/\s+/g, '-')}`} // Create a unique ID
-                    checked={selectedItemTitles.includes(item)}
-                    onCheckedChange={(checked) => handleItemSelection(item, checked)}
-                    disabled={isSubmitting}
-                  />
-                  <Label
-                    htmlFor={`item-${item.replace(/\s+/g, '-')}`}
-                    className="text-sm font-normal cursor-pointer flex-grow"
-                  >
-                    {item}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
+          <div className="space-y-3 border p-3 rounded-md">
+            <Label className="font-semibold text-md flex items-center">
+              <ListChecks className="mr-2 h-5 w-5 text-primary"/> Program Content Configuration
+            </Label>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={toggleCustomization}
+              className="w-full"
+            >
+              <Settings2 className="mr-2 h-4 w-4" />
+              {isCustomizingItems ? "Revert to Standard (Auto-Include All)" : "Customize Item Selection"}
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              {isCustomizingItems
+                ? "Select the items to include in your program below:"
+                : "The program will be created with all standard items by default."}
+            </p>
+          </div>
+
+          {isCustomizingItems && (
+            <>
+            <Label className="font-semibold text-md pt-2 block">Select Items to Include:</Label>
+            <ScrollArea className="h-[350px] w-full rounded-md border p-3">
+              <div className="space-y-2">
+                {programItemTitles.map((item) => (
+                  <div key={item} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`item-${item.replace(/\s+/g, '-')}`}
+                      checked={selectedItemTitles.includes(item)}
+                      onCheckedChange={(checked) => handleItemSelection(item, checked)}
+                      disabled={isSubmitting}
+                    />
+                    <Label
+                      htmlFor={`item-${item.replace(/\s+/g, '-')}`}
+                      className="text-sm font-normal cursor-pointer flex-grow"
+                    >
+                      {item}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+            </>
+          )}
           <div className="flex justify-between gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setStep('details')} disabled={isSubmitting}>
               Back
             </Button>
-            <Button type="submit" disabled={isSubmitting || selectedItemTitles.length === 0}>
+            <Button type="submit" disabled={isSubmitting || (isCustomizingItems && selectedItemTitles.length === 0)}>
               {isSubmitting ? 'Creating...' : 'Create Program'}
             </Button>
           </div>
@@ -256,3 +293,4 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
     </form>
   );
 }
+
