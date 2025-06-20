@@ -83,7 +83,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
 
     setIsSubmitting(true);
     
-    const programTitleToSubmit = title.trim() === '' ? format(date, "MMMM d, yyyy") : title.trim();
+    const programTitleToSubmit = title.trim() === '' ? "Sunday Service" : title.trim();
     const itemsToCreate = isCustomizingItems ? selectedItemTitles : [...programItemTitles]; // Use all if not customizing
 
     const programArgs: CreateProgramArgs = {
@@ -169,7 +169,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
               id="program-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Sunday Worship or leave blank for date"
+              placeholder="e.g., Evening Praise or leave blank for 'Sunday Service'"
               disabled={isSubmitting}
             />
           </div>
@@ -230,7 +230,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
         <>
           <div className="space-y-1 mb-3 p-3 border rounded-md bg-muted/50">
             <h3 className="text-sm font-medium text-muted-foreground">Review Details:</h3>
-            <p className="text-md font-semibold">{title.trim() === '' && date ? format(date, "MMMM d, yyyy") : title.trim()}</p>
+            <p className="text-md font-semibold">{title.trim() === '' ? "Sunday Service" : title.trim()}</p>
             {date && <p className="text-sm text-muted-foreground">{format(date, "PPP")}</p>}
           </div>
           
@@ -293,4 +293,3 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
     </form>
   );
 }
-
