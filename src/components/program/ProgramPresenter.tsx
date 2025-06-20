@@ -21,6 +21,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
 
 
 interface ProgramPresenterProps {
@@ -37,24 +38,26 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
   const [isNotesDialogOpen, setIsNotesDialogOpen] = useState(false);
   const [notesContent, setNotesContent] = useState('');
   const [currentItemHasNote, setCurrentItemHasNote] = useState(false);
+  const [displayedNote, setDisplayedNote] = useState<string | null>(null);
 
   const currentItem = program.items[currentIndex];
 
-  const checkForNote = (itemId: string) => {
-    if (typeof window !== 'undefined') {
-      const notesKey = getNotesKey(program.id, itemId);
+  const loadNoteForCurrentItem = () => {
+    if (typeof window !== 'undefined' && currentItem) {
+      const notesKey = getNotesKey(program.id, currentItem.id);
       const savedNote = localStorage.getItem(notesKey);
       setCurrentItemHasNote(!!savedNote && savedNote.trim().length > 0);
+      setDisplayedNote(savedNote);
     }
   };
 
   useEffect(() => {
     if (currentItem) {
       addProgramItemView(currentItem.title);
-      checkForNote(currentItem.id);
+      loadNoteForCurrentItem();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentItem, addProgramItemView]);
+  }, [currentItem]);
 
   const linkedHymn = useMemo(() => {
     if (currentItem?.hymnId) {
@@ -95,14 +98,18 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
   const handleSaveNote = () => {
     if (typeof window !== 'undefined') {
         const notesKey = getNotesKey(program.id, currentItem.id);
-        if (notesContent.trim().length > 0) {
-            localStorage.setItem(notesKey, notesContent);
+        const trimmedNote = notesContent.trim();
+        if (trimmedNote.length > 0) {
+            localStorage.setItem(notesKey, trimmedNote);
+            setDisplayedNote(trimmedNote);
+            setCurrentItemHasNote(true);
             toast({ title: 'Note Saved' });
         } else {
             localStorage.removeItem(notesKey);
+            setDisplayedNote(null);
+            setCurrentItemHasNote(false);
             toast({ title: 'Note Removed' });
         }
-        checkForNote(currentItem.id);
         setIsNotesDialogOpen(false);
     }
   };
@@ -112,6 +119,8 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
   if (!program || program.items.length === 0) {
     return <p>This program has no items.</p>;
   }
+
+  const hasPrimaryContent = !!currentItem.content || !!linkedHymn || !!linkedReading;
 
   return (
     <>
@@ -134,29 +143,42 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
             Item {currentIndex + 1} of {program.items.length}
           </p>
         </CardHeader>
-        <CardContent className="flex-grow flex flex-col items-center justify-center text-center p-6">
-          {currentItem.content && (
-            <p className="text-lg md:text-xl text-foreground mb-4">{currentItem.content}</p>
-          )}
-          {linkedHymn && (
-              <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
-                  <p className="text-sm text-muted-foreground mb-1">Featured Hymn:</p>
-                  <Link href={`/hymnal/${linkedHymn.id}`} className="text-lg font-semibold text-accent hover:underline">
-                      {linkedHymn.titleHiligaynon || linkedHymn.titleEnglish} {linkedHymn.pageNumber ? `(#${linkedHymn.pageNumber})` : ''}
-                  </Link>
+        <CardContent className="flex-grow flex flex-col justify-center text-center p-6">
+          <div className="w-full">
+            {currentItem.content && (
+              <p className="text-lg md:text-xl text-foreground mb-4">{currentItem.content}</p>
+            )}
+            {linkedHymn && (
+                <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
+                    <p className="text-sm text-muted-foreground mb-1">Featured Hymn:</p>
+                    <Link href={`/hymnal/${linkedHymn.id}`} className="text-lg font-semibold text-accent hover:underline">
+                        {linkedHymn.titleHiligaynon || linkedHymn.titleEnglish} {linkedHymn.pageNumber ? `(#${linkedHymn.pageNumber})` : ''}
+                    </Link>
+                </div>
+            )}
+            {linkedReading && (
+                <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
+                    <p className="text-sm text-muted-foreground mb-1">Featured Reading:</p>
+                    <Link href={`/readings/${linkedReading.id}`} className="text-lg font-semibold text-accent hover:underline">
+                        {linkedReading.title}
+                    </Link>
+                </div>
+            )}
+            {!hasPrimaryContent && (
+              <p className="text-muted-foreground italic text-lg">Details for this item will be provided during the service.</p>
+            )}
+          </div>
+          
+          {displayedNote && (
+            <>
+              {hasPrimaryContent && <Separator className="my-6" />}
+              <div className="w-full text-left mt-4">
+                <h4 className="font-semibold text-md text-primary mb-2">My Notes:</h4>
+                <p className="text-md text-foreground whitespace-pre-wrap bg-muted/50 p-4 rounded-md">{displayedNote}</p>
               </div>
+            </>
           )}
-          {linkedReading && (
-              <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
-                  <p className="text-sm text-muted-foreground mb-1">Featured Reading:</p>
-                  <Link href={`/readings/${linkedReading.id}`} className="text-lg font-semibold text-accent hover:underline">
-                      {linkedReading.title}
-                  </Link>
-              </div>
-          )}
-          {!currentItem.content && !linkedHymn && !linkedReading && (
-            <p className="text-muted-foreground italic text-lg">Details for this item will be provided during the service.</p>
-          )}
+
         </CardContent>
         <CardFooter className="flex flex-col gap-4 pt-4 border-t">
           <Progress value={progressPercentage} className="w-full h-2" />
