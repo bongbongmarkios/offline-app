@@ -6,7 +6,7 @@ import AppHeader from '@/components/layout/AppHeader';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArchiveRestore, Trash2, Info, AlertTriangle, RotateCcw, CalendarX2, Layers, Eraser, ArrowLeft, ListChecks } from 'lucide-react';
-import type { AnyTrashedItem, TrashedHymn, Hymn, TrashedProgram, Program, TrashedReading, Reading } from '@/types';
+import type { AnyTrashedItem, TrashedHymn, Hymn, TrashedProgram, Program, TrashedReading, Reading, ItemType } from '@/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   AlertDialog,
@@ -48,7 +48,6 @@ export default function TrashPage() {
       });
 
       if (validTrash.length < currentTrash.length) {
-        localStorage.setItem(LOCAL_STORAGE_TRASH_KEY, JSON.stringify(validTrash));
         const numPurged = currentTrash.length - validTrash.length;
         if (numPurged > 0) {
             toast({
@@ -58,7 +57,16 @@ export default function TrashPage() {
             });
         }
       }
-      setTrashedItems(validTrash.sort((a,b) => new Date(b.trashedAt).getTime() - new Date(a.trashedAt).getTime()));
+
+      // De-duplicate items before setting state
+      const uniqueValidTrash = validTrash.filter((item, index, self) =>
+        index === self.findIndex(t => t.originalId === item.originalId && t.itemType === item.itemType)
+      );
+      
+      // Update localStorage with the de-duplicated and purged list
+      localStorage.setItem(LOCAL_STORAGE_TRASH_KEY, JSON.stringify(uniqueValidTrash));
+
+      setTrashedItems(uniqueValidTrash.sort((a,b) => new Date(b.trashedAt).getTime() - new Date(a.trashedAt).getTime()));
     } catch (error) {
       console.error("Error loading or purging trash:", error);
       toast({ title: "Error", description: "Could not load trash items.", variant: "destructive" });
@@ -408,3 +416,4 @@ export default function TrashPage() {
     </>
   );
 }
+
