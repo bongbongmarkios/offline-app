@@ -4,33 +4,37 @@ import ProgramList from '@/components/program/ProgramList';
 import { samplePrograms } from '@/data/programs';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import Link from 'next/link'; // Link might be used if the button navigates
+// Removed Link import as it's not directly used by the FAB anymore for navigation
+import { createNewProgramAction } from './actions'; // Import the server action
 
 export default async function ProgramListPage() {
-  const programs = samplePrograms;
+  // Fetching samplePrograms directly here.
+  // Server actions + revalidatePath will handle updates.
+  const programs = [...samplePrograms].sort((a, b) => {
+    const dateA = a.date ? new Date(a.date).getTime() : 0;
+    const dateB = b.date ? new Date(b.date).getTime() : 0;
+    return dateB - dateA; // Sort descending by date (most recent first)
+  });
+
 
   return (
     <>
       <AppHeader title="Programs" />
-      <div className="container mx-auto px-4 pb-8"> {/* Ensure pb-8 or more to avoid overlap with FAB if content is short */}
+      <div className="container mx-auto px-4 pb-8">
         <ProgramList programs={programs} />
       </div>
 
-      {/* Floating Action Button */}
-      <div className="fixed bottom-20 right-6 z-50 print:hidden"> {/* bottom-20 to be above the 16h navbar + some padding */}
+      {/* Floating Action Button wrapped in a form to trigger server action */}
+      <form action={createNewProgramAction} className="fixed bottom-20 right-6 z-50 print:hidden">
         <Button
+          type="submit"
           size="icon"
-          className="rounded-full h-14 w-14 shadow-lg"
+          className="rounded-full h-14 w-14 shadow-lg" // Default variant applies primary color
           aria-label="Add new program"
-          // onClick={() => console.log('Add program clicked')} // Placeholder for future action
-          // Or link to an add page:
-          // asChild
         >
-          {/* <Link href="/program/add"> */}
-            <Plus className="h-7 w-7" />
-          {/* </Link> */}
+          <Plus className="h-7 w-7" />
         </Button>
-      </div>
+      </form>
     </>
   );
 }
