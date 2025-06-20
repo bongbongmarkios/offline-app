@@ -16,8 +16,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog"; // Removed DialogTrigger as it's not used for Chat only
 import {
   Popover,
   PopoverContent,
@@ -219,20 +218,21 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
 
 
                 <Dialog open={isChatDialogOpen} onOpenChange={setIsChatDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="ghost" size="icon" aria-label="Open AI Chat">
-                      <Wand2 className="h-6 w-6" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[600px] h-[70vh] flex flex-col">
-                    <DialogHeader>
-                      <DialogTitle>Chat with SBC Church App AI</DialogTitle>
-                      <DialogDescription>
-                        Ask questions or get help.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <ChatInterface />
-                  </DialogContent>
+                  {/* DialogTrigger is now directly part of the Dialog component in ShadCN */}
+                  <Button asChild variant="ghost" size="icon" aria-label="Open AI Chat" onClick={() => setIsChatDialogOpen(true)}>
+                     <Wand2 className="h-6 w-6" />
+                  </Button>
+                  {isChatDialogOpen && ( // Conditionally render DialogContent
+                    <DialogContent className="sm:max-w-[600px] h-[70vh] flex flex-col">
+                      <DialogHeader>
+                        <DialogTitle>Chat with SBC Church App AI</DialogTitle>
+                        <DialogDescription>
+                          Ask questions or get help.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <ChatInterface />
+                    </DialogContent>
+                  )}
                 </Dialog>
 
                 <DropdownMenu>
@@ -242,10 +242,6 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    {/* "Add Hymn" and "Add Reading" menu items removed */}
-                    <DropdownMenuItem onSelect={() => router.push('/hymnal/add')}>
-                      Add Hymn (Page)
-                    </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => router.push('/hymn-url-editor')}>
                       <ListChecks className="mr-2 h-4 w-4" />
                       <span>URL Management</span>
@@ -287,8 +283,6 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
           </div>
         </div>
       </header>
-
-      {/* "Add Hymn" and "Add Reading" Dialog components removed */}
 
       <Dialog open={isDeleteHymnDialogOpen} onOpenChange={setIsDeleteHymnDialogOpen}>
         <DialogContent className="sm:max-w-md">
