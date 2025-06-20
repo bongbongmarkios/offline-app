@@ -1,7 +1,7 @@
 
 'use client';
 import type { Program, ProgramItem, Hymn, Reading } from '@/types';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { ArrowLeft, ArrowRight, CheckCircle2, NotebookText, Eraser } from 'lucide-react';
@@ -49,18 +49,28 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
   const [isNotesDialogOpen, setIsNotesDialogOpen] = useState(false);
   const [notesContent, setNotesContent] = useState('');
   const [currentItemHasNote, setCurrentItemHasNote] = useState(false);
+  const [hasPersonalNote, setHasPersonalNote] = useState(false);
   const [displayedNote, setDisplayedNote] = useState<string | null>(null);
 
   const currentItem = program.items[currentIndex];
 
-  const loadNoteForCurrentItem = () => {
+  const loadNoteForCurrentItem = useCallback(() => {
     if (typeof window !== 'undefined' && currentItem) {
       const notesKey = getNotesKey(program.id, currentItem.id);
       const savedNote = localStorage.getItem(notesKey);
-      setCurrentItemHasNote(!!savedNote && savedNote.trim().length > 0);
-      setDisplayedNote(savedNote);
+      
+      setHasPersonalNote(savedNote !== null);
+
+      if (savedNote !== null) { // A local note exists (even an empty one)
+        setCurrentItemHasNote(savedNote.trim().length > 0);
+        setDisplayedNote(savedNote);
+      } else { // No local note, fall back to the note from program data
+        const programNote = currentItem.notes;
+        setCurrentItemHasNote(!!programNote && programNote.trim().length > 0);
+        setDisplayedNote(programNote || null);
+      }
     }
-  };
+  }, [currentItem, program.id]);
 
   useEffect(() => {
     if (currentItem) {
@@ -68,7 +78,7 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
       loadNoteForCurrentItem();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentItem]);
+  }, [currentIndex, program]); // Depend on program and index to reload notes
 
   const linkedHymn = useMemo(() => {
     if (currentItem?.hymnId) {
@@ -101,7 +111,8 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
     if (typeof window !== 'undefined') {
       const notesKey = getNotesKey(program.id, currentItem.id);
       const savedNote = localStorage.getItem(notesKey);
-      setNotesContent(savedNote || '');
+      // If a local note exists, edit that. Otherwise, start with program's note.
+      setNotesContent(savedNote !== null ? savedNote : (currentItem.notes || ''));
       setIsNotesDialogOpen(true);
     }
   };
@@ -109,18 +120,9 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
   const handleSaveNote = () => {
     if (typeof window !== 'undefined') {
         const notesKey = getNotesKey(program.id, currentItem.id);
-        const trimmedNote = notesContent.trim();
-        if (trimmedNote.length > 0) {
-            localStorage.setItem(notesKey, trimmedNote);
-            setDisplayedNote(trimmedNote);
-            setCurrentItemHasNote(true);
-            toast({ title: 'Note Saved' });
-        } else {
-            localStorage.removeItem(notesKey);
-            setDisplayedNote(null);
-            setCurrentItemHasNote(false);
-            toast({ title: 'Note Removed' });
-        }
+        localStorage.setItem(notesKey, notesContent);
+        loadNoteForCurrentItem(); // Reload notes to show the new saved one
+        toast({ title: 'Note Saved' });
         setIsNotesDialogOpen(false);
     }
   };
@@ -129,9 +131,8 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
     if (typeof window !== 'undefined' && currentItem) {
         const notesKey = getNotesKey(program.id, currentItem.id);
         localStorage.removeItem(notesKey);
-        setDisplayedNote(null);
-        setCurrentItemHasNote(false);
-        toast({ title: 'Note Deleted', description: `The note for "${currentItem.title}" has been deleted.` });
+        loadNoteForCurrentItem(); // Reload to fall back to program note or nothing
+        toast({ title: 'Personal Note Deleted', description: `Your personal note for "${currentItem.title}" has been deleted.` });
     }
   };
 
@@ -148,22 +149,22 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
       <Card className="w-full max-w-2xl mx-auto shadow-xl flex flex-col min-h-[60vh]">
         <CardHeader className="text-center pb-2 relative">
            <div className="absolute top-4 right-4 flex items-center gap-2">
-              {currentItemHasNote && (
+              {hasPersonalNote && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button
                       variant="destructive"
                       size="icon"
-                      aria-label="Erase note for this item"
+                      aria-label="Erase personal note for this item"
                     >
                       <Eraser className="h-5 w-5" />
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogTitle>Delete Personal Note?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will permanently delete the note for &quot;{currentItem.title}&quot;. This action cannot be undone.
+                        This will delete your personal note for &quot;{currentItem.title}&quot;. If a default note was part of the program, it will reappear. This action cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createNewProgramAction, type CreateProgramArgs } from '@/app/(main)/program/actions';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, ChevronRight, ListChecks, ChevronLeft, RotateCcw, BookOpenCheck, Music } from "lucide-react"; // Import new icons
+import { CalendarIcon, ChevronRight, ListChecks, ChevronLeft, RotateCcw, BookOpenCheck, Music, NotebookText } from "lucide-react"; // Import new icons
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { programItemTitles, type ProgramItemTitle, type ProgramItem } from '@/types';
@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/select"
 import { initialSampleHymns } from '@/data/hymns';
 import { sampleReadings } from '@/data/readings';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Textarea } from '../ui/textarea';
 
 
 interface AddProgramFormProps {
@@ -92,7 +94,12 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
       });
       return;
     }
-    setProgramItems(itemsToCreate.map(title => ({ title })));
+    // Preserve existing details when re-entering this step
+    const newProgramItems = itemsToCreate.map(title => {
+        const existingItem = programItems.find(p => p.title === title);
+        return existingItem || { title };
+    });
+    setProgramItems(newProgramItems);
     setStep('fillDetails');
   };
   
@@ -336,7 +343,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
                     <div key={index} className="p-3 border rounded-md space-y-2 bg-muted/20">
                         <Label className="font-medium text-primary">{item.title}</Label>
                         {isHymnItem(item.title) && (
-                            <Select onValueChange={(hymnId) => handleUpdateProgramItem(index, { hymnId: hymnId === 'none' ? undefined : hymnId })}>
+                            <Select onValueChange={(hymnId) => handleUpdateProgramItem(index, { hymnId: hymnId === 'none' ? undefined : hymnId })} value={item.hymnId}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Assign a Hymn..." />
                                 </SelectTrigger>
@@ -347,7 +354,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
                             </Select>
                         )}
                         {isReadingItem(item.title) && (
-                             <Select onValueChange={(readingId) => handleUpdateProgramItem(index, { readingId: readingId === 'none' ? undefined : readingId })}>
+                             <Select onValueChange={(readingId) => handleUpdateProgramItem(index, { readingId: readingId === 'none' ? undefined : readingId })} value={item.readingId}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Assign a Reading..." />
                                 </SelectTrigger>
@@ -362,8 +369,26 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
                                 placeholder="Add details (e.g., Speaker's Name)" 
                                 onChange={(e) => handleUpdateProgramItem(index, { content: e.target.value })} 
                                 className="bg-background"
+                                defaultValue={item.content || ''}
                             />
                          )}
+                        <Accordion type="single" collapsible className="w-full">
+                            <AccordionItem value={`item-notes-${index}`} className="border-b-0">
+                                <AccordionTrigger className="text-sm py-2 hover:no-underline [&[data-state=open]>svg]:text-primary flex items-center gap-2 text-muted-foreground hover:text-accent-foreground">
+                                    <NotebookText className="h-4 w-4"/>
+                                    <span>{item.notes && item.notes.trim() !== '' ? 'Edit Note' : 'Add Note'}</span>
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                    <Textarea
+                                        placeholder="Add optional notes for this item..."
+                                        onChange={(e) => handleUpdateProgramItem(index, { notes: e.target.value })}
+                                        className="bg-background text-sm"
+                                        rows={3}
+                                        defaultValue={item.notes || ''}
+                                    />
+                                </AccordionContent>
+                            </AccordionItem>
+                        </Accordion>
                     </div>
                 ))}
                 </div>
@@ -414,6 +439,15 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
                                 <span className="italic">{item.content}</span>
                            </div>
                          )}
+                         {item.notes && (
+                            <div className="pl-4 text-sm text-muted-foreground flex items-start gap-2 mt-2 pt-2 border-t border-dashed">
+                                <NotebookText className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                                <div>
+                                    <span className="font-semibold text-foreground">Note: </span>
+                                    <span className="italic whitespace-pre-wrap">{item.notes}</span>
+                                </div>
+                            </div>
+                        )}
                     </div>
                   );
                 })}

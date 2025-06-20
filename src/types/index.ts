@@ -43,6 +43,7 @@ export interface ProgramItem {
   content?: string; // e.g., scripture text, prayer text, or reference to a hymn/reading ID
   hymnId?: string; // Optional: if item is a hymn, link to Hymn
   readingId?: string; // Optional: if item is a responsive reading, link to Reading
+  notes?: string; // Optional notes for the program item
 }
 
 export interface Program {
