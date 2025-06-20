@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createNewProgramAction, type CreateProgramArgs } from '@/app/(main)/program/actions';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Dot } from "lucide-react"; // Added Dot for potential use, CalendarIcon is used
+import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -82,7 +82,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
           id="program-title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g., Sunday Worship Service or leave blank for date"
+          placeholder="e.g., Sunday Worship or leave blank for date"
           disabled={isSubmitting}
         />
       </div>
@@ -92,7 +92,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
         <div className="flex flex-col sm:flex-row gap-2">
             <Button
                 type="button"
-                variant="outline"
+                variant="secondary" // Changed variant to secondary
                 onClick={handleSetToday}
                 disabled={isSubmitting}
                 className="flex-grow sm:flex-grow-0"
