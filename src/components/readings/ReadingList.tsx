@@ -1,8 +1,10 @@
 'use client';
+import * as React from 'react';
 import type { Reading, ReadingCategory } from '@/types';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { BookText, BookHeart, Presentation } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 interface ReadingListProps {
   readings: Reading[];
@@ -44,59 +46,62 @@ export default function ReadingList({ readings }: ReadingListProps) {
               <Icon className="mr-3 h-6 w-6" />
               {title}
             </h2>
-            <div className="space-y-4">
-              {items.map((reading) => {
-                if (isInlineCategory) {
-                  // Render the full content directly on this page for certain categories
-                  return (
-                    <Card key={reading.id} className="shadow-sm">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="font-headline text-lg text-primary/90">{reading.title}</CardTitle>
-                        {reading.source && (
-                          <CardDescription className="text-xs text-muted-foreground pt-1">
-                            Source: {reading.source}
-                          </CardDescription>
-                        )}
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        <div className="space-y-2 text-md text-foreground leading-relaxed">
-                          {reading.lyrics.split('\n').map((line, index) => {
-                            const speakerMatch = line.match(/^(Leader:|People:|All:)\s*/);
-                            if (speakerMatch) {
-                              const text = line.substring(speakerMatch[0].length).trim();
-                              // Don't render empty lines that might result from stripping the speaker tag
-                              if (!text) return null;
-                              return <p key={index}>{text}</p>;
-                            }
-                            return <p key={index}>{line}</p>;
-                          })}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                } else {
-                  // Original behavior for responsive readings (they are longer and benefit from a detail page)
-                  return (
-                    <Link key={reading.id} href={`/readings/${reading.id}`} className="block hover:no-underline">
-                      <Card className="hover:shadow-md transition-shadow duration-200 cursor-pointer hover:border-primary/50">
-                        <CardHeader>
-                          <div className="flex items-center gap-3">
-                            <div className="flex-grow">
-                              <CardTitle className="font-headline text-xl group-hover:text-primary">{reading.title}</CardTitle>
-                              {reading.source && (
-                                <CardDescription className="text-sm text-muted-foreground pt-1">
-                                  Source: {reading.source}
-                                </CardDescription>
-                              )}
-                            </div>
+            
+            {isInlineCategory ? (
+              // New combined container logic
+              <Card className="shadow-sm">
+                <CardContent className="pt-6">
+                  <div className="space-y-6">
+                    {items.map((reading, index) => (
+                      <React.Fragment key={reading.id}>
+                        {index > 0 && <Separator className="my-4" />}
+                        <div>
+                          <h3 className="font-headline text-lg text-primary/90 font-semibold">{reading.title}</h3>
+                          {reading.source && (
+                            <p className="text-xs text-muted-foreground pt-1">
+                              Source: {reading.source}
+                            </p>
+                          )}
+                          <div className="mt-2 space-y-2 text-md text-foreground leading-relaxed">
+                            {reading.lyrics.split('\n').map((line, lineIndex) => {
+                              const speakerMatch = line.match(/^(Leader:|People:|All:)\s*/);
+                              if (speakerMatch) {
+                                const text = line.substring(speakerMatch[0].length).trim();
+                                if (!text) return null;
+                                return <p key={lineIndex}>{text}</p>;
+                              }
+                              return <p key={lineIndex}>{line}</p>;
+                            })}
                           </div>
-                        </CardHeader>
-                      </Card>
-                    </Link>
-                  );
-                }
-              })}
-            </div>
+                        </div>
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              // Original logic for responsive readings
+              <div className="space-y-4">
+                {items.map((reading) => (
+                  <Link key={reading.id} href={`/readings/${reading.id}`} className="block hover:no-underline">
+                    <Card className="hover:shadow-md transition-shadow duration-200 cursor-pointer hover:border-primary/50">
+                      <CardHeader>
+                        <div className="flex items-center gap-3">
+                          <div className="flex-grow">
+                            <CardTitle className="font-headline text-xl group-hover:text-primary">{reading.title}</CardTitle>
+                            {reading.source && (
+                              <CardDescription className="text-sm text-muted-foreground pt-1">
+                                Source: {reading.source}
+                              </CardDescription>
+                            )}
+                          </div>
+                        </div>
+                      </CardHeader>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         );
       })}
