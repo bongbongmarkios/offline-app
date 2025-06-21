@@ -33,8 +33,7 @@ export default async function ReadingPage({ params }: ReadingPageProps) {
   return (
     <>
       <AppHeader 
-        title={reading.title}
-        actions={
+        title={
           <Button asChild variant="outline" size="sm">
             <Link href="/readings">
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Readings
