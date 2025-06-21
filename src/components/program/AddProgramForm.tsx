@@ -483,7 +483,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
 
                         {isContentItem(item.title) && (
                           <Input 
-                            placeholder="Add details (e.g., Speaker's Name)" 
+                            placeholder="Add details" 
                             onChange={(e) => handleUpdateProgramItem(index, { content: e.target.value })} 
                             className="bg-background"
                             defaultValue={item.content || ''}
