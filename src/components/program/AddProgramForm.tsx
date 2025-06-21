@@ -205,7 +205,6 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
       });
       setNewlyCreatedProgram(newProgram);
       setStep('success');
-      onFormSubmitSuccess();
     } catch (error: any) {
       console.error("Error creating program:", error);
       toast({
@@ -596,21 +595,23 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
                     type="button"
                     variant="outline"
                     onClick={() => {
-                        onCancel(); // Closes the dialog
+                        onFormSubmitSuccess();
+                        onCancel();
                         resetForm();
                     }}
                 >
-                    Add to List
+                    Done
                 </Button>
                 <Button
                     type="button"
                     onClick={() => {
-                        onCancel(); // Closes the dialog
+                        onFormSubmitSuccess();
+                        onCancel();
                         router.push(`/program/${newlyCreatedProgram.id}`);
                         resetForm();
                     }}
                 >
-                    Start Presentation <ChevronRight className="ml-1 h-4 w-4"/>
+                    Present Now <ChevronRight className="ml-1 h-4 w-4"/>
                 </Button>
             </div>
         </div>
