@@ -4,7 +4,7 @@ import type { Program, ProgramItem, Hymn, Reading } from '@/types';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { ArrowLeft, ArrowRight, CheckCircle2, NotebookText, Eraser } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, NotebookText, Eraser, User, Award } from 'lucide-react';
 import { useActivity } from '@/hooks/useActivityTracker';
 import { Progress } from '@/components/ui/progress';
 import Link from 'next/link';
@@ -157,7 +157,7 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
     return <p>This program has no items.</p>;
   }
 
-  const hasPrimaryContent = !!currentItem.content || !!linkedHymn || !!linkedReading;
+  const hasPrimaryContent = !!currentItem.content || !!linkedHymn || !!linkedReading || !!currentItem.usher || !!currentItem.specialNumber;
 
   return (
     <>
@@ -225,6 +225,18 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
                         {linkedReading.title}
                     </Button>
                 </div>
+            )}
+            {currentItem.usher && (
+              <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
+                  <p className="text-sm text-muted-foreground mb-1 flex items-center justify-center"><User className="mr-2 h-4 w-4"/>Usher(s):</p>
+                  <p className="text-lg font-semibold text-foreground">{currentItem.usher}</p>
+              </div>
+            )}
+            {currentItem.specialNumber && (
+              <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
+                  <p className="text-sm text-muted-foreground mb-1 flex items-center justify-center"><Award className="mr-2 h-4 w-4"/>Special Number by:</p>
+                  <p className="text-lg font-semibold text-foreground">{currentItem.specialNumber}</p>
+              </div>
             )}
             {!hasPrimaryContent && (
               <p className="text-muted-foreground italic text-lg">Details for this item will be provided during the service.</p>

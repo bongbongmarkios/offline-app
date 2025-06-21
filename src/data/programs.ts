@@ -18,20 +18,20 @@ export let samplePrograms: Program[] = [
     title: 'Sunday Morning Worship - July 21, 2024',
     date: '2024-07-21',
     items: createProgramItems([
-      programItemTitles[0], 
-      programItemTitles[1], 
-      programItemTitles[2], 
-      programItemTitles[3], 
-      programItemTitles[4], 
-      programItemTitles[5], 
-      programItemTitles[6], 
-      programItemTitles[7], 
-      programItemTitles[8], 
-      programItemTitles[9], 
-      programItemTitles[10], 
-      programItemTitles[11], 
-      programItemTitles[12], 
-      programItemTitles[13], 
+      "Doxology",
+      "Call to Worship",
+      "Opening Hymn",
+      "Opening Prayer",
+      "Responsive Reading",
+      "Rice for Mission offering with children's choir",
+      "Hymn of Preparation",
+      "Scripture Reading",
+      "Pastoral Prayer",
+      "Choir",
+      "Message",
+      "Giving of tithes or pledges and offering to the lord",
+      "Closing Hymn",
+      "Prayer of Benediction"
     ]),
   },
   {
@@ -39,13 +39,13 @@ export let samplePrograms: Program[] = [
     title: 'Evening Praise Service - July 28, 2024',
     date: '2024-07-28',
     items: createProgramItems([
-      programItemTitles[2], 
-      programItemTitles[3], 
-      programItemTitles[7], 
-      programItemTitles[10], 
-      programItemTitles[6], 
-      programItemTitles[12], 
-      programItemTitles[13], 
+      "Opening Hymn", 
+      "Opening Prayer", 
+      "Scripture Reading", 
+      "Message", 
+      "Hymn of Preparation", 
+      "Closing Hymn", 
+      "Prayer of Benediction", 
     ]),
   },
 ];
@@ -74,12 +74,7 @@ export function addSampleProgram(
       ...item,
     })),
   };
-  samplePrograms.push(newProgram);
-  samplePrograms.sort((a, b) => {
-    const dateA = a.date ? new Date(a.date).getTime() : 0;
-    const dateB = b.date ? new Date(b.date).getTime() : 0;
-    return dateB - dateA;
-  });
+  samplePrograms.unshift(newProgram);
   return newProgram;
 }
 

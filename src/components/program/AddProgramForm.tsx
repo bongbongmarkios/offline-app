@@ -19,7 +19,7 @@ import { sampleReadings } from '@/data/readings';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Textarea } from '../ui/textarea';
 import { useRouter } from 'next/navigation';
-import { samplePrograms as initialSamplePrograms } from '@/data/programs';
+import { addSampleProgram } from '@/data/programs';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 
@@ -33,12 +33,13 @@ const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
 const LOCAL_STORAGE_READINGS_KEY = 'graceNotesReadings';
 
 const defaultSelectedItems: ProgramItemTitle[] = [
-  programItemTitles[1], // Call to Worship
-  programItemTitles[2], // Opening Hymn
-  programItemTitles[3], // Opening Prayer
-  programItemTitles[10], // Message
-  programItemTitles[14], // Closing Hymn
-  programItemTitles[15], // Prayer of Benediction
+  "Call to Worship",
+  "Opening Hymn",
+  "Opening Prayer",
+  "Message",
+  "Giving of tithes or pledges and offering to the lord",
+  "Closing Hymn",
+  "Prayer of Benediction",
 ];
 
 const contentlessItemTitles: ProgramItemTitle[] = [
@@ -171,38 +172,21 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
       const programTitleToSubmit = title.trim() === '' ? "Sunday Service" : title.trim();
       
       const storedProgramsString = localStorage.getItem(LOCAL_STORAGE_PROGRAMS_KEY);
-      let allPrograms: Program[] = storedProgramsString ? JSON.parse(storedProgramsString) : [...initialSamplePrograms];
+      let allPrograms: Program[] = storedProgramsString ? JSON.parse(storedProgramsString) : [];
 
-      let maxId = 30000;
-      allPrograms.forEach(program => {
-        const idNum = parseInt(program.id, 10);
-        if (!isNaN(idNum) && idNum >= 30000 && idNum < 40000) {
-          if (idNum > maxId) maxId = idNum;
-        }
-      });
-      const newId = (maxId + 1).toString();
-
-      let itemCounter = Date.now();
-      const finalProgramItems: ProgramItem[] = programItems.map(item => ({
-        ...item,
-        id: `item-${newId}-${itemCounter++}`,
-      }));
-
-      const newProgram: Program = {
-        id: newId,
-        title: programTitleToSubmit,
-        date: format(date, "yyyy-MM-dd"),
-        items: finalProgramItems,
-      };
-
-      allPrograms.unshift(newProgram);
+      const addedProgram = addSampleProgram(
+        { title: programTitleToSubmit, date: format(date, "yyyy-MM-dd") },
+        programItems
+      );
+      
+      allPrograms = [addedProgram, ...allPrograms];
       localStorage.setItem(LOCAL_STORAGE_PROGRAMS_KEY, JSON.stringify(allPrograms));
 
       toast({
         title: "Program Added",
-        description: `"${newProgram.title}" has been successfully created.`,
+        description: `"${addedProgram.title}" has been successfully created.`,
       });
-      setNewlyCreatedProgram(newProgram);
+      setNewlyCreatedProgram(addedProgram);
       setStep('success');
     } catch (error: any) {
       console.error("Error creating program:", error);
@@ -480,7 +464,36 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
                         )}
                         {isCallToWorshipItem(item.title) && renderReadingCombobox(callsToWorship, 'Assign a Call to Worship...', index, 'ctw')}
                         {isResponsiveReadingItem(item.title) && renderReadingCombobox(responsiveReadings, 'Assign a Responsive Reading...', index, 'rr')}
-                        {isOffertoryItem(item.title) && renderReadingCombobox(offertorySentences, 'Assign an Offertory Sentence...', index, 'os')}
+                        
+                        {isOffertoryItem(item.title) && (
+                          <div className="space-y-4">
+                            {renderReadingCombobox(offertorySentences, 'Assign an Offertory Sentence...', index, 'os')}
+                            <div className="space-y-2 pt-2">
+                              <Label htmlFor={`usher-for-item-${index}`} className="text-sm text-muted-foreground">
+                                Usher(s) (Optional)
+                              </Label>
+                              <Input
+                                id={`usher-for-item-${index}`}
+                                placeholder="Names of ushers"
+                                onChange={(e) => handleUpdateProgramItem(index, { usher: e.target.value })}
+                                className="bg-background text-sm"
+                                defaultValue={item.usher || ''}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`special-number-for-item-${index}`} className="text-sm text-muted-foreground">
+                                Special Number by (Optional)
+                              </Label>
+                              <Input
+                                id={`special-number-for-item-${index}`}
+                                placeholder="Name of performer(s)"
+                                onChange={(e) => handleUpdateProgramItem(index, { specialNumber: e.target.value })}
+                                className="bg-background text-sm"
+                                defaultValue={item.specialNumber || ''}
+                              />
+                            </div>
+                          </div>
+                        )}
 
                         {isContentItem(item.title) && (
                           <Input 
@@ -548,6 +561,16 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
                              <div className="pl-4 text-sm text-muted-foreground flex items-center">
                                 <BookOpenCheck className="mr-2 h-4 w-4"/>
                                 <span>{reading.title}</span>
+                            </div>
+                        )}
+                        {item.usher && (
+                            <div className="pl-4 text-sm text-muted-foreground">
+                                <span>Usher(s): {item.usher}</span>
+                            </div>
+                        )}
+                        {item.specialNumber && (
+                            <div className="pl-4 text-sm text-muted-foreground">
+                                <span>Special Number: {item.specialNumber}</span>
                             </div>
                         )}
                          {item.content && (

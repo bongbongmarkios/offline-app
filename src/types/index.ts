@@ -31,8 +31,6 @@ export const programItemTitles = [
   "Choir", 
   "Message", 
   "Giving of tithes or pledges and offering to the lord", 
-  "Usher",
-  "Special Number",
   "Closing Hymn", 
   "Prayer of Benediction"
 ] as const;
@@ -46,6 +44,8 @@ export interface ProgramItem {
   hymnId?: string; // Optional: if item is a hymn, link to Hymn
   readingId?: string; // Optional: if item is a responsive reading, link to Reading
   notes?: string; // Optional notes for the program item
+  usher?: string; // For offertory item
+  specialNumber?: string; // For offertory item
 }
 
 export interface Program {
