@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, type FormEvent, useEffect } from 'react';
@@ -36,8 +37,8 @@ const defaultSelectedItems: ProgramItemTitle[] = [
   programItemTitles[2], // Opening Hymn
   programItemTitles[3], // Opening Prayer
   programItemTitles[10], // Message
-  programItemTitles[12], // Closing Hymn
-  programItemTitles[13], // Prayer of Benediction
+  programItemTitles[14], // Closing Hymn
+  programItemTitles[15], // Prayer of Benediction
 ];
 
 const contentlessItemTitles: ProgramItemTitle[] = [
