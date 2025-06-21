@@ -1,4 +1,3 @@
-
 'use client';
 import type { Reading, ReadingCategory } from '@/types';
 import Link from 'next/link';
@@ -14,7 +13,7 @@ const categoryDetails: Record<ReadingCategory, { title: string; icon: React.Elem
   'responsive-reading': { title: 'Responsive Readings', icon: BookText },
   'offertory-sentence': { title: 'Offertory Sentences', icon: BookHeart },
 };
-const categoryOrder: ReadingCategory[] = ['call-to-worship', 'responsive-reading', 'offertory-sentence'];
+const categoryOrder: ReadingCategory[] = ['responsive-reading', 'call-to-worship', 'offertory-sentence'];
 
 export default function ReadingList({ readings }: ReadingListProps) {
   if (!readings || readings.length === 0) {
