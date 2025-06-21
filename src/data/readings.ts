@@ -34,12 +34,26 @@ All: seek justice, correct oppression; bring justice to the fatherless, plead th
   },
   {
     id: '21001',
-    title: 'Enter His Gates with Thanksgiving',
-    lyrics: `Leader: Enter his gates with thanksgiving, and his courts with praise!
-People: Give thanks to him; bless his name!
-Leader: For the Lord is good; his steadfast love endures forever,
-All: and his faithfulness to all generations.`,
-    source: 'Psalm 100:4-5',
+    title: 'PANGAGDA SA PAGSIMBA',
+    lyrics: `Ang Ginoo mangin sa inyo.
+Kag upod ang lya Espiritu.
+
+Pagdayawon ang Ginoo.
+Ang ngalan sang Ginoo pagdayawon.
+
+Hilinugyaw kamo sing masinadyahon gid sa Dios, bug-os nga duta. Alagda ninyo ang Ginoo nga may kasadya; sulod kamo sa atubangan sang lya nawong nga may sininggit sa kalipay. Kilalaha ninyo nga ang Ginoo amo ang Dios. Sia nagbuhat sa aton kag kita indi aton nga kaugalingon. Mga katawuhan kita Niya kag mga obeha sang lya halalban.
+
+Sa diin may duha ukon tatlo nga nagtipon sa akon ngalan, siling sang Ginoo, yara ako sa tunga nila. Kari kamo, pagdayawon naton ang Dios; ambahon naton ang dalangpan sang aton nga kaluwasan. Mag-alagad kita sa Dios sa kalipay; magsulod kita sa lya atubangan sa pagtahod sa mga kalantahon.
+
+-4-
+Dayawon namon, ikaw O Dios, sa bug-os nga tagipusoon. Ipahayag namon ang tanan Mo nga katingalahan. Magkalipay kag maghimaya kami sa Imo. Dayawon namon ang Imo nga ngalan, Ikaw labing mataas.
+
+-5-
+Ang Dios Espiritu kag ang mga nagasimba sa lya dapat magsimba sa Iya sa Espiritu kag kamatuoran. Ang mga halad sang Dios among Espiritu nga mahinulsulon. Ikaw wala nagatamay sang tagipusoon nga buong kag masinulob-on, O Kari kamo maghilinugyaw kita sing masinadyahon gid sa Ginoo. Kantahon naton nga may kalipay ang Batong Bantiling sang aton kaluwasan. Madangat kita sa atubangan sang lya nawong nga may pagpasalamat. Maghulugyaw kita nga may kalantahon.
+
+-7-
+Usisaon naton ang mga dalanon kag tungkaron naton sila kag magbalik kita sa Ginoo. Bayawon naton ang aton mga tagipusoon kag mga kamot sa Dios sa mga langit. Ini amo ang adlaw nga ginhimo sang Dios; magkalipay kag magkasadya kita sa lya.`,
+    source: 'SBC Liturgy',
     category: 'call-to-worship',
   },
   {
