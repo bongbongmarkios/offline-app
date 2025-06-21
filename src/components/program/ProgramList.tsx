@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { Program, TrashedProgram, AnyTrashedItem } from '@/types';
@@ -115,7 +114,7 @@ export default function ProgramList({ programs, onProgramDeleted }: ProgramListP
                 {program.date && (
                   <CardDescription className="text-sm text-muted-foreground pt-1 flex items-center">
                     <CalendarDays className="h-4 w-4 mr-2" />
-                    {new Date(program.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                    {new Date(program.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}
                   </CardDescription>
                 )}
               </CardHeader>
