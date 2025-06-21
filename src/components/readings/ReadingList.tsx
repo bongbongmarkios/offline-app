@@ -48,7 +48,7 @@ export default function ReadingList({ readings }: ReadingListProps) {
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value={category} className="border rounded-lg shadow-sm bg-card">
                   <AccordionTrigger className="px-4 md:px-6 py-2 hover:no-underline">
-                     <h2 className="text-2xl font-headline font-semibold text-primary flex items-center">
+                     <h2 className="text-xl font-headline font-semibold text-primary flex items-center">
                         <Icon className="mr-3 h-6 w-6" />
                         {title}
                       </h2>
@@ -85,7 +85,7 @@ export default function ReadingList({ readings }: ReadingListProps) {
               </Accordion>
             ) : (
               <>
-                <h2 className="text-2xl font-headline font-semibold text-primary mb-4 flex items-center">
+                <h2 className="text-xl font-headline font-semibold text-primary mb-4 flex items-center">
                   <Icon className="mr-3 h-6 w-6" />
                   {title}
                 </h2>
