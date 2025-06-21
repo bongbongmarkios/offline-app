@@ -311,7 +311,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
                         <p className="text-sm text-muted-foreground flex-grow">
                             All standard program items will be included by default.
                         </p>
-                        <Button type="button" variant="secondary" onClick={() => setIsCustomizing(true)} size="sm" className="flex-shrink-0">
+                        <Button type="button" variant="default" onClick={() => setIsCustomizing(true)} size="sm" className="flex-shrink-0">
                             Customize Selection
                         </Button>
                     </div>
