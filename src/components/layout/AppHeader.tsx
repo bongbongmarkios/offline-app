@@ -1,7 +1,6 @@
-
 'use client';
 import type { ReactNode } from 'react';
-import { Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, ListChecks, Trash, Sparkles, Bot, FilePlus2 } from 'lucide-react'; 
+import { Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, ListChecks, Trash, Sparkles, Bot, FilePlus2, BookOpenText } from 'lucide-react'; 
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -249,8 +248,8 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                       <span>URL Management</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => setIsAddReadingDialogOpen(true)}>
-                      <FilePlus2 className="mr-2 h-4 w-4" />
-                      <span>Add Reading</span>
+                      <BookOpenText className="mr-2 h-4 w-4" />
+                      <span>Call to Worship</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
