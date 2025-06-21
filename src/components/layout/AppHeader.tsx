@@ -1,6 +1,7 @@
+
 'use client';
 import type { ReactNode } from 'react';
-import { Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, ListChecks, Trash, Sparkles, Bot, FilePlus2, BookOpenText } from 'lucide-react'; 
+import { Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, ListChecks, Trash, Sparkles, Bot } from 'lucide-react'; 
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -25,7 +26,6 @@ import {
 import { useState, useEffect } from 'react';
 import DeleteHymnDialogContent from '@/components/hymnal/DeleteHymnDialogContent';
 import DeleteReadingDialogContent from '@/components/readings/DeleteReadingDialogContent';
-import AddReadingForm from '@/components/readings/AddReadingForm';
 import ChatInterface from '@/components/ai/ChatInterface';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -55,7 +55,6 @@ const initialSignalDetail: SignalDetail = {
 export default function AppHeader({ title, actions, hideDefaultActions }: AppHeaderProps) {
   const [isDeleteHymnDialogOpen, setIsDeleteHymnDialogOpen] = useState(false);
   const [isDeleteReadingDialogOpen, setIsDeleteReadingDialogOpen] = useState(false);
-  const [isAddReadingDialogOpen, setIsAddReadingDialogOpen] = useState(false);
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
   
   const router = useRouter();
@@ -247,10 +246,6 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                       <ListChecks className="mr-2 h-4 w-4" />
                       <span>URL Management</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setIsAddReadingDialogOpen(true)}>
-                      <BookOpenText className="mr-2 h-4 w-4" />
-                      <span>Call to Worship</span>
-                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onSelect={() => setIsDeleteHymnDialogOpen(true)}
@@ -325,21 +320,6 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isAddReadingDialogOpen} onOpenChange={setIsAddReadingDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Add New Reading (Simulated)</DialogTitle>
-            <DialogDescription>
-              Enter the details for the new responsive reading. This action is simulated and will not be saved permanently yet.
-            </DialogDescription>
-          </DialogHeader>
-          <AddReadingForm
-            onFormSubmit={() => {
-              setIsAddReadingDialogOpen(false);
-            }}
-          />
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
