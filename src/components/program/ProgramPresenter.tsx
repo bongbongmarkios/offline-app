@@ -1,4 +1,3 @@
-
 'use client';
 import type { Program, ProgramItem, Hymn, Reading } from '@/types';
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -163,7 +162,7 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
     <>
       <Card className="w-full max-w-2xl mx-auto shadow-xl flex flex-col min-h-[60vh]">
         <CardHeader className="text-center pb-2 relative">
-           <div className="absolute top-4 right-4 flex items-center gap-2">
+           <div className="absolute top-2 right-4 flex items-center gap-2">
               {hasPersonalNote && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
