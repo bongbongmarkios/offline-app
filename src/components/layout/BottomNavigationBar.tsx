@@ -1,4 +1,3 @@
-
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -7,8 +6,8 @@ import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/hymnal', label: 'Hymnal', icon: Music },
-  { href: '/program', label: 'Program', icon: ListOrdered },
   { href: '/readings', label: 'Readings', icon: BookOpenText },
+  { href: '/program', label: 'Program', icon: ListOrdered },
 ];
 
 export default function BottomNavigationBar() {
