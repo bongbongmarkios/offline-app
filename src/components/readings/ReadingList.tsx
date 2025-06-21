@@ -1,3 +1,4 @@
+
 'use client';
 import * as React from 'react';
 import type { Reading, ReadingCategory } from '@/types';
@@ -5,6 +6,7 @@ import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { BookText, BookHeart, Presentation } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface ReadingListProps {
   readings: Reading[];
@@ -42,65 +44,72 @@ export default function ReadingList({ readings }: ReadingListProps) {
 
         return (
           <div key={category}>
-            <h2 className="text-2xl font-headline font-semibold text-primary mb-4 flex items-center">
-              <Icon className="mr-3 h-6 w-6" />
-              {title}
-            </h2>
-            
             {isInlineCategory ? (
-              // New combined container logic
-              <Card className="shadow-sm">
-                <CardContent className="pt-6">
-                  <div className="space-y-6">
-                    {items.map((reading, index) => (
-                      <React.Fragment key={reading.id}>
-                        {index > 0 && <Separator className="my-4" />}
-                        <div>
-                          <h3 className="font-headline text-lg text-primary/90 font-semibold">{reading.title}</h3>
-                          {reading.source && (
-                            <p className="text-xs text-muted-foreground pt-1">
-                              Source: {reading.source}
-                            </p>
-                          )}
-                          <div className="mt-2 space-y-2 text-md text-foreground leading-relaxed">
-                            {reading.lyrics.split('\n').map((line, lineIndex) => {
-                              const speakerMatch = line.match(/^(Leader:|People:|All:)\s*/);
-                              if (speakerMatch) {
-                                const text = line.substring(speakerMatch[0].length).trim();
-                                if (!text) return null;
-                                return <p key={lineIndex}>{text}</p>;
-                              }
-                              return <p key={lineIndex}>{line}</p>;
-                            })}
-                          </div>
-                        </div>
-                      </React.Fragment>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              // Original logic for responsive readings
-              <div className="space-y-4">
-                {items.map((reading) => (
-                  <Link key={reading.id} href={`/readings/${reading.id}`} className="block hover:no-underline">
-                    <Card className="hover:shadow-md transition-shadow duration-200 cursor-pointer hover:border-primary/50">
-                      <CardHeader>
-                        <div className="flex items-center gap-3">
-                          <div className="flex-grow">
-                            <CardTitle className="font-headline text-xl group-hover:text-primary">{reading.title}</CardTitle>
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value={category} className="border rounded-lg shadow-sm bg-card">
+                  <AccordionTrigger className="px-4 md:px-6 py-2 hover:no-underline">
+                     <h2 className="text-2xl font-headline font-semibold text-primary flex items-center">
+                        <Icon className="mr-3 h-6 w-6" />
+                        {title}
+                      </h2>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 md:px-6 pb-6">
+                    <div className="space-y-6 pt-2">
+                      {items.map((reading, index) => (
+                        <React.Fragment key={reading.id}>
+                          {index > 0 && <Separator className="my-4" />}
+                          <div>
+                            <h3 className="font-headline text-lg text-primary/90 font-semibold">{reading.title}</h3>
                             {reading.source && (
-                              <CardDescription className="text-sm text-muted-foreground pt-1">
+                              <p className="text-xs text-muted-foreground pt-1">
                                 Source: {reading.source}
-                              </CardDescription>
+                              </p>
                             )}
+                            <div className="mt-2 space-y-2 text-md text-foreground leading-relaxed">
+                              {reading.lyrics.split('\n').map((line, lineIndex) => {
+                                const speakerMatch = line.match(/^(Leader:|People:|All:)\s*/);
+                                if (speakerMatch) {
+                                  const text = line.substring(speakerMatch[0].length).trim();
+                                  if (!text) return null;
+                                  return <p key={lineIndex}>{text}</p>;
+                                }
+                                return <p key={lineIndex}>{line}</p>;
+                              })}
+                            </div>
                           </div>
-                        </div>
-                      </CardHeader>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            ) : (
+              <>
+                <h2 className="text-2xl font-headline font-semibold text-primary mb-4 flex items-center">
+                  <Icon className="mr-3 h-6 w-6" />
+                  {title}
+                </h2>
+                <div className="space-y-4">
+                  {items.map((reading) => (
+                    <Link key={reading.id} href={`/readings/${reading.id}`} className="block hover:no-underline">
+                      <Card className="hover:shadow-md transition-shadow duration-200 cursor-pointer hover:border-primary/50">
+                        <CardHeader>
+                          <div className="flex items-center gap-3">
+                            <div className="flex-grow">
+                              <CardTitle className="font-headline text-xl group-hover:text-primary">{reading.title}</CardTitle>
+                              {reading.source && (
+                                <CardDescription className="text-sm text-muted-foreground pt-1">
+                                  Source: {reading.source}
+                                </CardDescription>
+                              )}
+                            </div>
+                          </div>
+                        </CardHeader>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         );
