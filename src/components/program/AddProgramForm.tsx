@@ -307,9 +307,11 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
                     <ListChecks className="mr-2 h-5 w-5 text-primary"/> Program Items
                 </Label>
                 {!isCustomizing ? (
-                    <div className="p-3 mt-2 bg-muted/50 rounded-md text-sm text-muted-foreground border">
-                        All standard program items will be included by default.
-                        <Button type="button" variant="link" onClick={() => setIsCustomizing(true)} className="text-xs h-auto p-0 ml-2">
+                    <div className="p-3 mt-2 bg-muted/50 rounded-md border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <p className="text-sm text-muted-foreground flex-grow">
+                            All standard program items will be included by default.
+                        </p>
+                        <Button type="button" variant="secondary" onClick={() => setIsCustomizing(true)} size="sm" className="flex-shrink-0">
                             Customize Selection
                         </Button>
                     </div>
