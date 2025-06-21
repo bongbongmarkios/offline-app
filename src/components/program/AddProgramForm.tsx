@@ -367,61 +367,61 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
                 <h3 className="font-semibold">Fill Program Details</h3>
                 <p className="text-sm text-muted-foreground">Assign specific content to your selected program items.</p>
             </div>
-            <ScrollArea className="flex-1 w-full rounded-md border p-2 min-h-0">
-                <div className="space-y-3 p-1">
+            <ScrollArea className="flex-1 w-full rounded-md border p-1 min-h-0">
+              <Accordion type="single" collapsible className="w-full">
                 {programItems.map((item, index) => (
-                    <div key={index} className="p-3 border rounded-md space-y-2 bg-muted/20">
-                        <Label className="font-medium text-primary">{item.title}</Label>
-                        {isHymnItem(item.title) && (
-                            <Select onValueChange={(hymnId) => handleUpdateProgramItem(index, { hymnId: hymnId === 'none' ? undefined : hymnId })} value={item.hymnId}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Assign a Hymn..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="none">-- No Hymn --</SelectItem>
-                                    {hymns.map(hymn => <SelectItem key={hymn.id} value={hymn.id}>{hymn.titleEnglish || hymn.titleHiligaynon}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        )}
-                        {isReadingItem(item.title) && (
-                             <Select onValueChange={(readingId) => handleUpdateProgramItem(index, { readingId: readingId === 'none' ? undefined : readingId })} value={item.readingId}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Assign a Reading..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                   <SelectItem value="none">-- No Reading --</SelectItem>
-                                    {readings.map(reading => <SelectItem key={reading.id} value={reading.id}>{reading.title}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        )}
-                         {isContentItem(item.title) && (
-                            <Input 
-                                placeholder="Add details (e.g., Speaker's Name)" 
-                                onChange={(e) => handleUpdateProgramItem(index, { content: e.target.value })} 
-                                className="bg-background"
-                                defaultValue={item.content || ''}
-                            />
-                         )}
-                        <Accordion type="single" collapsible className="w-full">
-                            <AccordionItem value={`item-notes-${index}`} className="border-b-0">
-                                <AccordionTrigger className="text-sm py-2 hover:no-underline [&[data-state=open]>svg]:text-primary flex items-center gap-2 text-muted-foreground hover:text-accent-foreground">
-                                    <NotebookText className="h-4 w-4"/>
-                                    <span>{item.notes && item.notes.trim() !== '' ? 'Edit Note' : 'Add Note'}</span>
-                                </AccordionTrigger>
-                                <AccordionContent>
-                                    <Textarea
-                                        placeholder="Add optional notes for this item..."
-                                        onChange={(e) => handleUpdateProgramItem(index, { notes: e.target.value })}
-                                        className="bg-background text-sm"
-                                        rows={3}
-                                        defaultValue={item.notes || ''}
-                                    />
-                                </AccordionContent>
-                            </AccordionItem>
-                        </Accordion>
-                    </div>
+                  <AccordionItem value={`program-item-${index}`} key={index} className="border-b-0 mb-2 border rounded-md bg-muted/30 hover:bg-muted/50 px-3">
+                    <AccordionTrigger className="text-md py-3 hover:no-underline font-medium text-foreground">
+                      {item.title}
+                    </AccordionTrigger>
+                    <AccordionContent className="space-y-4 pt-1 pb-4">
+                      {isHymnItem(item.title) && (
+                          <Select onValueChange={(hymnId) => handleUpdateProgramItem(index, { hymnId: hymnId === 'none' ? undefined : hymnId })} defaultValue={item.hymnId}>
+                              <SelectTrigger>
+                                  <SelectValue placeholder="Assign a Hymn..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                  <SelectItem value="none">-- No Hymn --</SelectItem>
+                                  {hymns.map(hymn => <SelectItem key={hymn.id} value={hymn.id}>{hymn.titleEnglish || hymn.titleHiligaynon}</SelectItem>)}
+                              </SelectContent>
+                          </Select>
+                      )}
+                      {isReadingItem(item.title) && (
+                           <Select onValueChange={(readingId) => handleUpdateProgramItem(index, { readingId: readingId === 'none' ? undefined : readingId })} defaultValue={item.readingId}>
+                              <SelectTrigger>
+                                  <SelectValue placeholder="Assign a Reading..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                 <SelectItem value="none">-- No Reading --</SelectItem>
+                                  {readings.map(reading => <SelectItem key={reading.id} value={reading.id}>{reading.title}</SelectItem>)}
+                              </SelectContent>
+                          </Select>
+                      )}
+                       {isContentItem(item.title) && (
+                          <Input 
+                              placeholder="Add details (e.g., Speaker's Name)" 
+                              onChange={(e) => handleUpdateProgramItem(index, { content: e.target.value })} 
+                              className="bg-background"
+                              defaultValue={item.content || ''}
+                          />
+                       )}
+                       <div className="space-y-2">
+                          <Label htmlFor={`notes-for-item-${index}`} className="flex items-center text-sm text-muted-foreground">
+                            <NotebookText className="mr-2 h-4 w-4"/> Optional Notes
+                          </Label>
+                          <Textarea
+                              id={`notes-for-item-${index}`}
+                              placeholder="Add optional notes for this item..."
+                              onChange={(e) => handleUpdateProgramItem(index, { notes: e.target.value })}
+                              className="bg-background text-sm"
+                              rows={3}
+                              defaultValue={item.notes || ''}
+                          />
+                       </div>
+                    </AccordionContent>
+                  </AccordionItem>
                 ))}
-                </div>
+              </Accordion>
             </ScrollArea>
             <div className="flex justify-between gap-2 pt-2 flex-shrink-0">
                 <Button type="button" variant="outline" onClick={() => setStep('items')} disabled={isSubmitting}>
