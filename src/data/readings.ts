@@ -92,19 +92,51 @@ All: O come, let us worship and bow down; let us kneel before the Lord, our Make
   },
   {
     id: '22001',
-    title: 'Honor the Lord with Your Wealth',
-    lyrics: `Leader: Honor the Lord with your wealth and with the firstfruits of all your produce;
-All: then your barns will be filled with plenty, and your vats will be bursting with wine.`,
-    source: 'Proverbs 3:9-10',
+    title: 'BALASAHON SA PAGDULOT (1)',
+    lyrics: `All: Ang kalibutan kag ang tanan nga yara sa iya, iya sang Ginoo, iya man ang Duta kag ang tanan nga nagakabuhi sa duta.`,
+    source: 'SBC Liturgy',
     category: 'offertory-sentence',
   },
   {
     id: '22002',
-    title: 'Bring the Full Tithe',
-    lyrics: `Leader: Bring the full tithe into the storehouse, that there may be food in my house.
-All: And thereby put me to the test, says the Lord of hosts, if I will not open the windows of heaven for you and pour down for you a blessing until there is no more need.`,
-    source: 'Malachi 3:10',
+    title: 'BALASAHON SA PAGDULOT (2)',
+    lyrics: `All: Ang akon halad, O Dios, amo ang mapainubuson nga espiritu, ang mapainubuson kag matinumanon nga tagiposoon indi mo pagsikwayon.`,
+    source: 'SBC Liturgy',
+    category: 'offertory-sentence',
+  },
+  {
+    id: '22003',
+    title: 'BALASAHON SA PAGDULOT (3)',
+    lyrics: `All: Ano bala ang mahatag ko sa Ginoo tungod sang tanan Niya nga kaayo sa akon? Sa pagtilipon sang tanan Niya nga mga tawo, hatagan ko Sia sang akon ginsaad.`,
+    source: 'SBC Liturgy',
+    category: 'offertory-sentence',
+  },
+  {
+    id: '22004',
+    title: 'BALASAHON SA PAGDULOT (4)',
+    lyrics: `All: Indi kamo magtipon sing manggad para sa inyo kaugalingon diri sa duta, sa diin ang mga sapatsapat kag ang tuktok makaut-ot kag ang mga makawat makasulod sa pagpangawat. Sa baylo, magtipon kamo sing manggad sa langit, sa diin wala sing sapatsapat kag tuktok nga makaut-ot kag ang mga makawat indi makasulod sa pagpangawat.`,
+    source: 'SBC Liturgy',
+    category: 'offertory-sentence',
+  },
+  {
+    id: '22005',
+    title: 'BALASAHON SA PAGDULOT (5)',
+    lyrics: `All: Sa tagsa ka nahauna nga adlaw sang simana ang tagsa sa inyo magpain sing kuwarta suno sa iya kinitaan.`,
+    source: 'SBC Liturgy',
+    category: 'offertory-sentence',
+  },
+  {
+    id: '22006',
+    title: 'BALASAHON SA PAGDULOT (6)',
+    lyrics: `All: Maghatag ang tagsa ka tawo suno sa gintuyo niya sa iya tagiposoon; indi sa kasubo ukon sa pagpilit; kay ang Dios nagahigugma sa manughatag nga malipayon.`,
+    source: 'SBC Liturgy',
+    category: 'offertory-sentence',
+  },
+  {
+    id: '22007',
+    title: 'BALASAHON SA PAGDULOT (7)',
+    lyrics: `All: Aton dumdumon ang ginsiling sang aton Ginoong Hesus, "May labi nga kalipay ang paghatag sang sa pagbaton."`,
+    source: 'SBC Liturgy',
     category: 'offertory-sentence',
   },
 ];
-
