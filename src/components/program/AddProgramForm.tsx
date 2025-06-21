@@ -1,32 +1,26 @@
 
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, ChevronRight, ListChecks, ChevronLeft, RotateCcw, BookOpenCheck, Music, NotebookText, CheckCircle2 } from "lucide-react";
+import { CalendarIcon, ChevronRight, ListChecks, ChevronLeft, RotateCcw, BookOpenCheck, Music, NotebookText, CheckCircle2, ChevronsUpDown, Check } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { programItemTitles, type ProgramItemTitle, type ProgramItem, type Program } from '@/types';
+import { programItemTitles, type ProgramItemTitle, type ProgramItem, type Program, type Hymn, type Reading } from '@/types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { initialSampleHymns } from '@/data/hymns';
 import { sampleReadings } from '@/data/readings';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Textarea } from '../ui/textarea';
 import { useRouter } from 'next/navigation';
 import { samplePrograms as initialSamplePrograms } from '@/data/programs';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 
 interface AddProgramFormProps {
@@ -35,6 +29,8 @@ interface AddProgramFormProps {
 }
 
 const LOCAL_STORAGE_PROGRAMS_KEY = 'graceNotesPrograms';
+const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
+const LOCAL_STORAGE_READINGS_KEY = 'graceNotesReadings';
 
 const defaultSelectedItems: ProgramItemTitle[] = [
   programItemTitles[2], // Opening Hymn
@@ -74,8 +70,29 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
   const [isCustomizing, setIsCustomizing] = useState(false); // Default to NOT customizing
   const [newlyCreatedProgram, setNewlyCreatedProgram] = useState<Program | null>(null);
 
-  const hymns = initialSampleHymns;
-  const readings = sampleReadings;
+  const [allHymns, setAllHymns] = useState<Hymn[]>([]);
+  const [allReadings, setAllReadings] = useState<Reading[]>([]);
+  const [openCombobox, setOpenCombobox] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Load hymns from localStorage
+    try {
+      const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
+      const loadedHymns = storedHymnsString ? JSON.parse(storedHymnsString) : initialSampleHymns;
+      setAllHymns(loadedHymns.sort((a: Hymn, b: Hymn) => (a.titleEnglish || a.titleHiligaynon).localeCompare(b.titleEnglish || b.titleHiligaynon)));
+    } catch (e) {
+      setAllHymns(initialSampleHymns);
+    }
+    
+    // Load readings from localStorage (or fallback)
+    try {
+      const storedReadingsString = localStorage.getItem(LOCAL_STORAGE_READINGS_KEY);
+      const loadedReadings = storedReadingsString ? JSON.parse(storedReadingsString) : sampleReadings;
+      setAllReadings(loadedReadings);
+    } catch (e) {
+      setAllReadings(sampleReadings);
+    }
+  }, []);
 
   const handleProceedToItems = () => {
     if (!date) {
@@ -369,58 +386,108 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
             </div>
             <ScrollArea className="flex-1 w-full rounded-md border p-1 min-h-0">
               <Accordion type="single" collapsible className="w-full">
-                {programItems.map((item, index) => (
-                  <AccordionItem value={`program-item-${index}`} key={index} className="border-b-0 mb-2 border rounded-md bg-muted/30 hover:bg-muted/50 px-3">
-                    <AccordionTrigger className="text-md py-3 hover:no-underline font-medium text-foreground">
-                      {item.title}
-                    </AccordionTrigger>
-                    <AccordionContent className="space-y-4 pt-1 pb-4">
-                      {isHymnItem(item.title) && (
-                          <Select onValueChange={(hymnId) => handleUpdateProgramItem(index, { hymnId: hymnId === 'none' ? undefined : hymnId })} defaultValue={item.hymnId}>
-                              <SelectTrigger>
-                                  <SelectValue placeholder="Assign a Hymn..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                  <SelectItem value="none">-- No Hymn --</SelectItem>
-                                  {hymns.map(hymn => <SelectItem key={hymn.id} value={hymn.id}>{hymn.titleEnglish || hymn.titleHiligaynon}</SelectItem>)}
-                              </SelectContent>
-                          </Select>
-                      )}
-                      {isReadingItem(item.title) && (
-                           <Select onValueChange={(readingId) => handleUpdateProgramItem(index, { readingId: readingId === 'none' ? undefined : readingId })} defaultValue={item.readingId}>
-                              <SelectTrigger>
-                                  <SelectValue placeholder="Assign a Reading..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                 <SelectItem value="none">-- No Reading --</SelectItem>
-                                  {readings.map(reading => <SelectItem key={reading.id} value={reading.id}>{reading.title}</SelectItem>)}
-                              </SelectContent>
-                          </Select>
-                      )}
-                       {isContentItem(item.title) && (
+                {programItems.map((item, index) => {
+                  const selectedHymn = allHymns.find(h => h.id === item.hymnId);
+                  const selectedReading = allReadings.find(r => r.id === item.readingId);
+                  const comboboxId = `combobox-${index}`;
+
+                  return (
+                    <AccordionItem value={`program-item-${index}`} key={index} className="border-b-0 mb-2 border rounded-md bg-muted/30 hover:bg-muted/50 px-3">
+                      <AccordionTrigger className="text-md py-3 hover:no-underline font-medium text-foreground">
+                        {item.title}
+                      </AccordionTrigger>
+                      <AccordionContent className="space-y-4 pt-1 pb-4">
+                        {isHymnItem(item.title) && (
+                          <Popover open={openCombobox === `hymn-${index}`} onOpenChange={(open) => setOpenCombobox(open ? `hymn-${index}` : null)}>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" role="combobox" className="w-full justify-between">
+                                <span className="truncate">{selectedHymn ? (selectedHymn.titleEnglish || selectedHymn.titleHiligaynon) : "Assign a Hymn..."}</span>
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                              <Command>
+                                <CommandInput placeholder="Search hymns..." />
+                                <CommandList>
+                                  <CommandEmpty>No hymn found.</CommandEmpty>
+                                  <CommandGroup>
+                                    {allHymns.map((hymn) => (
+                                      <CommandItem
+                                        key={hymn.id}
+                                        value={hymn.titleEnglish || hymn.titleHiligaynon}
+                                        onSelect={() => {
+                                          handleUpdateProgramItem(index, { hymnId: hymn.id });
+                                          setOpenCombobox(null);
+                                        }}
+                                      >
+                                        <Check className={cn("mr-2 h-4 w-4", item.hymnId === hymn.id ? "opacity-100" : "opacity-0")} />
+                                        {hymn.titleEnglish || hymn.titleHiligaynon}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                        )}
+                        {isReadingItem(item.title) && (
+                          <Popover open={openCombobox === `reading-${index}`} onOpenChange={(open) => setOpenCombobox(open ? `reading-${index}` : null)}>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" role="combobox" className="w-full justify-between">
+                                <span className="truncate">{selectedReading ? selectedReading.title : "Assign a Reading..."}</span>
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                              <Command>
+                                <CommandInput placeholder="Search readings..." />
+                                <CommandList>
+                                  <CommandEmpty>No reading found.</CommandEmpty>
+                                  <CommandGroup>
+                                    {allReadings.map((reading) => (
+                                      <CommandItem
+                                        key={reading.id}
+                                        value={reading.title}
+                                        onSelect={() => {
+                                          handleUpdateProgramItem(index, { readingId: reading.id });
+                                          setOpenCombobox(null);
+                                        }}
+                                      >
+                                        <Check className={cn("mr-2 h-4 w-4", item.readingId === reading.id ? "opacity-100" : "opacity-0")} />
+                                        {reading.title}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                        )}
+                        {isContentItem(item.title) && (
                           <Input 
-                              placeholder="Add details (e.g., Speaker's Name)" 
-                              onChange={(e) => handleUpdateProgramItem(index, { content: e.target.value })} 
-                              className="bg-background"
-                              defaultValue={item.content || ''}
+                            placeholder="Add details (e.g., Speaker's Name)" 
+                            onChange={(e) => handleUpdateProgramItem(index, { content: e.target.value })} 
+                            className="bg-background"
+                            defaultValue={item.content || ''}
                           />
-                       )}
-                       <div className="space-y-2">
+                        )}
+                        <div className="space-y-2">
                           <Label htmlFor={`notes-for-item-${index}`} className="flex items-center text-sm text-muted-foreground">
                             <NotebookText className="mr-2 h-4 w-4"/> Optional Notes
                           </Label>
                           <Textarea
-                              id={`notes-for-item-${index}`}
-                              placeholder="Add optional notes for this item..."
-                              onChange={(e) => handleUpdateProgramItem(index, { notes: e.target.value })}
-                              className="bg-background text-sm"
-                              rows={3}
-                              defaultValue={item.notes || ''}
+                            id={`notes-for-item-${index}`}
+                            placeholder="Add optional notes for this item..."
+                            onChange={(e) => handleUpdateProgramItem(index, { notes: e.target.value })}
+                            className="bg-background text-sm"
+                            rows={3}
+                            defaultValue={item.notes || ''}
                           />
-                       </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )
+                })}
               </Accordion>
             </ScrollArea>
             <div className="flex justify-between gap-2 pt-2 flex-shrink-0">
@@ -447,8 +514,8 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
           <ScrollArea className="flex-1 w-full rounded-md border p-2 min-h-0">
             <div className="space-y-3 p-1">
               {programItems.map((item, index) => {
-                  const hymn = item.hymnId ? hymns.find(h => h.id === item.hymnId) : null;
-                  const reading = item.readingId ? readings.find(r => r.id === item.readingId) : null;
+                  const hymn = item.hymnId ? allHymns.find(h => h.id === item.hymnId) : null;
+                  const reading = item.readingId ? allReadings.find(r => r.id === item.readingId) : null;
                   return (
                     <div key={index} className="p-3 border rounded-md space-y-1 bg-muted/20">
                         <p className="font-medium text-primary">{index + 1}. {item.title}</p>
