@@ -33,6 +33,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import HymnMultiLanguageView from '@/components/hymnal/HymnMultiLanguageView';
 
 
 interface ProgramPresenterProps {
@@ -51,6 +53,10 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
   const [currentItemHasNote, setCurrentItemHasNote] = useState(false);
   const [hasPersonalNote, setHasPersonalNote] = useState(false);
   const [displayedNote, setDisplayedNote] = useState<string | null>(null);
+
+  const [previewHymn, setPreviewHymn] = useState<Hymn | null>(null);
+  const [previewReading, setPreviewReading] = useState<Reading | null>(null);
+
 
   const currentItem = program.items[currentIndex];
 
@@ -82,6 +88,15 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
 
   const linkedHymn = useMemo(() => {
     if (currentItem?.hymnId) {
+      // Load hymns from localStorage for most up-to-date data
+      if (typeof window !== 'undefined') {
+        const storedHymnsString = localStorage.getItem('graceNotesHymns');
+        if (storedHymnsString) {
+            const allHymns = JSON.parse(storedHymnsString);
+            return allHymns.find((h: Hymn) => h.id === currentItem.hymnId);
+        }
+      }
+      // Fallback to initial data if localStorage isn't available/populated
       return initialSampleHymns.find(h => h.id === currentItem.hymnId);
     }
     return null;
@@ -198,17 +213,17 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
             {linkedHymn && (
                 <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
                     <p className="text-sm text-muted-foreground mb-1">Featured Hymn:</p>
-                    <Link href={`/hymnal/${linkedHymn.id}`} className="text-lg font-semibold text-accent hover:underline">
-                        {linkedHymn.titleHiligaynon || linkedHymn.titleEnglish} {linkedHymn.pageNumber ? `(#${linkedHymn.pageNumber})` : ''}
-                    </Link>
+                    <Button variant="link" className="text-lg font-semibold text-accent hover:underline h-auto p-0 text-left" onClick={() => setPreviewHymn(linkedHymn)}>
+                       {linkedHymn.titleHiligaynon || linkedHymn.titleEnglish} {linkedHymn.pageNumber ? `(#${linkedHymn.pageNumber})` : ''}
+                    </Button>
                 </div>
             )}
             {linkedReading && (
                 <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
                     <p className="text-sm text-muted-foreground mb-1">Featured Reading:</p>
-                    <Link href={`/readings/${linkedReading.id}`} className="text-lg font-semibold text-accent hover:underline">
+                     <Button variant="link" className="text-lg font-semibold text-accent hover:underline h-auto p-0 text-left" onClick={() => setPreviewReading(linkedReading)}>
                         {linkedReading.title}
-                    </Link>
+                    </Button>
                 </div>
             )}
             {!hasPrimaryContent && (
@@ -268,6 +283,79 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
                 <Button variant="outline" onClick={() => setIsNotesDialogOpen(false)}>Cancel</Button>
                 <Button onClick={handleSaveNote}>Save Note</Button>
             </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!previewHymn} onOpenChange={(open) => !open && setPreviewHymn(null)}>
+        <DialogContent className="sm:max-w-2xl h-[80vh] sm:h-auto sm:max-h-[85vh] flex flex-col">
+          {previewHymn && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{previewHymn.titleEnglish || previewHymn.titleHiligaynon}</DialogTitle>
+                <DialogDescription>
+                  {previewHymn.pageNumber && `Page: ${previewHymn.pageNumber}`}
+                  {previewHymn.pageNumber && previewHymn.keySignature && ` | `}
+                  {previewHymn.keySignature && `Key: ${previewHymn.keySignature}`}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex-1 min-h-0">
+                <ScrollArea className="h-full border rounded-md p-4">
+                    <HymnMultiLanguageView hymn={previewHymn} />
+                </ScrollArea>
+              </div>
+              <DialogFooter className="pt-4 flex-shrink-0">
+                <Button variant="secondary" asChild>
+                  <Link href={`/hymnal/${previewHymn.id}`}>Go to Full Page</Link>
+                </Button>
+                <Button variant="outline" onClick={() => setPreviewHymn(null)}>Close</Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!previewReading} onOpenChange={(open) => !open && setPreviewReading(null)}>
+        <DialogContent className="sm:max-w-xl h-[80vh] sm:h-auto sm:max-h-[85vh] flex flex-col">
+          {previewReading && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{previewReading.title}</DialogTitle>
+                {previewReading.source && <DialogDescription>Source: {previewReading.source}</DialogDescription>}
+              </DialogHeader>
+              <div className="flex-1 min-h-0">
+                <ScrollArea className="h-full border rounded-md p-4">
+                  <div className="space-y-4 text-lg text-foreground leading-relaxed">
+                    {previewReading.lyrics.split('\n').map((line, index) => {
+                        const speakerMatch = line.match(/^(Leader:|People:|All:)\s*/);
+                        if (speakerMatch) {
+                            const speaker = speakerMatch[1];
+                            const text = line.substring(speaker.length).trim();
+                            
+                            if (!text) return null; 
+
+                            if (speaker === 'People:' && previewReading.category === 'responsive-reading') {
+                                return (
+                                    <p key={index} className="font-bold text-foreground">
+                                        {text}
+                                    </p>
+                                );
+                            }
+                            return <p key={index}>{text}</p>;
+
+                        }
+                        return <p key={index}>{line}</p>;
+                    })}
+                  </div>
+                </ScrollArea>
+              </div>
+              <DialogFooter className="pt-4 flex-shrink-0">
+                 <Button variant="secondary" asChild>
+                    <Link href={`/readings/${previewReading.id}`}>Go to Full Page</Link>
+                </Button>
+                 <Button variant="outline" onClick={() => setPreviewReading(null)}>Close</Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </>
