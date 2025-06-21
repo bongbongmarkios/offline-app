@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, ChevronRight, ListChecks, ChevronLeft, RotateCcw, BookOpenCheck, Music, NotebookText, CheckCircle2, ChevronsUpDown, Check } from "lucide-react";
+import { CalendarIcon, ChevronRight, ListChecks, ChevronLeft, RotateCcw, BookOpenCheck, Music, NotebookText, CheckCircle2, ChevronsUpDown, Check, Presentation, BookHeart } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { programItemTitles, type ProgramItemTitle, type ProgramItem, type Program, type Hymn, type Reading } from '@/types';
@@ -33,13 +33,14 @@ const LOCAL_STORAGE_HYMNS_KEY = 'graceNotesHymns';
 const LOCAL_STORAGE_READINGS_KEY = 'graceNotesReadings';
 
 const defaultSelectedItems: ProgramItemTitle[] = [
+  programItemTitles[1], // Call to Worship
   programItemTitles[2], // Opening Hymn
   programItemTitles[3], // Opening Prayer
   programItemTitles[10], // Message
   programItemTitles[12], // Closing Hymn
+  programItemTitles[13], // Prayer of Benediction
 ];
 
-// Titles that do not require a user-input content field.
 const contentlessItemTitles: ProgramItemTitle[] = [
   "Doxology",
   "Rice for Mission offering with children's choir",
@@ -48,11 +49,15 @@ const contentlessItemTitles: ProgramItemTitle[] = [
 ];
 
 const isHymnItem = (title: ProgramItemTitle): boolean => title.toLowerCase().includes('hymn');
-const isReadingItem = (title: ProgramItemTitle): boolean => title.toLowerCase().includes('reading');
-// A "content item" is one that is not a hymn, not a reading, and not content-less. It needs an input field.
+const isCallToWorshipItem = (title: ProgramItemTitle): boolean => title === 'Call to Worship';
+const isResponsiveReadingItem = (title: ProgramItemTitle): boolean => title === 'Responsive Reading';
+const isOffertoryItem = (title: ProgramItemTitle): boolean => title === 'Giving of tithes or pledges and offering to the lord';
+
 const isContentItem = (title: ProgramItemTitle): boolean => 
   !isHymnItem(title) && 
-  !isReadingItem(title) && 
+  !isCallToWorshipItem(title) &&
+  !isResponsiveReadingItem(title) &&
+  !isOffertoryItem(title) &&
   !contentlessItemTitles.includes(title);
 
 
@@ -67,15 +72,18 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
   const [step, setStep] = useState<'details' | 'items' | 'fillDetails' | 'preview' | 'success'>('details');
   const [selectedItemTitles, setSelectedItemTitles] = useState<ProgramItemTitle[]>(defaultSelectedItems);
   const [programItems, setProgramItems] = useState<Omit<ProgramItem, 'id'>[]>([]);
-  const [isCustomizing, setIsCustomizing] = useState(false); // Default to NOT customizing
+  const [isCustomizing, setIsCustomizing] = useState(false);
   const [newlyCreatedProgram, setNewlyCreatedProgram] = useState<Program | null>(null);
 
   const [allHymns, setAllHymns] = useState<Hymn[]>([]);
   const [allReadings, setAllReadings] = useState<Reading[]>([]);
+  const [callsToWorship, setCallsToWorship] = useState<Reading[]>([]);
+  const [responsiveReadings, setResponsiveReadings] = useState<Reading[]>([]);
+  const [offertorySentences, setOffertorySentences] = useState<Reading[]>([]);
+  
   const [openCombobox, setOpenCombobox] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load hymns from localStorage
     try {
       const storedHymnsString = localStorage.getItem(LOCAL_STORAGE_HYMNS_KEY);
       const loadedHymns = storedHymnsString ? JSON.parse(storedHymnsString) : initialSampleHymns;
@@ -84,11 +92,13 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
       setAllHymns(initialSampleHymns);
     }
     
-    // Load readings from localStorage (or fallback)
     try {
       const storedReadingsString = localStorage.getItem(LOCAL_STORAGE_READINGS_KEY);
-      const loadedReadings = storedReadingsString ? JSON.parse(storedReadingsString) : sampleReadings;
+      const loadedReadings: Reading[] = storedReadingsString ? JSON.parse(storedReadingsString) : sampleReadings;
       setAllReadings(loadedReadings);
+      setCallsToWorship(loadedReadings.filter(r => r.category === 'call-to-worship'));
+      setResponsiveReadings(loadedReadings.filter(r => r.category === 'responsive-reading'));
+      setOffertorySentences(loadedReadings.filter(r => r.category === 'offertory-sentence'));
     } catch (e) {
       setAllReadings(sampleReadings);
     }
@@ -116,7 +126,6 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
       });
       return;
     }
-    // Preserve existing details when re-entering this step
     const newProgramItems = itemsToCreate.map(title => {
         const existingItem = programItems.find(p => p.title === title);
         return existingItem || { title };
@@ -236,6 +245,49 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
     setIsCustomizing(false);
     setSelectedItemTitles(defaultSelectedItems);
   }
+
+  const renderReadingCombobox = (
+    items: Reading[],
+    placeholder: string,
+    currentIndex: number,
+    comboboxKey: string
+  ) => {
+    const selectedItem = items.find(i => i.id === programItems[currentIndex].readingId);
+    return (
+      <Popover open={openCombobox === `${comboboxKey}-${currentIndex}`} onOpenChange={(open) => setOpenCombobox(open ? `${comboboxKey}-${currentIndex}` : null)}>
+        <PopoverTrigger asChild>
+          <Button variant="outline" role="combobox" className="w-full justify-between">
+            <span className="truncate">{selectedItem ? selectedItem.title : placeholder}</span>
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+          <Command>
+            <CommandInput placeholder="Search..." />
+            <CommandList>
+              <CommandEmpty>No item found.</CommandEmpty>
+              <CommandGroup>
+                {items.map((item) => (
+                  <CommandItem
+                    key={item.id}
+                    value={item.title}
+                    onSelect={() => {
+                      handleUpdateProgramItem(currentIndex, { readingId: item.id });
+                      setOpenCombobox(null);
+                    }}
+                  >
+                    <Check className={cn("mr-2 h-4 w-4", programItems[currentIndex].readingId === item.id ? "opacity-100" : "opacity-0")} />
+                    {item.title}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    );
+  };
+
 
   return (
     <form onSubmit={handleFormSubmit} className="space-y-6 py-2 flex flex-col flex-grow min-h-0">
@@ -388,9 +440,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
               <Accordion type="single" collapsible className="w-full">
                 {programItems.map((item, index) => {
                   const selectedHymn = allHymns.find(h => h.id === item.hymnId);
-                  const selectedReading = allReadings.find(r => r.id === item.readingId);
-                  const comboboxId = `combobox-${index}`;
-
+                  
                   return (
                     <AccordionItem value={`program-item-${index}`} key={index} className="border-b-0 mb-2 border rounded-md bg-muted/30 hover:bg-muted/50 px-3">
                       <AccordionTrigger className="text-md py-3 hover:no-underline font-medium text-foreground">
@@ -430,39 +480,10 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
                             </PopoverContent>
                           </Popover>
                         )}
-                        {isReadingItem(item.title) && (
-                          <Popover open={openCombobox === `reading-${index}`} onOpenChange={(open) => setOpenCombobox(open ? `reading-${index}` : null)}>
-                            <PopoverTrigger asChild>
-                              <Button variant="outline" role="combobox" className="w-full justify-between">
-                                <span className="truncate">{selectedReading ? selectedReading.title : "Assign a Reading..."}</span>
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                              <Command>
-                                <CommandInput placeholder="Search readings..." />
-                                <CommandList>
-                                  <CommandEmpty>No reading found.</CommandEmpty>
-                                  <CommandGroup>
-                                    {allReadings.map((reading) => (
-                                      <CommandItem
-                                        key={reading.id}
-                                        value={reading.title}
-                                        onSelect={() => {
-                                          handleUpdateProgramItem(index, { readingId: reading.id });
-                                          setOpenCombobox(null);
-                                        }}
-                                      >
-                                        <Check className={cn("mr-2 h-4 w-4", item.readingId === reading.id ? "opacity-100" : "opacity-0")} />
-                                        {reading.title}
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-                        )}
+                        {isCallToWorshipItem(item.title) && renderReadingCombobox(callsToWorship, 'Assign a Call to Worship...', index, 'ctw')}
+                        {isResponsiveReadingItem(item.title) && renderReadingCombobox(responsiveReadings, 'Assign a Responsive Reading...', index, 'rr')}
+                        {isOffertoryItem(item.title) && renderReadingCombobox(offertorySentences, 'Assign an Offertory Sentence...', index, 'os')}
+
                         {isContentItem(item.title) && (
                           <Input 
                             placeholder="Add details (e.g., Speaker's Name)" 

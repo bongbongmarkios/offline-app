@@ -53,11 +53,14 @@ export interface Program {
   items: ProgramItem[];
 }
 
+export type ReadingCategory = 'responsive-reading' | 'call-to-worship' | 'offertory-sentence';
+
 export interface Reading {
   id: string;
   title: string;
   lyrics: string; 
-  source?: string; 
+  source?: string;
+  category?: ReadingCategory;
 }
 
 // For AI suggestions
