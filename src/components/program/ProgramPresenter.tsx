@@ -168,8 +168,9 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button
-                      variant="destructive"
+                      variant="ghost"
                       size="icon"
+                      className="text-destructive hover:text-destructive"
                       aria-label="Erase personal note for this item"
                     >
                       <Eraser className="h-5 w-5" />
@@ -190,10 +191,11 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
                 </AlertDialog>
               )}
               <Button
-                  variant={currentItemHasNote ? 'default' : 'outline'}
+                  variant="ghost"
                   size="icon"
                   onClick={handleOpenNotesDialog}
                   aria-label="Add or edit note for this item"
+                  className={currentItemHasNote ? "text-primary" : "text-muted-foreground"}
               >
                   <NotebookText className="h-5 w-5" />
               </Button>
