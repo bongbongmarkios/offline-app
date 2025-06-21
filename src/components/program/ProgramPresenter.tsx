@@ -316,10 +316,7 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
                 </ScrollArea>
               </div>
               <DialogFooter className="pt-4 flex-shrink-0">
-                <Button variant="secondary" asChild>
-                  <Link href={`/hymnal/${previewHymn.id}`}>Go to Full Page</Link>
-                </Button>
-                <Button variant="outline" onClick={() => setPreviewHymn(null)}>Close</Button>
+                <Button variant="outline" className="w-full" onClick={() => setPreviewHymn(null)}>Close</Button>
               </DialogFooter>
             </>
           )}
@@ -361,10 +358,7 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
                 </ScrollArea>
               </div>
               <DialogFooter className="pt-4 flex-shrink-0">
-                 <Button variant="secondary" asChild>
-                    <Link href={`/readings/${previewReading.id}`}>Go to Full Page</Link>
-                </Button>
-                 <Button variant="outline" onClick={() => setPreviewReading(null)}>Close</Button>
+                 <Button variant="outline" className="w-full" onClick={() => setPreviewReading(null)}>Close</Button>
               </DialogFooter>
             </>
           )}
