@@ -42,12 +42,7 @@ export default function ProgramListPage() {
       loadedPrograms = [...initialSamplePrograms];
     }
 
-    const sortedPrograms = [...loadedPrograms].sort((a, b) => {
-      const dateA = a.date ? new Date(a.date).getTime() : 0;
-      const dateB = b.date ? new Date(b.date).getTime() : 0;
-      return dateB - dateA; // Sort descending by date (most recent first)
-    });
-    setPrograms(sortedPrograms);
+    setPrograms(loadedPrograms);
     setIsLoading(false);
   }, []);
 

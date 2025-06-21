@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, type FormEvent, useEffect } from 'react';
@@ -195,8 +194,7 @@ export default function AddProgramForm({ onFormSubmitSuccess, onCancel }: AddPro
         items: finalProgramItems,
       };
 
-      allPrograms.push(newProgram);
-      allPrograms.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+      allPrograms.unshift(newProgram);
       localStorage.setItem(LOCAL_STORAGE_PROGRAMS_KEY, JSON.stringify(allPrograms));
 
       toast({
