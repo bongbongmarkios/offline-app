@@ -37,14 +37,15 @@ export default function ReadingDetail({ reading }: ReadingDetailProps) {
                   
                   if (!text) return null; 
 
-                  if (speaker === 'People:') {
+                  // Only make "People" lines bold for the 'responsive-reading' category.
+                  if (speaker === 'People:' && reading.category === 'responsive-reading') {
                     return (
                         <p key={index} className="font-bold text-foreground">
                             {text}
                         </p>
                     );
                   }
-                  // For Leader and All, render normally
+                  // For Leader, All, and People in other categories, render normally.
                   return <p key={index}>{text}</p>;
 
                 }
