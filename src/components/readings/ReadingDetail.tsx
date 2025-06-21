@@ -28,8 +28,21 @@ export default function ReadingDetail({ reading }: ReadingDetailProps) {
         </CardHeader>
         <Separator className="my-2"/>
         <CardContent className="pt-4">
-            <div className="whitespace-pre-line text-foreground leading-relaxed text-lg">
-            {reading.lyrics}
+            <div className="space-y-6 text-lg text-foreground leading-relaxed">
+              {reading.lyrics.split('\n').map((line, index) => {
+                const speakerMatch = line.match(/^(Leader:|People:|All:)\s*/);
+                if (speakerMatch) {
+                  const speaker = speakerMatch[1];
+                  const text = line.substring(speaker.length).trim();
+                  return (
+                    <div key={index}>
+                      <p className="font-semibold text-primary">{speaker}</p>
+                      <p className="pl-4 border-l-2 border-primary/20">{text}</p>
+                    </div>
+                  );
+                }
+                return <p key={index}>{line}</p>;
+              })}
             </div>
         </CardContent>
     </Card>
