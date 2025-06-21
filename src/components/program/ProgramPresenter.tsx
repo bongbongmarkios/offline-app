@@ -161,8 +161,8 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
   return (
     <>
       <Card className="w-full max-w-2xl mx-auto shadow-xl flex flex-col min-h-[60vh]">
-        <CardHeader className="text-center pb-2 relative">
-           <div className="absolute top-2 right-4 flex items-center gap-2">
+        <CardHeader className="text-center pt-4 pb-2 relative">
+           <div className="absolute top-2 right-2 flex items-center gap-2">
               {hasPersonalNote && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
