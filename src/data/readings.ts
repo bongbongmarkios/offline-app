@@ -1,7 +1,7 @@
 
 import type { Reading } from '@/types';
 
-export const sampleReadings: Reading[] = [
+export let sampleReadings: Reading[] = [
   {
     id: '20001', // Updated ID
     title: 'The Lord is My Shepherd',
@@ -140,3 +140,17 @@ All: O come, let us worship and bow down; let us kneel before the Lord, our Make
     category: 'offertory-sentence',
   },
 ];
+
+// Function to update an existing reading in the in-memory sample data
+export function updateSampleReading(readingId: string, updatedData: Partial<Omit<Reading, 'id'>>): Reading | null {
+  const readingIndex = sampleReadings.findIndex(r => r.id === readingId);
+  if (readingIndex === -1) {
+    console.warn(`Reading with ID ${readingId} not found in sampleReadings for update.`);
+    return null;
+  }
+  sampleReadings[readingIndex] = {
+    ...sampleReadings[readingIndex],
+    ...updatedData,
+  };
+  return sampleReadings[readingIndex];
+}
