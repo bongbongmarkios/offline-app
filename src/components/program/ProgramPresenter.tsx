@@ -160,119 +160,121 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
 
   return (
     <>
-      <Card className="w-full max-w-2xl mx-auto shadow-xl flex flex-col min-h-[60vh]">
-        <CardHeader className="text-center pt-4 pb-2 relative">
-           <div className="absolute top-2 right-2 flex items-center gap-2">
-              {hasPersonalNote && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive hover:text-destructive"
-                      aria-label="Erase personal note for this item"
-                    >
-                      <Eraser className="h-5 w-5" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Personal Note?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will delete your personal note for &quot;{currentItem.title}&quot;. If a default note was part of the program, it will reappear. This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteNote}>Delete</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-              <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleOpenNotesDialog}
-                  aria-label="Add or edit note for this item"
-                  className={currentItemHasNote ? "text-primary" : "text-muted-foreground"}
-              >
-                  <NotebookText className="h-5 w-5" />
-              </Button>
-          </div>
-          <CardTitle className="font-headline text-2xl md:text-3xl text-primary">
-            {currentItem.title}
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Item {currentIndex + 1} of {program.items.length}
-          </p>
-        </CardHeader>
-        <CardContent className="flex-grow flex flex-col justify-center text-center p-6">
-          <div className="w-full">
-            {currentItem.content && (
-              <p className="text-lg md:text-xl text-foreground mb-4">{currentItem.content}</p>
+      <div className="relative max-w-2xl mx-auto mt-6">
+        <div className="absolute top-0 right-0 z-10 flex -translate-y-1/2 translate-x-2 items-center gap-2">
+            {hasPersonalNote && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:text-destructive bg-card rounded-full shadow-lg border hover:bg-destructive/10"
+                    aria-label="Erase personal note for this item"
+                  >
+                    <Eraser className="h-5 w-5" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Personal Note?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will delete your personal note for &quot;{currentItem.title}&quot;. If a default note was part of the program, it will reappear. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteNote}>Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
-            {linkedHymn && (
-                <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
-                    <p className="text-sm text-muted-foreground mb-1">Featured Hymn:</p>
-                    <Button variant="link" className="text-lg font-semibold text-accent hover:underline h-auto p-0 text-left" onClick={() => setPreviewHymn(linkedHymn)}>
-                       {linkedHymn.titleHiligaynon || linkedHymn.titleEnglish} {linkedHymn.pageNumber ? `(#${linkedHymn.pageNumber})` : ''}
-                    </Button>
-                </div>
-            )}
-            {linkedReading && (
-                <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
-                    <p className="text-sm text-muted-foreground mb-1">Featured Reading:</p>
-                     <Button variant="link" className="text-lg font-semibold text-accent hover:underline h-auto p-0 text-left" onClick={() => setPreviewReading(linkedReading)}>
-                        {linkedReading.title}
-                    </Button>
-                </div>
-            )}
-            {currentItem.usher && (
-              <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
-                  <p className="text-sm text-muted-foreground mb-1 flex items-center justify-center"><User className="mr-2 h-4 w-4"/>Usher(s):</p>
-                  <p className="text-lg font-semibold text-foreground">{currentItem.usher}</p>
-              </div>
-            )}
-            {currentItem.specialNumber && (
-              <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
-                  <p className="text-sm text-muted-foreground mb-1 flex items-center justify-center"><Award className="mr-2 h-4 w-4"/>Special Number by:</p>
-                  <p className="text-lg font-semibold text-foreground">{currentItem.specialNumber}</p>
-              </div>
-            )}
-            {!hasPrimaryContent && (
-              <p className="text-muted-foreground italic text-lg">Details for this item will be provided during the service.</p>
-            )}
-          </div>
-          
-          {displayedNote && (
-            <>
-              {hasPrimaryContent && <Separator className="my-6" />}
-              <div className="w-full text-left mt-4">
-                <h4 className="font-semibold text-md text-primary mb-2">My Notes:</h4>
-                <p className="text-md text-foreground whitespace-pre-wrap bg-muted/50 p-4 rounded-md">{displayedNote}</p>
-              </div>
-            </>
-          )}
-
-        </CardContent>
-        <CardFooter className="flex flex-col gap-4 pt-4 border-t">
-          <Progress value={progressPercentage} className="w-full h-2" />
-          <div className="flex justify-between w-full">
-            <Button onClick={goToPrevious} disabled={currentIndex === 0} variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleOpenNotesDialog}
+              aria-label="Add or edit note for this item"
+              className={`${currentItemHasNote ? "text-primary" : "text-muted-foreground"} bg-card rounded-full shadow-lg border hover:bg-accent/10`}
+            >
+              <NotebookText className="h-5 w-5" />
             </Button>
-            {currentIndex === program.items.length - 1 ? (
-              <Button variant="default" disabled>
-                  End of Program <CheckCircle2 className="ml-2 h-4 w-4" />
-              </Button>
-            ) : (
-              <Button onClick={goToNext}>
-                Next <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+        </div>
+        <Card className="w-full shadow-xl flex flex-col min-h-[60vh]">
+            <CardHeader className="text-center pt-6 pb-2">
+            <CardTitle className="font-headline text-2xl md:text-3xl text-primary">
+                {currentItem.title}
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+                Item {currentIndex + 1} of {program.items.length}
+            </p>
+            </CardHeader>
+            <CardContent className="flex-grow flex flex-col justify-center text-center p-6">
+            <div className="w-full">
+                {currentItem.content && (
+                <p className="text-lg md:text-xl text-foreground mb-4">{currentItem.content}</p>
+                )}
+                {linkedHymn && (
+                    <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
+                        <p className="text-sm text-muted-foreground mb-1">Featured Hymn:</p>
+                        <Button variant="link" className="text-lg font-semibold text-accent hover:underline h-auto p-0 text-left" onClick={() => setPreviewHymn(linkedHymn)}>
+                        {linkedHymn.titleHiligaynon || linkedHymn.titleEnglish} {linkedHymn.pageNumber ? `(#${linkedHymn.pageNumber})` : ''}
+                        </Button>
+                    </div>
+                )}
+                {linkedReading && (
+                    <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
+                        <p className="text-sm text-muted-foreground mb-1">Featured Reading:</p>
+                        <Button variant="link" className="text-lg font-semibold text-accent hover:underline h-auto p-0 text-left" onClick={() => setPreviewReading(linkedReading)}>
+                            {linkedReading.title}
+                        </Button>
+                    </div>
+                )}
+                {currentItem.usher && (
+                <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
+                    <p className="text-sm text-muted-foreground mb-1 flex items-center justify-center"><User className="mr-2 h-4 w-4"/>Usher(s):</p>
+                    <p className="text-lg font-semibold text-foreground">{currentItem.usher}</p>
+                </div>
+                )}
+                {currentItem.specialNumber && (
+                <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
+                    <p className="text-sm text-muted-foreground mb-1 flex items-center justify-center"><Award className="mr-2 h-4 w-4"/>Special Number by:</p>
+                    <p className="text-lg font-semibold text-foreground">{currentItem.specialNumber}</p>
+                </div>
+                )}
+                {!hasPrimaryContent && (
+                <p className="text-muted-foreground italic text-lg">Details for this item will be provided during the service.</p>
+                )}
+            </div>
+            
+            {displayedNote && (
+                <>
+                {hasPrimaryContent && <Separator className="my-6" />}
+                <div className="w-full text-left mt-4">
+                    <h4 className="font-semibold text-md text-primary mb-2">My Notes:</h4>
+                    <p className="text-md text-foreground whitespace-pre-wrap bg-muted/50 p-4 rounded-md">{displayedNote}</p>
+                </div>
+                </>
             )}
-          </div>
-        </CardFooter>
-      </Card>
+
+            </CardContent>
+            <CardFooter className="flex flex-col gap-4 pt-4 border-t">
+            <Progress value={progressPercentage} className="w-full h-2" />
+            <div className="flex justify-between w-full">
+                <Button onClick={goToPrevious} disabled={currentIndex === 0} variant="outline">
+                <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+                </Button>
+                {currentIndex === program.items.length - 1 ? (
+                <Button variant="default" disabled>
+                    End of Program <CheckCircle2 className="ml-2 h-4 w-4" />
+                </Button>
+                ) : (
+                <Button onClick={goToNext}>
+                    Next <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+                )}
+            </div>
+            </CardFooter>
+        </Card>
+      </div>
       
       <Dialog open={isNotesDialogOpen} onOpenChange={setIsNotesDialogOpen}>
         <DialogContent>
