@@ -1,9 +1,10 @@
+
 'use client';
 import type { Program, ProgramItem, Hymn, Reading } from '@/types';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { ArrowLeft, ArrowRight, CheckCircle2, NotebookText, Eraser, User, Award } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, NotebookText, Eraser, User, Award, Mic, BookMarked } from 'lucide-react';
 import { useActivity } from '@/hooks/useActivityTracker';
 import { Progress } from '@/components/ui/progress';
 import Link from 'next/link';
@@ -117,7 +118,7 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
 
   const goToPrevious = () => {
     if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
+      setCurrentIndex(currentIndex + 1);
     }
   };
 
@@ -209,9 +210,21 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
             </CardHeader>
             <CardContent className="flex-grow flex flex-col justify-center text-center p-6">
             <div className="w-full">
-                {currentItem.content && (
-                <p className="text-lg md:text-xl text-foreground mb-4">{currentItem.content}</p>
-                )}
+                {currentItem.content ? (
+                    currentItem.title === 'Message' ? (
+                        <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
+                            <p className="text-sm text-muted-foreground mb-1 flex items-center justify-center"><Mic className="mr-2 h-4 w-4"/>Message by:</p>
+                            <p className="text-lg font-semibold text-foreground">{currentItem.content}</p>
+                        </div>
+                    ) : currentItem.title === 'Scripture Reading' ? (
+                        <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
+                            <p className="text-sm text-muted-foreground mb-1 flex items-center justify-center"><BookMarked className="mr-2 h-4 w-4"/>Scripture Reading by:</p>
+                            <p className="text-lg font-semibold text-foreground">{currentItem.content}</p>
+                        </div>
+                    ) : (
+                        <p className="text-lg md:text-xl text-foreground mb-4">{currentItem.content}</p>
+                    )
+                ) : null}
                 {linkedHymn && (
                     <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
                         <p className="text-sm text-muted-foreground mb-1">Featured Hymn:</p>
