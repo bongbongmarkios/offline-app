@@ -152,15 +152,15 @@ export default function ReadingList({ readings: initialReadings }: ReadingListPr
                   </h2>
                   <div className="space-y-4">
                     {items.map((reading) => (
-                      <Card key={reading.id} className="hover:shadow-md transition-shadow duration-200 relative group">
-                         <Button variant="ghost" size="icon" className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEditClick(reading); }}>
+                      <Card key={reading.id} className="hover:shadow-md transition-shadow duration-200 relative">
+                         <Button variant="ghost" size="icon" className="absolute top-2 right-2 z-10" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEditClick(reading); }}>
                             <FilePenLine className="h-5 w-5 text-muted-foreground"/>
                          </Button>
                         <Link href={`/readings/${reading.id}`} className="block hover:no-underline">
                           <CardHeader className="pr-12">
                             <div className="flex items-center gap-3">
                               <div className="flex-grow">
-                                <CardTitle className="font-headline text-xl group-hover:text-primary">{reading.title}</CardTitle>
+                                <CardTitle className="font-headline text-xl text-primary">{reading.title}</CardTitle>
                                 {reading.source && (
                                   <CardDescription className="text-sm text-muted-foreground pt-1">
                                     Source: {reading.source}
