@@ -118,7 +118,7 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
 
   const goToPrevious = () => {
     if (currentIndex > 0) {
-      setCurrentIndex(currentIndex + 1);
+      setCurrentIndex(currentIndex - 1);
     }
   };
 
@@ -151,11 +151,31 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
     }
   };
 
-  const progressPercentage = ((currentIndex + 1) / program.items.length) * 100;
-
   if (!program || program.items.length === 0) {
     return <p>This program has no items.</p>;
   }
+
+  if (!currentItem) {
+    return (
+      <Card className="w-full shadow-xl flex flex-col min-h-[60vh]">
+        <CardHeader className="text-center pt-6 pb-2">
+          <CardTitle className="font-headline text-2xl md:text-3xl text-destructive">
+            Program Item Error
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex-grow flex flex-col justify-center text-center p-6">
+          <p>Could not load the current program item. The program might be empty or the data is corrupted.</p>
+        </CardContent>
+        <CardFooter className="flex justify-center pt-4 border-t">
+          <Button asChild variant="outline">
+            <Link href="/program">Back to Programs</Link>
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  }
+
+  const progressPercentage = ((currentIndex + 1) / program.items.length) * 100;
 
   const hasPrimaryContent = !!currentItem.content || !!linkedHymn || !!linkedReading || !!currentItem.usher || !!currentItem.specialNumber;
 
@@ -200,7 +220,7 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
             </Button>
         </div>
         <Card className="w-full shadow-xl flex flex-col min-h-[60vh]">
-            <CardHeader className="text-center pt-6 pb-2">
+            <CardHeader className="text-center pt-4 pb-2">
             <CardTitle className="font-headline text-2xl md:text-3xl text-primary">
                 {currentItem.title}
             </CardTitle>
