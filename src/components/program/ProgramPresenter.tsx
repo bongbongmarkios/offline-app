@@ -1,4 +1,3 @@
-
 'use client';
 import type { Program, ProgramItem, Hymn, Reading } from '@/types';
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -123,7 +122,7 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
   };
 
   const handleOpenNotesDialog = () => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && currentItem) {
       const notesKey = getNotesKey(program.id, currentItem.id);
       const savedNote = localStorage.getItem(notesKey);
       // If a local note exists, edit that. Otherwise, start with program's note.
@@ -133,7 +132,7 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
   };
 
   const handleSaveNote = () => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && currentItem) {
         const notesKey = getNotesKey(program.id, currentItem.id);
         localStorage.setItem(notesKey, notesContent);
         loadNoteForCurrentItem(); // Reload notes to show the new saved one
@@ -151,10 +150,6 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
     }
   };
 
-  if (!program || program.items.length === 0) {
-    return <p>This program has no items.</p>;
-  }
-
   if (!currentItem) {
     return (
       <Card className="w-full shadow-xl flex flex-col min-h-[60vh]">
@@ -167,8 +162,8 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
           <p>Could not load the current program item. The program might be empty or the data is corrupted.</p>
         </CardContent>
         <CardFooter className="flex justify-center pt-4 border-t">
-          <Button asChild variant="outline">
-            <Link href="/program">Back to Programs</Link>
+          <Button asChild variant="outline" onClick={goToPrevious}>
+            <p>Back to Previous</p>
           </Button>
         </CardFooter>
       </Card>
@@ -176,8 +171,8 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
   }
 
   const progressPercentage = ((currentIndex + 1) / program.items.length) * 100;
-
-  const hasPrimaryContent = !!currentItem.content || !!linkedHymn || !!linkedReading || !!currentItem.usher || !!currentItem.specialNumber;
+  const isOffertoryItem = currentItem.title === 'Giving of tithes or pledges and offering to the lord';
+  const hasPrimaryContent = !!currentItem.content || !!linkedHymn || !!linkedReading || !!currentItem.usher || isOffertoryItem;
 
   return (
     <>
@@ -267,11 +262,11 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
                     <p className="text-lg font-semibold text-foreground">{currentItem.usher}</p>
                 </div>
                 )}
-                {currentItem.specialNumber && (
-                <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
-                    <p className="text-sm text-muted-foreground mb-1 flex items-center justify-center"><Award className="mr-2 h-4 w-4"/>Special Number by:</p>
-                    <p className="text-lg font-semibold text-foreground">{currentItem.specialNumber}</p>
-                </div>
+                {isOffertoryItem && (
+                    <div className="my-4 p-4 border rounded-md bg-secondary/30 w-full">
+                        <p className="text-sm text-muted-foreground mb-1 flex items-center justify-center"><Award className="mr-2 h-4 w-4"/>Special Number by:</p>
+                        <p className="text-lg font-semibold text-foreground">{currentItem.specialNumber || '?'}</p>
+                    </div>
                 )}
                 {!hasPrimaryContent && (
                 <p className="text-muted-foreground italic text-lg">Details for this item will be provided during the service.</p>
