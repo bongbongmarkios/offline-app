@@ -321,7 +321,7 @@ Ang ating pagkamangha, ating kagalakan, kapag si Hesus ay ating makikita.`,
     externalUrl: undefined,
   },
   {
-    id: '10006',
+    id: '10007',
     titleHiligaynon: 'DAYAWA SIA (Praise him, Praise Him)',
     lyricsHiligaynon: `Verse 1:
 Dayawa Sia, si Hesus nga Manunubos
@@ -349,8 +349,7 @@ Ang kalangitan gadayaw tanan
 Hesus, Manluluwas kag Makagagahom 
 Purongan Sia nga Hari gid naton 
 Magakari Sia subong nga Mandadaos 
-Makita ta Sia sa himaya Nia.
-`,
+Makita ta Sia sa himaya Nia.`,
     titleEnglish: 'Praise Him, Praise Him',
     lyricsEnglish: `Praise Him, Jesus our Redeemer,
 Declare His love.
@@ -377,6 +376,94 @@ Crown Him our King indeed.
 He will come as Conqueror,
 We will see Him in His glory.`,
     keySignature: '6/8',
+  },
+  {
+    id: '10008',
+    titleEnglish: 'What a Friend We Have in Jesus',
+    lyricsEnglish: `What a friend we have in Jesus,
+All our sins and griefs to bear!
+What a privilege to carry
+Everything to God in prayer!
+O what peace we often forfeit,
+O what needless pain we bear,
+All because we do not carry
+Everything to God in prayer!
+
+Have we trials and temptations?
+Is there trouble anywhere?
+We should never be discouraged,
+Take it to the Lord in prayer.
+Can we find a friend so faithful
+Who will all our sorrows share?
+Jesus knows our every weakness,
+Take it to the Lord in prayer.
+
+Are we weak and heavy-laden,
+Cumbered with a load of care?
+Precious Savior, still our refuge—
+Take it to the Lord in prayer;
+Do thy friends despise, forsake thee?
+Take it to the Lord in prayer;
+In His arms He’ll take and shield thee,
+Thou wilt find a solace there.`,
+    titleHiligaynon: 'ABYAN TA SI JESUS',
+    lyricsHiligaynon: `Daw ano kaayo nga abyan si Jesus,
+Sal-anan, kasubo ginadala N'ya!
+Daw ano kaayo nga aton gindulot
+Sa Dios ang tanan sa pangamuyo!
+Kalinong gindula, kasakit giantus,
+Kay wala ta dalha sa pangamuyo
+Sa Dios ang tanan sa pangamuyo.
+
+May pagtilaw bala kag mga kasakit?
+May kagamo bala sa bisan diin?
+Dili kita dapat nga magpaluya,
+Dalha sa Ginoo sa pangamuyo.
+May abyan bala nga masaligan gid
+Nga sa kasubo ta Sia mag-unong?
+Nahibaloan N'ya aton kaluyahon,
+Dalha sa Ginoo sa pangamuyo.
+
+Maluyahon bala kag nabug-atan ta,
+Ginapiutan sang mga palas-anon?
+Bilidhon nga Manluluwas, dalangpan ta—
+Dalha sa Ginoo sa pangamuyo;
+Kon mga abyan mo isikway, pabay-an ka?
+Dalha sa Ginoo sa pangamuyo;
+Sa Iya butkon, Iya ka sagupon,
+Didto makakita ka sang kalipay.`,
+    titleFilipino: 'O ANONG KAIBIGAN',
+    lyricsFilipino: `O anong kaibigan si Cristo,
+Lahat ng sala'y dala Niya!
+Anong pribilehiyo na dalhin
+Lahat sa Diyos sa panalangin!
+O anong kapayapaan ang nawawala,
+O anong sakit ang dinadala,
+Lahat dahil di natin dinadala
+Lahat sa Diyos sa panalangin!
+
+May mga pagsubok at tukso ba tayo?
+May problema ba kahit saan?
+Huwag tayong panghinaan ng loob,
+Dalhin sa Panginoon sa panalangin.
+Makakahanap ba tayo ng kaibigang tapat
+Na sa lahat ng ating pighati'y makikibahagi?
+Alam ni Jesus ang bawat kahinaan natin,
+Dalhin sa Panginoon sa panalangin.
+
+Tayo ba'y mahina at nabibigatan,
+Pasan-pasan ang bigat ng alalahanin?
+Mahal na Tagapagligtas, kanlungan pa rin—
+Dalhin sa Panginoon sa panalangin;
+Minamaliit ka ba't iniiwan ng kaibigan?
+Dalhin sa Panginoon sa panalangin;
+Sa Kanyang bisig, ika'y Kanyang iingatan,
+Doon ka makakahanap ng aliw.`,
+    author: 'Joseph M. Scriven',
+    category: 'Comfort and Assurance',
+    pageNumber: '88',
+    keySignature: 'F Major',
+    externalUrl: undefined,
   },
   {
     id: 'TEST_HYMN_001',
