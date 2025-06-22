@@ -7,10 +7,11 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { useTheme, type PrimaryColor } from '@/context/ThemeContext';
-import { Moon, Palette, Sun, Settings as SettingsIcon, Loader2, ArrowLeft } from 'lucide-react';
+import { Moon, Palette, Sun, Settings as SettingsIcon, Loader2, ArrowLeft, DatabaseZap, Eraser } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 
 const primaryColorOptions: { name: PrimaryColor, label: string, lightClass: string, darkClass: string }[] = [
@@ -131,6 +132,30 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        <Card className="mt-8">
+            <CardHeader>
+                <CardTitle className="flex items-center font-headline text-xl">
+                <DatabaseZap className="mr-3 h-6 w-6 text-accent" />
+                Data Management
+                </CardTitle>
+                <CardDescription>
+                Advanced options for managing application data stored in your browser.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p className="mb-4 text-sm text-muted-foreground">
+                If the app is not behaving as expected (e.g., hymns or programs are missing), a full reset can resolve the issue by clearing all stored data and starting fresh with the app's default content.
+                </p>
+                <Link href="/delete-data" passHref>
+                <Button variant="destructive" className="w-full sm:w-auto">
+                    <Eraser className="mr-2 h-4 w-4" />
+                    Reset All Application Data...
+                </Button>
+                </Link>
+            </CardContent>
+        </Card>
+
       </div>
     </>
   );
