@@ -1,12 +1,14 @@
 
 'use client';
 
-import { useState, FormEvent, useRef, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
+import { useState, FormEvent, useRef, useEffect, KeyboardEvent } from 'react';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Paperclip, Send, User, Bot, Loader2 } from 'lucide-react';
-import { chatWithGemini } from '@/ai/flows/chat-flow'; // We will create this flow
+import { Send, User, Bot, Loader2, Sparkles } from 'lucide-react';
+import { chatWithGemini } from '@/ai/flows/chat-flow';
+import { cn } from '@/lib/utils';
+import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface Message {
   id: string;
@@ -14,17 +16,26 @@ interface Message {
   sender: 'user' | 'ai';
 }
 
+const initialMessage: Message = {
+    id: 'initial-message',
+    text: 'Hello! How can I help you today? You can ask me about hymns, readings, or program suggestions.',
+    sender: 'ai',
+};
+
 export default function ChatInterface() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([initialMessage]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
       const scrollViewport = scrollAreaRef.current.querySelector('div[data-radix-scroll-area-viewport]');
       if(scrollViewport) {
-        scrollViewport.scrollTop = scrollViewport.scrollHeight;
+        setTimeout(() => {
+            scrollViewport.scrollTop = scrollViewport.scrollHeight;
+        }, 0);
       }
     }
   };
@@ -33,8 +44,8 @@ export default function ChatInterface() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: FormEvent) => {
+    if (e) e.preventDefault();
     if (!input.trim() || isLoading) return;
 
     const userMessage: Message = { id: Date.now().toString(), text: input, sender: 'user' };
@@ -56,37 +67,56 @@ export default function ChatInterface() {
       setMessages((prevMessages) => [...prevMessages, errorMessage]);
     } finally {
       setIsLoading(false);
+      textareaRef.current?.focus();
     }
   };
 
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSubmit();
+    }
+  }
+
   return (
-    <div className="flex flex-col h-full overflow-hidden pt-4">
-      <ScrollArea className="flex-grow mb-4 pr-4" ref={scrollAreaRef}>
-        <div className="space-y-4">
+    <div className="flex flex-col h-full bg-background overflow-hidden">
+       <DialogHeader className="p-4 border-b text-left">
+          <DialogTitle className="flex items-center gap-2 font-headline">
+            <Sparkles className="h-5 w-5 text-primary"/>
+            SBC Church App AI
+          </DialogTitle>
+          <DialogDescription>
+            Ask me about hymns, readings, or program suggestions.
+          </DialogDescription>
+        </DialogHeader>
+      <ScrollArea className="flex-grow p-4" ref={scrollAreaRef}>
+        <div className="space-y-6">
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex items-start gap-3 ${
-                message.sender === 'user' ? 'justify-end' : ''
-              }`}
+              className={cn(
+                  'flex items-start gap-3',
+                  message.sender === 'user' ? 'justify-end' : ''
+              )}
             >
               {message.sender === 'ai' && (
                 <span className="flex-shrink-0 p-2 bg-primary/10 rounded-full">
-                  <Bot className="h-5 w-5 text-primary" />
+                  <Bot className="h-6 w-6 text-primary" />
                 </span>
               )}
               <div
-                className={`max-w-[70%] p-3 rounded-lg ${
-                  message.sender === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-foreground'
-                }`}
+                className={cn(
+                    'max-w-[80%] p-3.5 rounded-xl text-sm',
+                    message.sender === 'user'
+                    ? 'bg-primary text-primary-foreground rounded-br-none'
+                    : 'bg-muted text-foreground rounded-bl-none'
+                )}
               >
-                <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                <p className="whitespace-pre-wrap">{message.text}</p>
               </div>
               {message.sender === 'user' && (
                  <span className="flex-shrink-0 p-2 bg-accent/20 rounded-full">
-                  <User className="h-5 w-5 text-accent" />
+                  <User className="h-6 w-6 text-accent" />
                 </span>
               )}
             </div>
@@ -94,28 +124,39 @@ export default function ChatInterface() {
           {isLoading && (
             <div className="flex items-start gap-3">
               <span className="flex-shrink-0 p-2 bg-primary/10 rounded-full">
-                  <Bot className="h-5 w-5 text-primary" />
+                  <Bot className="h-6 w-6 text-primary" />
               </span>
-              <div className="max-w-[70%] p-3 rounded-lg bg-muted text-foreground">
+              <div className="max-w-[80%] p-4 rounded-lg bg-muted text-foreground">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
             </div>
           )}
         </div>
       </ScrollArea>
-      <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t pt-4">
-        <Input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your message..."
-          className="flex-grow"
-          disabled={isLoading}
-        />
-        <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
-          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-        </Button>
-      </form>
+      <div className="border-t p-4 bg-background">
+          <form onSubmit={handleSubmit} className="relative">
+            <Textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Message SBC Church App AI..."
+              className="pr-14 resize-none min-h-[52px] text-base"
+              rows={1}
+              disabled={isLoading}
+              autoFocus
+            />
+            <Button 
+                type="submit" 
+                size="icon" 
+                disabled={isLoading || !input.trim()}
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-9 w-9"
+            >
+              <Send className="h-4 w-4" />
+              <span className="sr-only">Send message</span>
+            </Button>
+          </form>
+      </div>
     </div>
   );
 }

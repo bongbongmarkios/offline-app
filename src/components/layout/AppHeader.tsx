@@ -1,3 +1,4 @@
+
 'use client';
 import type { ReactNode } from 'react';
 import { Search, Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, ListChecks, Trash, Sparkles, Bot, RotateCcw } from 'lucide-react'; 
@@ -214,13 +215,7 @@ export default function AppHeader({ title, actions, hideDefaultActions, onRestar
             <Sparkles className="h-6 w-6" />
           </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] h-[70vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle>Chat with SBC Church App AI</DialogTitle>
-          <DialogDescription>
-            Ask questions or get help.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="sm:max-w-[600px] h-[70vh] flex flex-col p-0">
         <ChatInterface />
       </DialogContent>
     </Dialog>
