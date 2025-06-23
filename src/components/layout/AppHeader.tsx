@@ -216,6 +216,12 @@ export default function AppHeader({ title, actions, hideDefaultActions, onRestar
           </Button>
       </DialogTrigger>
       <DialogContent className="w-screen h-screen max-w-none top-0 left-0 sm:top-0 translate-x-0 translate-y-0 rounded-none border-0 flex flex-col p-0">
+        <DialogHeader className="sr-only">
+          <DialogTitle>AI Chat</DialogTitle>
+          <DialogDescription>
+              An interactive chat window to ask questions or get help with hymns, readings, or program suggestions.
+          </DialogDescription>
+        </DialogHeader>
         <ChatInterface />
       </DialogContent>
     </Dialog>
