@@ -16,6 +16,7 @@ export default function ProgramPage() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const [program, setProgram] = useState<Program | null | undefined>(undefined); // undefined for loading, null for not found
+  const [presenterKey, setPresenterKey] = useState(Date.now());
 
   useEffect(() => {
     if (!id) return;
@@ -42,6 +43,10 @@ export default function ProgramPage() {
     setProgram(foundProgram || null); // Set to null if not found anywhere
 
   }, [id]);
+
+  const handleRestartProgram = () => {
+    setPresenterKey(Date.now());
+  };
 
   if (program === undefined) {
     // Loading state
@@ -99,6 +104,7 @@ export default function ProgramPage() {
             </Link>
           </Button>
         }
+        onRestart={handleRestartProgram}
       />
       <div className="container mx-auto px-4 pb-8">
         <div className="text-center my-4 md:my-6">
@@ -116,7 +122,7 @@ export default function ProgramPage() {
             </p>
           )}
         </div>
-        <ProgramPresenter program={program} />
+        <ProgramPresenter key={presenterKey} program={program} />
       </div>
     </>
   );

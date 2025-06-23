@@ -1,6 +1,6 @@
 'use client';
 import type { ReactNode } from 'react';
-import { Search, Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, ListChecks, Trash, Sparkles, Bot } from 'lucide-react'; 
+import { Search, Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, ListChecks, Trash, Sparkles, Bot, RotateCcw } from 'lucide-react'; 
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -37,6 +37,7 @@ interface AppHeaderProps {
   title: ReactNode;
   actions?: ReactNode;
   hideDefaultActions?: boolean;
+  onRestart?: () => void;
 }
 
 type SignalLevel = 'strong' | 'average' | 'weak' | 'none' | 'unknown';
@@ -54,7 +55,7 @@ const initialSignalDetail: SignalDetail = {
 };
 
 
-export default function AppHeader({ title, actions, hideDefaultActions }: AppHeaderProps) {
+export default function AppHeader({ title, actions, hideDefaultActions, onRestart }: AppHeaderProps) {
   const [isDeleteHymnDialogOpen, setIsDeleteHymnDialogOpen] = useState(false);
   const [isDeleteReadingDialogOpen, setIsDeleteReadingDialogOpen] = useState(false);
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
@@ -225,6 +226,17 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
     </Dialog>
   );
 
+  const programPresenterActions = (
+    <div className="flex items-center gap-2">
+      {onRestart && (
+          <Button variant="ghost" size="icon" onClick={onRestart} aria-label="Restart Program">
+            <RotateCcw className="h-6 w-6" />
+          </Button>
+      )}
+      {AiChatButtonAndDialog}
+    </div>
+  );
+
   return (
     <>
       <header className="bg-card shadow-sm mb-4 md:mb-6 print:hidden">
@@ -243,8 +255,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
 
             {!hideDefaultActions && (
               isProgramPresenterPage ? (
-                // On program presenter page, only show the AI Chat button
-                AiChatButtonAndDialog
+                programPresenterActions
               ) : (
                 // On all other pages, show the full set of default actions
                 <>
