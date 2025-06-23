@@ -62,6 +62,7 @@ export default function ReadingPage() {
               </Link>
             </Button>
           }
+          hideDefaultActions={true}
         />
         <div className="container mx-auto px-4 pb-8 text-center py-10">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
@@ -83,6 +84,7 @@ export default function ReadingPage() {
               </Link>
             </Button>
           }
+          hideDefaultActions={true}
         />
         <div className="container mx-auto px-4 pb-8 text-center py-10">
           <h2 className="text-2xl font-semibold mb-4 text-destructive">Reading Not Found</h2>
@@ -106,6 +108,7 @@ export default function ReadingPage() {
             </Link>
           </Button>
         }
+        hideDefaultActions={true}
       />
       <div className="container mx-auto px-4 pb-8">
         <ReadingDetail reading={reading} />
