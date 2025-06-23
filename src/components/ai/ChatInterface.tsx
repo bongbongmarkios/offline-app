@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, FormEvent, useRef, useEffect, KeyboardEvent } from 'react';
@@ -24,7 +23,6 @@ const initialMessage: ChatMessage = {
 
 const suggestions = [
     'Find lyrics',
-    'Create a Sunday program for me',
 ];
 
 export default function ChatInterface() {
@@ -196,7 +194,7 @@ export default function ChatInterface() {
                     </Button>
                     <div className="truncate">
                         <DialogTitle className="flex items-center gap-2 font-headline truncate">
-                            <Sparkles className="h-5 w-5 text-primary flex-shrink-0"/>
+                            <Sparkles className="h-5 w-5 text-primary"/>
                             <span className="truncate">{currentConversation?.title || 'SBC Church App AI'}</span>
                         </DialogTitle>
                         {currentConversationId && (
