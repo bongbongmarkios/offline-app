@@ -9,12 +9,13 @@ import { sampleReadings, updateSampleReading } from '@/data/readings';
 import type { Reading } from '@/types';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, FilePenLine } from 'lucide-react';
+import { ArrowLeft, Loader2, FilePenLine, ZoomIn, ZoomOut } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import EditReadingForm from '@/components/readings/EditReadingForm';
 import { useToast } from '@/hooks/use-toast';
 
 const LOCAL_STORAGE_READINGS_KEY = 'graceNotesReadings';
+const fontSizes = ['text-sm', 'text-base', 'text-lg', 'text-xl', 'text-2xl', 'text-3xl'];
 
 export default function ReadingPage() {
   const params = useParams();
@@ -22,6 +23,15 @@ export default function ReadingPage() {
   const [reading, setReading] = useState<Reading | null | undefined>(undefined); // undefined for loading, null for not found
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { toast } = useToast();
+  const [fontSizeIndex, setFontSizeIndex] = useState(2); // Default to 'text-lg'
+
+  const increaseFontSize = () => {
+    setFontSizeIndex(prev => Math.min(prev + 1, fontSizes.length - 1));
+  };
+
+  const decreaseFontSize = () => {
+    setFontSizeIndex(prev => Math.max(prev - 1, 0));
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -36,7 +46,7 @@ export default function ReadingPage() {
 
         // If not found in localStorage, check initial data as a fallback
         if (!foundReading) {
-            foundReading = sampleReadings.find(r => r.id === id);
+            foundReading = sampleReadings.find(p => p.id === id);
         }
 
     } catch (error) {
@@ -123,9 +133,17 @@ export default function ReadingPage() {
   }
   
   const headerActions = (
-    <Button variant="ghost" size="icon" onClick={() => setIsEditDialogOpen(true)} aria-label="Edit reading details">
-      <FilePenLine className="h-6 w-6" />
-    </Button>
+    <div className="flex items-center gap-1">
+        <Button variant="ghost" size="icon" onClick={decreaseFontSize} aria-label="Decrease font size" disabled={fontSizeIndex === 0}>
+            <ZoomOut className="h-6 w-6" />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={increaseFontSize} aria-label="Increase font size" disabled={fontSizeIndex === fontSizes.length - 1}>
+            <ZoomIn className="h-6 w-6" />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={() => setIsEditDialogOpen(true)} aria-label="Edit reading details">
+            <FilePenLine className="h-6 w-6" />
+        </Button>
+    </div>
   );
 
   // Reading found, render it
@@ -143,7 +161,7 @@ export default function ReadingPage() {
         hideDefaultActions={true}
       />
       <div className="container mx-auto px-4 pb-8">
-        <ReadingDetail reading={reading} />
+        <ReadingDetail reading={reading} fontSizeClass={fontSizes[fontSizeIndex]} />
       </div>
 
       {reading && (

@@ -5,17 +5,19 @@ import { useEffect } from 'react';
 import { useActivity } from '@/hooks/useActivityTracker';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 interface ReadingDetailProps {
   reading: Reading;
+  fontSizeClass: string;
 }
 
-export default function ReadingDetail({ reading }: ReadingDetailProps) {
+export default function ReadingDetail({ reading, fontSizeClass }: ReadingDetailProps) {
   const { addReadingView } = useActivity();
 
   useEffect(() => {
     addReadingView(reading.title);
-  }, [addReadingView, reading.title]);
+  }, [addReadingView, reading.title, reading.id]);
 
   return (
     <Card className="shadow-lg">
@@ -31,7 +33,7 @@ export default function ReadingDetail({ reading }: ReadingDetailProps) {
         </CardHeader>
         <Separator className="my-2"/>
         <CardContent className="pt-4">
-            <div className="space-y-4 text-lg text-foreground leading-relaxed">
+            <div className={cn("space-y-4 text-foreground leading-relaxed", fontSizeClass)}>
               {reading.lyrics.split('\n').map((line, index) => {
                 const speakerMatch = line.match(/^(Leader:|People:|All:)\s*/);
                 if (speakerMatch) {
