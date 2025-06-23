@@ -30,6 +30,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import HymnSearchDialog from '@/components/hymnal/HymnSearchDialog';
 import ReadingSearchDialog from '@/components/readings/ReadingSearchDialog';
+import ProgramSearchDialog from '@/components/program/ProgramSearchDialog';
 
 
 interface AppHeaderProps {
@@ -59,6 +60,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
   const [isHymnSearchOpen, setIsHymnSearchOpen] = useState(false);
   const [isReadingSearchOpen, setIsReadingSearchOpen] = useState(false);
+  const [isProgramSearchOpen, setIsProgramSearchOpen] = useState(false);
   
   const router = useRouter();
   const pathname = usePathname();
@@ -67,7 +69,9 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
   const [isStatusPopoverOpen, setIsStatusPopoverOpen] = useState(false);
 
   const handleSearchOpen = () => {
-    if (pathname.startsWith('/readings')) {
+    if (pathname.startsWith('/program')) {
+      setIsProgramSearchOpen(true);
+    } else if (pathname.startsWith('/readings')) {
       setIsReadingSearchOpen(true);
     } else {
       setIsHymnSearchOpen(true);
@@ -79,7 +83,9 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
-        if (pathname.startsWith('/readings')) {
+        if (pathname.startsWith('/program')) {
+          setIsProgramSearchOpen((open) => !open);
+        } else if (pathname.startsWith('/readings')) {
           setIsReadingSearchOpen((open) => !open)
         } else {
           setIsHymnSearchOpen((open) => !open)
@@ -325,6 +331,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
       
       <HymnSearchDialog open={isHymnSearchOpen} onOpenChange={setIsHymnSearchOpen} />
       <ReadingSearchDialog open={isReadingSearchOpen} onOpenChange={setIsReadingSearchOpen} />
+      <ProgramSearchDialog open={isProgramSearchOpen} onOpenChange={setIsProgramSearchOpen} />
 
       <Dialog open={isDeleteHymnDialogOpen} onOpenChange={setIsDeleteHymnDialogOpen}>
         <DialogContent className="sm:max-w-md">
