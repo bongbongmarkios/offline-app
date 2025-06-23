@@ -26,9 +26,10 @@ import { useState, useEffect } from 'react';
 import DeleteHymnDialogContent from '@/components/hymnal/DeleteHymnDialogContent';
 import DeleteReadingDialogContent from '@/components/readings/DeleteReadingDialogContent';
 import ChatInterface from '@/components/ai/ChatInterface';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import HymnSearchDialog from '@/components/hymnal/HymnSearchDialog';
+import ReadingSearchDialog from '@/components/readings/ReadingSearchDialog';
 
 
 interface AppHeaderProps {
@@ -56,20 +57,33 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
   const [isDeleteHymnDialogOpen, setIsDeleteHymnDialogOpen] = useState(false);
   const [isDeleteReadingDialogOpen, setIsDeleteReadingDialogOpen] = useState(false);
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isHymnSearchOpen, setIsHymnSearchOpen] = useState(false);
+  const [isReadingSearchOpen, setIsReadingSearchOpen] = useState(false);
   
   const router = useRouter();
+  const pathname = usePathname();
 
   const [currentSignal, setCurrentSignal] = useState<SignalDetail>(initialSignalDetail);
   const [isStatusPopoverOpen, setIsStatusPopoverOpen] = useState(false);
 
+  const handleSearchOpen = () => {
+    if (pathname.startsWith('/readings')) {
+      setIsReadingSearchOpen(true);
+    } else {
+      setIsHymnSearchOpen(true);
+    }
+  };
 
   useEffect(() => {
     // Keyboard shortcut for search
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
-        setIsSearchOpen((open) => !open)
+        if (pathname.startsWith('/readings')) {
+          setIsReadingSearchOpen((open) => !open)
+        } else {
+          setIsHymnSearchOpen((open) => !open)
+        }
       }
     }
     document.addEventListener('keydown', down);
@@ -149,7 +163,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
         window.removeEventListener('offline', updateNetworkStatus);
     };
 
-  }, []);
+  }, [pathname]);
 
   const getWifiIconColor = (): string => {
     switch (currentSignal.level) {
@@ -201,7 +215,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
 
             {!hideDefaultActions && (
               <>
-                <Button variant="ghost" size="icon" aria-label="Open search" onClick={() => setIsSearchOpen(true)}>
+                <Button variant="ghost" size="icon" aria-label="Open search" onClick={handleSearchOpen}>
                   <Search className="h-6 w-6" />
                 </Button>
                 <Popover open={isStatusPopoverOpen} onOpenChange={setIsStatusPopoverOpen}>
@@ -260,7 +274,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => setIsSearchOpen(true)}>
+                    <DropdownMenuItem onSelect={handleSearchOpen}>
                       <Search className="mr-2 h-4 w-4" />
                       <span>Search</span>
                       <kbd className="pointer-events-none ml-auto inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
@@ -309,7 +323,8 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
         </div>
       </header>
       
-      <HymnSearchDialog open={isSearchOpen} onOpenChange={setIsSearchOpen} />
+      <HymnSearchDialog open={isHymnSearchOpen} onOpenChange={setIsHymnSearchOpen} />
+      <ReadingSearchDialog open={isReadingSearchOpen} onOpenChange={setIsReadingSearchOpen} />
 
       <Dialog open={isDeleteHymnDialogOpen} onOpenChange={setIsDeleteHymnDialogOpen}>
         <DialogContent className="sm:max-w-md">

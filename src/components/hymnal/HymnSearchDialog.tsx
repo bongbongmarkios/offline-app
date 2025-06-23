@@ -52,7 +52,12 @@ export default function HymnSearchDialog({ open, onOpenChange }: HymnSearchDialo
   }, [onOpenChange]);
 
   return (
-    <CommandDialog open={open} onOpenChange={onOpenChange}>
+    <CommandDialog 
+      open={open} 
+      onOpenChange={onOpenChange}
+      title="Search Hymns"
+      description="Search for hymns by title, page number, or lyrics."
+    >
       <CommandInput placeholder="Search hymns by title, page number, or lyrics..." />
       <CommandList>
         {isLoading ? (
