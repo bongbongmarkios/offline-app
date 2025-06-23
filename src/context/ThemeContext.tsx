@@ -5,12 +5,15 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 
 export type Theme = 'light' | 'dark';
 export type PrimaryColor = 'purple' | 'skyBlue' | 'avocadoGreen' | 'maroon';
+export type FontStyle = 'default' | 'modern' | 'classic';
 
 interface ThemeContextValue {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   primaryColor: PrimaryColor;
   setPrimaryColor: (color: PrimaryColor) => void;
+  fontStyle: FontStyle;
+  setFontStyle: (font: FontStyle) => void;
   isThemeReady: boolean;
 }
 
@@ -19,12 +22,13 @@ const defaultThemeContextValue: ThemeContextValue = {
   setTheme: () => console.warn('ThemeProvider not yet ready or mounted'),
   primaryColor: 'purple',
   setPrimaryColor: () => console.warn('ThemeProvider not yet ready or mounted'),
+  fontStyle: 'default',
+  setFontStyle: () => console.warn('ThemeProvider not yet ready or mounted'),
   isThemeReady: false,
 };
 
 const ThemeContext = createContext<ThemeContextValue>(defaultThemeContextValue);
 
-// Maps PrimaryColor names to their CSS variable names defined in globals.css
 const colorVarMap: Record<PrimaryColor, { light: string; dark: string; foreground: string; ringLight: string; ringDark: string }> = {
   purple: { 
     light: 'var(--primary-purple-hsl)', 
@@ -59,7 +63,8 @@ const colorVarMap: Record<PrimaryColor, { light: string; dark: string; foregroun
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setThemeState] = useState<Theme>('light');
   const [primaryColor, setPrimaryColorState] = useState<PrimaryColor>('purple');
-  const [isThemeReady, setIsThemeReady] = useState(false); // Changed from isMounted
+  const [fontStyle, setFontStyleState] = useState<FontStyle>('default');
+  const [isThemeReady, setIsThemeReady] = useState(false);
 
   const applyThemeStyles = useCallback((currentTheme: Theme, currentColor: PrimaryColor) => {
     if (typeof window === 'undefined') return;
@@ -73,23 +78,33 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     root.style.setProperty('--ring', currentTheme === 'light' ? selectedColorSet.ringLight : selectedColorSet.ringDark);
   }, []);
 
+  const applyFontStyle = useCallback((currentFont: FontStyle) => {
+    if (typeof window === 'undefined') return;
+    const root = window.document.documentElement;
+    root.classList.remove('font-default', 'font-modern', 'font-classic');
+    root.classList.add(`font-${currentFont}`);
+  }, []);
+
   useEffect(() => {
     const storedTheme = localStorage.getItem('app-theme') as Theme | null;
     const storedColor = localStorage.getItem('app-primary-color') as PrimaryColor | null;
+    const storedFont = localStorage.getItem('app-font-style') as FontStyle | null;
     const initialTheme = storedTheme || 'light';
     const initialColor = storedColor || 'purple';
+    const initialFont = storedFont || 'default';
 
     setThemeState(initialTheme);
     setPrimaryColorState(initialColor);
+    setFontStyleState(initialFont);
     applyThemeStyles(initialTheme, initialColor);
-    setIsThemeReady(true); // Set ready after initial application
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [applyThemeStyles]); // applyThemeStyles is stable due to useCallback
+    applyFontStyle(initialFont);
+    setIsThemeReady(true);
+  }, [applyThemeStyles, applyFontStyle]);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem('app-theme', newTheme);
-    if (isThemeReady) { // Apply only if initial setup is done
+    if (isThemeReady) {
       applyThemeStyles(newTheme, primaryColor);
     }
   };
@@ -97,8 +112,16 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const setPrimaryColor = (newColor: PrimaryColor) => {
     setPrimaryColorState(newColor);
     localStorage.setItem('app-primary-color', newColor);
-    if (isThemeReady) { // Apply only if initial setup is done
+    if (isThemeReady) {
       applyThemeStyles(theme, newColor);
+    }
+  };
+
+  const setFontStyle = (newFont: FontStyle) => {
+    setFontStyleState(newFont);
+    localStorage.setItem('app-font-style', newFont);
+    if (isThemeReady) {
+      applyFontStyle(newFont);
     }
   };
   
@@ -107,6 +130,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     setTheme, 
     primaryColor, 
     setPrimaryColor, 
+    fontStyle,
+    setFontStyle,
     isThemeReady 
   };
 
@@ -119,7 +144,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
-   if (context === undefined) { // Check for undefined instead of comparing to default
+   if (context === undefined) {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
   return context;

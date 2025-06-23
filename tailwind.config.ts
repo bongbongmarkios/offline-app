@@ -20,6 +20,8 @@ export default {
       fontFamily: {
         body: ['Literata', 'serif'],
         headline: ['Belleza', 'sans-serif'],
+        inter: ['Inter', 'sans-serif'],
+        lora: ['Lora', 'serif'],
         code: ['monospace'],
       },
       colors: {

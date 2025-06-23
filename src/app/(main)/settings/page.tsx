@@ -6,24 +6,31 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
-import { useTheme, type PrimaryColor } from '@/context/ThemeContext';
-import { Moon, Palette, Sun, Settings as SettingsIcon, Loader2, ArrowLeft, DatabaseZap, Eraser } from 'lucide-react';
+import { useTheme, type PrimaryColor, type FontStyle } from '@/context/ThemeContext';
+import { Moon, Palette, Sun, Settings as SettingsIcon, Loader2, ArrowLeft, DatabaseZap, Eraser, Type } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 
 const primaryColorOptions: { name: PrimaryColor, label: string, lightClass: string, darkClass: string }[] = [
   { name: 'purple', label: 'Deep Purple', lightClass: 'bg-[#673AB7]', darkClass: 'bg-[#8B5CF6]' },
   { name: 'skyBlue', label: 'Sky Blue', lightClass: 'bg-[#2196F3]', darkClass: 'bg-[#38BDF8]' },
-  { name: 'avocadoGreen', label: 'Avocado Green', lightClass: 'bg-[#8BC34A]', darkClass: 'bg-[#A3E635]' }, // Using slightly different greens for demo
-  { name: 'maroon', label: 'Maroon', lightClass: 'bg-[#800000]', darkClass: 'bg-[#C026D3]' }, // Using a magenta for dark maroon demo
+  { name: 'avocadoGreen', label: 'Avocado Green', lightClass: 'bg-[#8BC34A]', darkClass: 'bg-[#A3E635]' },
+  { name: 'maroon', label: 'Maroon', lightClass: 'bg-[#800000]', darkClass: 'bg-[#C026D3]' },
+];
+
+const fontStyleOptions: { name: FontStyle, label: string, fontClass: string }[] = [
+  { name: 'default', label: 'Default (Literata & Belleza)', fontClass: 'font-body' },
+  { name: 'modern', label: 'Modern (Sans-Serif)', fontClass: 'font-inter' },
+  { name: 'classic', label: 'Classic (Serif)', fontClass: 'font-lora' },
 ];
 
 
 export default function SettingsPage() {
-  const { theme, setTheme, primaryColor, setPrimaryColor, isThemeReady } = useTheme();
+  const { theme, setTheme, primaryColor, setPrimaryColor, fontStyle, setFontStyle, isThemeReady } = useTheme();
   const router = useRouter();
 
   const handleThemeChange = (checked: boolean) => {
@@ -32,6 +39,10 @@ export default function SettingsPage() {
 
   const handlePrimaryColorChange = (value: string) => {
     setPrimaryColor(value as PrimaryColor);
+  };
+
+  const handleFontStyleChange = (value: string) => {
+    setFontStyle(value as FontStyle);
   };
 
   const headerTitleContent = (
@@ -130,6 +141,31 @@ export default function SettingsPage() {
                 ))}
               </RadioGroup>
             </div>
+
+            {/* Font Style Selection */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center">
+                <Type className="mr-2 h-5 w-5" />
+                Font Style
+              </h3>
+              <RadioGroup
+                value={fontStyle}
+                onValueChange={handleFontStyleChange}
+                className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+              >
+                {fontStyleOptions.map((option) => (
+                  <Label
+                    key={option.name}
+                    htmlFor={`font-${option.name}`}
+                    className="flex items-center space-x-3 rounded-md border p-4 hover:bg-accent/50 [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
+                  >
+                    <RadioGroupItem value={option.name} id={`font-${option.name}`} />
+                    <span className={cn('font-medium', option.fontClass)}>{option.label}</span>
+                  </Label>
+                ))}
+              </RadioGroup>
+            </div>
+
           </CardContent>
         </Card>
 

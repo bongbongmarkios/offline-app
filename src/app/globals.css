@@ -115,4 +115,21 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Default font style */
+  html.font-default body {
+    @apply font-body;
+  }
+
+  /* Modern font style */
+  html.font-modern body,
+  html.font-modern .font-headline {
+    @apply font-inter;
+  }
+
+  /* Classic font style */
+  html.font-classic body,
+  html.font-classic .font-headline {
+    @apply font-lora;
+  }
 }
