@@ -98,3 +98,17 @@ export interface TrashedProgram extends TrashedItemBase { // New interface for t
 }
 
 export type AnyTrashedItem = TrashedHymn | TrashedReading | TrashedProgram; // Added TrashedProgram
+
+// For AI Chat
+export interface ChatMessage {
+  id: string;
+  text: string;
+  sender: 'user' | 'ai';
+}
+
+export interface Conversation {
+  id: string;
+  title: string;
+  messages: ChatMessage[];
+  createdAt: string; // ISO 8601 format
+}
