@@ -26,6 +26,8 @@ const fontStyleOptions: { name: FontStyle, label: string, fontClass: string }[] 
   { name: 'default', label: 'Default (Literata & Belleza)', fontClass: 'font-body' },
   { name: 'modern', label: 'Modern (Sans-Serif)', fontClass: 'font-inter' },
   { name: 'classic', label: 'Classic (Serif)', fontClass: 'font-lora' },
+  { name: 'system-sans', label: 'System (Sans-Serif)', fontClass: 'font-system-sans' },
+  { name: 'system-serif', label: 'System (Serif)', fontClass: 'font-system-serif' },
 ];
 
 

@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 
 export type Theme = 'light' | 'dark';
 export type PrimaryColor = 'purple' | 'skyBlue' | 'avocadoGreen' | 'maroon';
-export type FontStyle = 'default' | 'modern' | 'classic';
+export type FontStyle = 'default' | 'modern' | 'classic' | 'system-sans' | 'system-serif';
 
 interface ThemeContextValue {
   theme: Theme;
@@ -81,7 +81,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const applyFontStyle = useCallback((currentFont: FontStyle) => {
     if (typeof window === 'undefined') return;
     const root = window.document.documentElement;
-    root.classList.remove('font-default', 'font-modern', 'font-classic');
+    root.classList.remove('font-default', 'font-modern', 'font-classic', 'font-system-sans', 'font-system-serif');
     root.classList.add(`font-${currentFont}`);
   }, []);
 

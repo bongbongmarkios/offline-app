@@ -118,18 +118,30 @@
 
   /* Default font style */
   html.font-default body {
-    @apply font-body;
+    font-family: theme('fontFamily.body');
+  }
+  /* When using default fonts, elements with .font-headline get the headline font */
+  html.font-default .font-headline {
+    font-family: theme('fontFamily.headline');
   }
 
-  /* Modern font style */
-  html.font-modern body,
-  html.font-modern .font-headline {
-    @apply font-inter;
+  /* Modern font style (body and headlines use same font) */
+  html.font-modern body, html.font-modern .font-headline {
+    font-family: theme('fontFamily.inter');
   }
 
-  /* Classic font style */
-  html.font-classic body,
-  html.font-classic .font-headline {
-    @apply font-lora;
+  /* Classic font style (body and headlines use same font) */
+  html.font-classic body, html.font-classic .font-headline {
+    font-family: theme('fontFamily.lora');
+  }
+
+  /* System Sans-Serif (body and headlines use same font) */
+  html.font-system-sans body, html.font-system-sans .font-headline {
+    font-family: theme('fontFamily.system-sans');
+  }
+
+  /* System Serif (body and headlines use same font) */
+  html.font-system-serif body, html.font-system-serif .font-headline {
+    font-family: theme('fontFamily.system-serif');
   }
 }

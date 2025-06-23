@@ -23,6 +23,8 @@ export default {
         inter: ['Inter', 'sans-serif'],
         lora: ['Lora', 'serif'],
         code: ['monospace'],
+        'system-sans': ['system-ui', 'sans-serif'],
+        'system-serif': ['ui-serif', 'Georgia', 'serif'],
       },
       colors: {
         background: 'hsl(var(--background))',
