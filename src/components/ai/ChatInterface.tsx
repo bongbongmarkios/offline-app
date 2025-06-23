@@ -242,12 +242,12 @@ export default function ChatInterface() {
                             {lyricsMatch ? (
                             <>
                                 <p className="whitespace-pre-wrap">{message.text.substring(0, lyricsMatch.index).trim()}</p>
-                                <div className="mt-4 p-4 bg-background/50 border rounded-lg relative group">
+                                <div className="mt-4 p-4 bg-background/50 border rounded-lg relative">
                                     <pre className="whitespace-pre-wrap font-sans text-sm">{lyricsMatch[1].trim()}</pre>
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        className="absolute top-2 right-2 h-7 w-7"
                                         onClick={() => handleCopy(lyricsMatch[1].trim())}
                                         aria-label="Copy lyrics"
                                     >
