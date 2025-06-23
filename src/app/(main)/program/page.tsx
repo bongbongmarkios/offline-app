@@ -63,12 +63,17 @@ export default function ProgramListPage() {
   const closeAddProgramDialog = () => {
     setIsAddProgramDialogOpen(false);
   };
-
+  
+  const headerTitle = (
+    <h1 className="text-xl font-headline font-normal text-primary sm:text-2xl">
+      SBC APP
+    </h1>
+  );
 
   if (isLoading) {
     return (
       <>
-        <AppHeader title="Programs" />
+        <AppHeader title={headerTitle} />
         <div className="container mx-auto px-4 pb-8 text-center py-10">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
           <p className="text-muted-foreground">Loading programs...</p>
@@ -79,7 +84,7 @@ export default function ProgramListPage() {
 
   return (
     <>
-      <AppHeader title="Programs" />
+      <AppHeader title={headerTitle} />
       <div className="container mx-auto px-4 pb-8">
         <ProgramList programs={programs} onProgramDeleted={handleProgramDataChanged} />
       </div>

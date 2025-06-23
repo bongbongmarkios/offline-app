@@ -20,10 +20,16 @@ export default async function HymnalPage() {
     return pageNumA - pageNumB;
   });
 
+  const headerTitle = (
+    <h1 className="text-xl font-headline font-normal text-primary sm:text-2xl">
+      SBC APP
+    </h1>
+  );
+
   return (
     <>
       <AppHeader 
-        title="Hymnal" 
+        title={headerTitle} 
       />
       <div className="container mx-auto px-4 pb-8">
         {/* HymnList will handle its own data fetching from localStorage client-side */}
