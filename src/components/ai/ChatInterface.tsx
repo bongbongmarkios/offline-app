@@ -22,6 +22,13 @@ const initialMessage: Message = {
     sender: 'ai',
 };
 
+const suggestions = [
+    'Find a hymn by title',
+    'Create a Sunday program for me',
+    'What are the responsive readings?',
+    'Suggest a closing hymn',
+];
+
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([initialMessage]);
   const [input, setInput] = useState('');
@@ -44,11 +51,12 @@ export default function ChatInterface() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = async (e?: FormEvent) => {
+  const handleSubmit = async (e?: FormEvent, promptOverride?: string) => {
     if (e) e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    const prompt = promptOverride || input;
+    if (!prompt.trim() || isLoading) return;
 
-    const userMessage: Message = { id: Date.now().toString(), text: input, sender: 'user' };
+    const userMessage: Message = { id: Date.now().toString(), text: prompt, sender: 'user' };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
     setInput('');
     setIsLoading(true);
@@ -71,10 +79,14 @@ export default function ChatInterface() {
     }
   };
 
+  const handleSuggestionClick = (suggestion: string) => {
+    handleSubmit(undefined, suggestion);
+  };
+
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        handleSubmit();
+        handleSubmit(undefined, input);
     }
   }
 
@@ -134,7 +146,23 @@ export default function ChatInterface() {
         </div>
       </ScrollArea>
       <div className="border-t p-4 bg-background">
-          <form onSubmit={handleSubmit} className="relative">
+          {messages.filter(m => m.sender === 'user').length === 0 && (
+            <div className="mb-4 flex flex-wrap items-start gap-2">
+                {suggestions.map((suggestion) => (
+                    <Button
+                        key={suggestion}
+                        variant="outline"
+                        size="sm"
+                        className="h-auto rounded-full px-3 py-1.5 text-xs font-normal"
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        disabled={isLoading}
+                    >
+                        {suggestion}
+                    </Button>
+                ))}
+            </div>
+          )}
+          <form onSubmit={(e) => handleSubmit(e, input)} className="relative">
             <Textarea
               ref={textareaRef}
               value={input}
