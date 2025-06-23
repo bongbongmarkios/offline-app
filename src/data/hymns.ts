@@ -4,9 +4,9 @@ import type { Hymn } from '@/types';
 // initialSampleHymns now contains a single hymn to reset the baseline data.
 export let initialSampleHymns: Hymn[] = [
   {
-    id: '10008',
-    titleEnglish: 'What a Friend We Have in Jesus',
-    lyricsEnglish: `What a friend we have in Jesus,
+    id: '10001',
+    titleEnglish: '(Praise him, Praise Him)',
+    lyricsEnglish: `(Praise him, Praise Him),
 All our sins and griefs to bear!
 What a privilege to carry
 Everything to God in prayer!
