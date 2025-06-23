@@ -7,7 +7,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 import { initialSampleHymns } from '@/data/hymns';
 
 // Tool to find hymn lyrics
@@ -26,7 +26,10 @@ const findHymnLyrics = ai.defineTool(
         }),
     },
     async ({ title }) => {
-        const lowerCaseTitle = title.toLowerCase();
+        const lowerCaseTitle = title.toLowerCase().trim();
+        if (!lowerCaseTitle) {
+          return { found: false };
+        }
         
         // Search all hymns for a match in any language title
         const foundHymn = initialSampleHymns.find(h => 
