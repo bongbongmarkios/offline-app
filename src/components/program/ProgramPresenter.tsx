@@ -1,3 +1,4 @@
+
 'use client';
 import type { Program, ProgramItem, Hymn, Reading } from '@/types';
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -103,6 +104,14 @@ export default function ProgramPresenter({ program }: ProgramPresenterProps) {
 
   const linkedReading = useMemo(() => {
     if (currentItem?.readingId) {
+      // Load readings from localStorage for the most up-to-date data.
+      if (typeof window !== 'undefined') {
+        const storedReadingsString = localStorage.getItem('graceNotesReadings');
+        if (storedReadingsString) {
+          const allReadings = JSON.parse(storedReadingsString);
+          return allReadings.find((r: Reading) => r.id === currentItem.readingId);
+        }
+      }
       return sampleReadings.find(r => r.id === currentItem.readingId);
     }
     return null;
