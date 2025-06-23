@@ -94,6 +94,16 @@ export default function ReadingList({ readings: initialReadings }: ReadingListPr
           const items = groupedReadings[category];
           if (!items || items.length === 0) return null;
 
+          // Sort items by page number
+          items.sort((a, b) => {
+            const pageNumA = a.pageNumber ? parseInt(a.pageNumber, 10) : Infinity;
+            const pageNumB = b.pageNumber ? parseInt(b.pageNumber, 10) : Infinity;
+            if (isNaN(pageNumA) && isNaN(pageNumB)) return a.title.localeCompare(b.title);
+            if (isNaN(pageNumA)) return 1;
+            if (isNaN(pageNumB)) return -1;
+            return pageNumA - pageNumB;
+          });
+
           const { title, icon: Icon } = categoryDetails[category];
           const isInlineCategory = category === 'call-to-worship' || category === 'offertory-sentence';
 
