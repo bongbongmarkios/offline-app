@@ -284,8 +284,7 @@ export default function ChatInterface() {
                             <Button
                                 key={suggestion}
                                 variant="outline"
-                                size="sm"
-                                className="h-auto rounded-full px-3 py-1.5 text-xs font-normal"
+                                className="h-auto rounded-lg border-2 border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10"
                                 onClick={() => handleSuggestionClick(suggestion)}
                                 disabled={isLoading}
                             >
