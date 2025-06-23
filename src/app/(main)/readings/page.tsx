@@ -7,7 +7,7 @@ export default async function ReadingsPage() {
 
   return (
     <>
-      <AppHeader title="R-Readings" />
+      <AppHeader title="SBC APP" />
       <div className="container mx-auto px-4 pb-8">
         <ReadingList readings={readings} />
       </div>
