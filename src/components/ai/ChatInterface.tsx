@@ -9,7 +9,7 @@ import { Send, User, Bot, Loader2, Sparkles, Menu, FilePlus2 } from 'lucide-reac
 import { chatWithGemini } from '@/ai/flows/chat-flow';
 import { cn } from '@/lib/utils';
 import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import ChatSidebar from './ChatSidebar';
 import { useToast } from '@/hooks/use-toast';
 
@@ -167,14 +167,16 @@ export default function ChatInterface() {
   return (
     <div className="flex h-full bg-background overflow-hidden">
         <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-            <SheetContent side="left" className="p-0 w-full max-w-xs sm:max-w-sm" withCloseButton={false}>
+            <SheetContent side="left" className="p-0 w-full max-w-xs sm:max-w-sm flex flex-col">
+                <SheetHeader className="p-4 border-b flex-shrink-0">
+                    <SheetTitle>Chat History</SheetTitle>
+                </SheetHeader>
                 <ChatSidebar 
                   conversations={conversations}
                   currentConversationId={currentConversationId}
                   onSelectConversation={handleSelectConversation}
                   onNewConversation={handleNewConversation}
                   onDeleteConversation={handleDeleteConversation}
-                  onClose={() => setIsSidebarOpen(false)}
                 />
             </SheetContent>
         </Sheet>

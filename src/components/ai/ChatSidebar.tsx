@@ -3,7 +3,7 @@
 import type { Conversation } from '@/types';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FilePlus2, MessageSquare, Trash2, X } from 'lucide-react';
+import { FilePlus2, MessageSquare, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   AlertDialog,
@@ -24,7 +24,6 @@ interface ChatSidebarProps {
   onSelectConversation: (id: string) => void;
   onNewConversation: () => void;
   onDeleteConversation: (id:string) => void;
-  onClose: () => void;
 }
 
 export default function ChatSidebar({
@@ -33,7 +32,6 @@ export default function ChatSidebar({
   onSelectConversation,
   onNewConversation,
   onDeleteConversation,
-  onClose,
 }: ChatSidebarProps) {
     
   const [conversationToDelete, setConversationToDelete] = useState<Conversation | null>(null);
@@ -54,14 +52,8 @@ export default function ChatSidebar({
 
   return (
     <AlertDialog>
-        <div className="flex flex-col h-full bg-muted/50 text-foreground">
-        <div className="flex items-center justify-between p-4 border-b">
-            <h2 className="text-lg font-semibold">Chat History</h2>
-            <Button variant="ghost" size="icon" onClick={onClose} className="md:hidden">
-                <X className="h-5 w-5" />
-            </Button>
-        </div>
-        <div className="p-2">
+        <div className="flex flex-1 flex-col min-h-0 bg-background text-foreground">
+        <div className="p-2 border-b flex-shrink-0">
             <Button variant="outline" className="w-full justify-start gap-2" onClick={onNewConversation}>
             <FilePlus2 className="h-5 w-5" />
             New Chat
