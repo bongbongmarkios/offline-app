@@ -203,6 +203,28 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
     router.refresh();
   }
 
+  // Check if we are on a specific program presenter page
+  const isProgramPresenterPage = /^\/program\/[^\/]+$/.test(pathname);
+
+  const AiChatButtonAndDialog = (
+    <Dialog open={isChatDialogOpen} onOpenChange={setIsChatDialogOpen}>
+      <DialogTrigger asChild>
+          <Button variant="ghost" size="icon" aria-label="Open AI Chat">
+            <Sparkles className="h-6 w-6" />
+          </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[600px] h-[70vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle>Chat with SBC Church App AI</DialogTitle>
+          <DialogDescription>
+            Ask questions or get help.
+          </DialogDescription>
+        </DialogHeader>
+        <ChatInterface />
+      </DialogContent>
+    </Dialog>
+  );
+
   return (
     <>
       <header className="bg-card shadow-sm mb-4 md:mb-6 print:hidden">
@@ -220,110 +242,101 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
             {actions}
 
             {!hideDefaultActions && (
-              <>
-                <Button variant="ghost" size="icon" aria-label="Open search" onClick={handleSearchOpen}>
-                  <Search className="h-6 w-6" />
-                </Button>
-                <Popover open={isStatusPopoverOpen} onOpenChange={setIsStatusPopoverOpen}>
-                  <PopoverTrigger asChild>
-                    <Button variant="ghost" size="icon" aria-label={getWifiAriaLabel()}>
-                      <Wifi className={`h-6 w-6 ${getWifiIconColor()}`} />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-4" side="bottom" align="end">
-                    <div className="space-y-2">
-                      <h4 className="font-medium leading-none">Internet Status</h4>
-                      <p className="text-sm">
-                        Signal: <span className={cn("font-semibold", getWifiIconColor())}>{currentSignal.description}</span>
-                      </p>
-                      {currentSignal.mbps !== undefined && currentSignal.level !== 'none' && (
-                        <p className="text-sm text-muted-foreground">
-                          Speed: ~{currentSignal.mbps.toFixed(1)} Mbps
+              isProgramPresenterPage ? (
+                // On program presenter page, only show the AI Chat button
+                AiChatButtonAndDialog
+              ) : (
+                // On all other pages, show the full set of default actions
+                <>
+                  <Button variant="ghost" size="icon" aria-label="Open search" onClick={handleSearchOpen}>
+                    <Search className="h-6 w-6" />
+                  </Button>
+                  <Popover open={isStatusPopoverOpen} onOpenChange={setIsStatusPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" size="icon" aria-label={getWifiAriaLabel()}>
+                        <Wifi className={`h-6 w-6 ${getWifiIconColor()}`} />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-4" side="bottom" align="end">
+                      <div className="space-y-2">
+                        <h4 className="font-medium leading-none">Internet Status</h4>
+                        <p className="text-sm">
+                          Signal: <span className={cn("font-semibold", getWifiIconColor())}>{currentSignal.description}</span>
                         </p>
-                      )}
-                       {currentSignal.effectiveType && currentSignal.level !== 'none' && (
-                        <p className="text-sm text-muted-foreground">
-                          Type: {currentSignal.effectiveType}
-                        </p>
-                      )}
-                      {currentSignal.level === 'unknown' && (
-                        <p className="text-xs text-muted-foreground italic">Browser may not fully support network status updates.</p>
-                      )}
-                       {currentSignal.level === 'none' && (
-                        <p className="text-sm font-semibold text-destructive">You are currently offline.</p>
-                      )}
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                        {currentSignal.mbps !== undefined && currentSignal.level !== 'none' && (
+                          <p className="text-sm text-muted-foreground">
+                            Speed: ~{currentSignal.mbps.toFixed(1)} Mbps
+                          </p>
+                        )}
+                        {currentSignal.effectiveType && currentSignal.level !== 'none' && (
+                          <p className="text-sm text-muted-foreground">
+                            Type: {currentSignal.effectiveType}
+                          </p>
+                        )}
+                        {currentSignal.level === 'unknown' && (
+                          <p className="text-xs text-muted-foreground italic">Browser may not fully support network status updates.</p>
+                        )}
+                        {currentSignal.level === 'none' && (
+                          <p className="text-sm font-semibold text-destructive">You are currently offline.</p>
+                        )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
 
-                <Dialog open={isChatDialogOpen} onOpenChange={setIsChatDialogOpen}>
-                  <DialogTrigger asChild>
-                     <Button variant="ghost" size="icon" aria-label="Open AI Chat">
-                        <Sparkles className="h-6 w-6" />
-                     </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[600px] h-[70vh] flex flex-col">
-                    <DialogHeader>
-                      <DialogTitle>Chat with SBC Church App AI</DialogTitle>
-                      <DialogDescription>
-                        Ask questions or get help.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <ChatInterface />
-                  </DialogContent>
-                </Dialog>
+                  {AiChatButtonAndDialog}
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" aria-label="Open menu">
-                      <Menu className="h-6 w-6" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={handleSearchOpen}>
-                      <Search className="mr-2 h-4 w-4" />
-                      <span>Search</span>
-                      <kbd className="pointer-events-none ml-auto inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-                        <span className="text-xs">⌘</span>K
-                      </kbd>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => router.push('/hymn-url-editor')}>
-                      <ListChecks className="mr-2 h-4 w-4" />
-                      <span>URL Management</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onSelect={() => setIsDeleteHymnDialogOpen(true)}
-                      className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      <span>Delete Hymn</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onSelect={() => setIsDeleteReadingDialogOpen(true)}
-                      className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                    >
-                      <BookX className="mr-2 h-4 w-4" />
-                      <span>Delete Reading</span>
-                    </DropdownMenuItem>
-                     <DropdownMenuItem
-                      onSelect={() => router.push('/trash')}
-                    >
-                      <Trash className="mr-2 h-4 w-4" />
-                      <span>Trash</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => router.push('/settings')}>
-                      <SettingsIcon className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => router.push('/about')}>
-                      <Info className="mr-2 h-4 w-4" />
-                      <span>About</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" aria-label="Open menu">
+                        <Menu className="h-6 w-6" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onSelect={handleSearchOpen}>
+                        <Search className="mr-2 h-4 w-4" />
+                        <span>Search</span>
+                        <kbd className="pointer-events-none ml-auto inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                          <span className="text-xs">⌘</span>K
+                        </kbd>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => router.push('/hymn-url-editor')}>
+                        <ListChecks className="mr-2 h-4 w-4" />
+                        <span>URL Management</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onSelect={() => setIsDeleteHymnDialogOpen(true)}
+                        className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        <span>Delete Hymn</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={() => setIsDeleteReadingDialogOpen(true)}
+                        className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                      >
+                        <BookX className="mr-2 h-4 w-4" />
+                        <span>Delete Reading</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={() => router.push('/trash')}
+                      >
+                        <Trash className="mr-2 h-4 w-4" />
+                        <span>Trash</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onSelect={() => router.push('/settings')}>
+                        <SettingsIcon className="mr-2 h-4 w-4" />
+                        <span>Settings</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => router.push('/about')}>
+                        <Info className="mr-2 h-4 w-4" />
+                        <span>About</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              )
             )}
           </div>
         </div>
