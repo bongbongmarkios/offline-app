@@ -157,16 +157,18 @@ export default function ReadingList({ readings: initialReadings }: ReadingListPr
                          <Button variant="ghost" size="icon" className="absolute top-2 right-2 z-10" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEditClick(reading); }}>
                             <FilePenLine className="h-5 w-5 text-muted-foreground"/>
                          </Button>
-                        <Link href={`/readings/${reading.id}`} className="block hover:no-underline">
+                        <Link href={`/readings/${reading.id}`} className="block hover:no-underline group">
                           <CardHeader className="pr-12">
-                            <div className="flex items-start gap-3">
+                            <div className="flex items-center gap-3">
                               {reading.pageNumber && (
-                                <span className="text-sm font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full flex-shrink-0 mt-1">
+                                <span className="text-sm font-semibold text-primary bg-primary/10 px-3 py-1.5 rounded-full flex-shrink-0">
                                   {reading.pageNumber}
                                 </span>
                               )}
                               <div className="flex-grow">
-                                <CardTitle className="font-headline text-xl text-primary">{reading.title}</CardTitle>
+                                <CardTitle className="font-headline text-lg text-primary group-hover:underline">
+                                  {reading.title}
+                                </CardTitle>
                                 {reading.source && (
                                   <CardDescription className="text-sm text-muted-foreground pt-1">
                                     Source: {reading.source}
