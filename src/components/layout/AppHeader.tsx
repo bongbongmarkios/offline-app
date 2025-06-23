@@ -1,7 +1,6 @@
-
 'use client';
 import type { ReactNode } from 'react';
-import { Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, ListChecks, Trash, Sparkles, Bot } from 'lucide-react'; 
+import { Search, Wifi, Menu, Trash2, Info, Settings as SettingsIcon, BookX, ListChecks, Trash, Sparkles, Bot } from 'lucide-react'; 
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -29,6 +28,7 @@ import DeleteReadingDialogContent from '@/components/readings/DeleteReadingDialo
 import ChatInterface from '@/components/ai/ChatInterface';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import HymnSearchDialog from '@/components/hymnal/HymnSearchDialog';
 
 
 interface AppHeaderProps {
@@ -56,6 +56,7 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
   const [isDeleteHymnDialogOpen, setIsDeleteHymnDialogOpen] = useState(false);
   const [isDeleteReadingDialogOpen, setIsDeleteReadingDialogOpen] = useState(false);
   const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   
   const router = useRouter();
 
@@ -64,6 +65,15 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
 
 
   useEffect(() => {
+    // Keyboard shortcut for search
+    const down = (e: KeyboardEvent) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        setIsSearchOpen((open) => !open)
+      }
+    }
+    document.addEventListener('keydown', down);
+
     const updateNetworkStatus = () => {
       if (typeof navigator !== 'undefined' && 'connection' in navigator) {
         const connection = navigator.connection as any;
@@ -122,18 +132,23 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
 
     updateNetworkStatus();
 
+    let connection: any;
     if (typeof navigator !== 'undefined' && 'connection' in navigator) {
-      const connection = navigator.connection as any;
+      connection = navigator.connection as any;
       connection.addEventListener('change', updateNetworkStatus);
-      window.addEventListener('online', updateNetworkStatus);
-      window.addEventListener('offline', updateNetworkStatus);
-
-      return () => {
-        connection.removeEventListener('change', updateNetworkStatus);
+    }
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+    
+    return () => {
+        document.removeEventListener('keydown', down)
+        if (connection) {
+            connection.removeEventListener('change', updateNetworkStatus);
+        }
         window.removeEventListener('online', updateNetworkStatus);
         window.removeEventListener('offline', updateNetworkStatus);
-      };
-    }
+    };
+
   }, []);
 
   const getWifiIconColor = (): string => {
@@ -186,6 +201,9 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
 
             {!hideDefaultActions && (
               <>
+                <Button variant="ghost" size="icon" aria-label="Open search" onClick={() => setIsSearchOpen(true)}>
+                  <Search className="h-6 w-6" />
+                </Button>
                 <Popover open={isStatusPopoverOpen} onOpenChange={setIsStatusPopoverOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="ghost" size="icon" aria-label={getWifiAriaLabel()}>
@@ -242,6 +260,13 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => setIsSearchOpen(true)}>
+                      <Search className="mr-2 h-4 w-4" />
+                      <span>Search</span>
+                      <kbd className="pointer-events-none ml-auto inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                        <span className="text-xs">⌘</span>K
+                      </kbd>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => router.push('/hymn-url-editor')}>
                       <ListChecks className="mr-2 h-4 w-4" />
                       <span>URL Management</span>
@@ -284,6 +309,8 @@ export default function AppHeader({ title, actions, hideDefaultActions }: AppHea
         </div>
       </header>
       
+      <HymnSearchDialog open={isSearchOpen} onOpenChange={setIsSearchOpen} />
+
       <Dialog open={isDeleteHymnDialogOpen} onOpenChange={setIsDeleteHymnDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
