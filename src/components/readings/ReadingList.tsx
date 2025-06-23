@@ -162,11 +162,6 @@ export default function ReadingList({ readings: initialReadings }: ReadingListPr
                                 <CardTitle className="font-headline text-xl text-primary">
                                   {reading.title}
                                 </CardTitle>
-                                {reading.source && (
-                                  <CardDescription className="text-sm text-muted-foreground pt-1">
-                                    Source: {reading.source}
-                                  </CardDescription>
-                                )}
                               </div>
                             </div>
                           </CardHeader>
