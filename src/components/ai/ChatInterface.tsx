@@ -167,7 +167,7 @@ export default function ChatInterface() {
   return (
     <div className="flex h-full bg-background overflow-hidden">
         <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-            <SheetContent side="left" className="p-0 w-full max-w-xs sm:max-w-sm flex flex-col">
+            <SheetContent side="left" className="p-0 flex flex-col w-3/4 sm:max-w-xs">
                 <SheetHeader className="p-4 border-b flex-shrink-0">
                     <SheetTitle>Chat History</SheetTitle>
                 </SheetHeader>
