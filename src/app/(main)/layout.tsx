@@ -1,3 +1,4 @@
+'use client';
 
 import BottomNavigationBar from '@/components/layout/BottomNavigationBar';
 import { Toaster } from '@/components/ui/toaster';
