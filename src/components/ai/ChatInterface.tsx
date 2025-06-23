@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, FormEvent, useRef, useEffect, KeyboardEvent } from 'react';
@@ -22,11 +23,8 @@ const initialMessage: ChatMessage = {
 };
 
 const suggestions = [
-    'Find a hymn by title',
     'Find lyrics',
     'Create a Sunday program for me',
-    'What are the responsive readings?',
-    'Suggest a closing hymn',
 ];
 
 export default function ChatInterface() {
@@ -247,7 +245,7 @@ export default function ChatInterface() {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="absolute top-2 right-2 h-7 w-7"
+                                        className="absolute top-2 right-2 h-7 w-7 opacity-100"
                                         onClick={() => handleCopy(lyricsMatch[1].trim())}
                                         aria-label="Copy lyrics"
                                     >
