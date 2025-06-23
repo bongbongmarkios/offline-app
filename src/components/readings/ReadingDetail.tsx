@@ -1,3 +1,4 @@
+
 'use client';
 import type { Reading } from '@/types';
 import { useEffect } from 'react';
@@ -20,9 +21,11 @@ export default function ReadingDetail({ reading }: ReadingDetailProps) {
     <Card className="shadow-lg">
         <CardHeader>
             <CardTitle className="font-headline text-3xl text-primary">{reading.title}</CardTitle>
-            {reading.source && (
+            {(reading.source || reading.pageNumber) && (
                 <CardDescription className="text-md text-muted-foreground pt-2">
-                Source: {reading.source}
+                    {reading.source && `Source: ${reading.source}`}
+                    {reading.source && reading.pageNumber && ` | `}
+                    {reading.pageNumber && `Page: ${reading.pageNumber}`}
                 </CardDescription>
             )}
         </CardHeader>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, type FormEvent, useEffect } from 'react';
@@ -25,6 +26,7 @@ export default function EditReadingForm({ readingToEdit, onEditSuccess, onCancel
   const [source, setSource] = useState(readingToEdit.source || '');
   const [lyrics, setLyrics] = useState(readingToEdit.lyrics || '');
   const [category, setCategory] = useState<ReadingCategory>(readingToEdit.category || 'responsive-reading');
+  const [pageNumber, setPageNumber] = useState(readingToEdit.pageNumber || '');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -32,6 +34,7 @@ export default function EditReadingForm({ readingToEdit, onEditSuccess, onCancel
     setSource(readingToEdit.source || '');
     setLyrics(readingToEdit.lyrics || '');
     setCategory(readingToEdit.category || 'responsive-reading');
+    setPageNumber(readingToEdit.pageNumber || '');
   }, [readingToEdit]);
 
   const handleSubmit = (e: FormEvent) => {
@@ -50,6 +53,7 @@ export default function EditReadingForm({ readingToEdit, onEditSuccess, onCancel
       source: source.trim() || undefined,
       lyrics: lyrics,
       category: category,
+      pageNumber: pageNumber.trim() || undefined,
     };
     
     // The parent component will handle the actual update logic (in-memory and localStorage)
@@ -90,14 +94,25 @@ export default function EditReadingForm({ readingToEdit, onEditSuccess, onCancel
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-reading-source">Source (Optional)</Label>
-              <Input
-                id="edit-reading-source"
-                value={source}
-                onChange={(e) => setSource(e.target.value)}
-                placeholder="e.g., Psalm 23"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="edit-reading-source">Source (Optional)</Label>
+                    <Input
+                        id="edit-reading-source"
+                        value={source}
+                        onChange={(e) => setSource(e.target.value)}
+                        placeholder="e.g., Psalm 23"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="edit-reading-page-number">Page Number (Optional)</Label>
+                    <Input
+                        id="edit-reading-page-number"
+                        value={pageNumber}
+                        onChange={(e) => setPageNumber(e.target.value)}
+                        placeholder="e.g., 501"
+                    />
+                </div>
             </div>
              <div className="space-y-2">
               <Label htmlFor="edit-reading-category">Category</Label>

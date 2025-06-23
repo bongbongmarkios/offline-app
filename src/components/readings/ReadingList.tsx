@@ -1,3 +1,4 @@
+
 'use client';
 import * as React from 'react';
 import type { Reading, ReadingCategory } from '@/types';
@@ -158,7 +159,12 @@ export default function ReadingList({ readings: initialReadings }: ReadingListPr
                          </Button>
                         <Link href={`/readings/${reading.id}`} className="block hover:no-underline">
                           <CardHeader className="pr-12">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-start gap-3">
+                              {reading.pageNumber && (
+                                <span className="text-sm font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full flex-shrink-0 mt-1">
+                                  {reading.pageNumber}
+                                </span>
+                              )}
                               <div className="flex-grow">
                                 <CardTitle className="font-headline text-xl text-primary">{reading.title}</CardTitle>
                                 {reading.source && (

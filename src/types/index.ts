@@ -63,6 +63,7 @@ export interface Reading {
   lyrics: string; 
   source?: string;
   category?: ReadingCategory;
+  pageNumber?: string;
 }
 
 // For AI suggestions

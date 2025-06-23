@@ -15,6 +15,7 @@ Leader: Thy rod and thy staff they comfort me.
 All: Thou preparest a table before me in the presence of mine enemies: thou anointest my head with oil; my cup runneth over. Surely goodness and mercy shall follow me all the days of my life: and I will dwell in the house of the Lord for ever. Amen.`,
     source: 'Psalm 23',
     category: 'responsive-reading',
+    pageNumber: '501',
   },
   {
     id: '20002', // Updated ID
@@ -31,6 +32,7 @@ Leader: cease to do evil, learn to do good;
 All: seek justice, correct oppression; bring justice to the fatherless, plead the widow's cause. Amen.`,
     source: 'Isaiah 1:12-17',
     category: 'responsive-reading',
+    pageNumber: '502',
   },
   {
     id: '21001',
