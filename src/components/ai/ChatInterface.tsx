@@ -5,7 +5,7 @@ import type { ChatMessage, Conversation } from '@/types';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, User, Bot, Loader2, Sparkles, Menu, FilePlus2 } from 'lucide-react';
+import { Send, User, Bot, Loader2, Sparkles, Menu, FilePlus2, Copy } from 'lucide-react';
 import { chatWithGemini } from '@/ai/flows/chat-flow';
 import { cn } from '@/lib/utils';
 import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -23,6 +23,7 @@ const initialMessage: ChatMessage = {
 
 const suggestions = [
     'Find a hymn by title',
+    'Find lyrics',
     'Create a Sunday program for me',
     'What are the responsive readings?',
     'Suggest a closing hymn',
@@ -164,6 +165,15 @@ export default function ChatInterface() {
     }
   }
 
+  const handleCopy = (textToCopy: string) => {
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        toast({ title: 'Lyrics Copied!', description: 'The lyrics have been copied to your clipboard.' });
+    }, (err) => {
+        console.error('Could not copy text: ', err);
+        toast({ title: 'Copy Failed', description: 'Could not copy lyrics to clipboard.', variant: 'destructive' });
+    });
+  };
+
   return (
     <div className="flex h-full bg-background overflow-hidden">
         <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
@@ -205,36 +215,58 @@ export default function ChatInterface() {
 
             <ScrollArea className="flex-grow p-4" ref={scrollAreaRef}>
                 <div className="space-y-6">
-                {messagesToDisplay.map((message) => (
-                    <div
-                    key={message.id}
-                    className={cn(
-                        'flex items-start gap-3',
-                        message.sender === 'user' ? 'justify-end' : ''
-                    )}
-                    >
-                    {message.sender === 'ai' && (
-                        <span className="flex-shrink-0 p-2 bg-primary/10 rounded-full">
-                        <Bot className="h-6 w-6 text-primary" />
-                        </span>
-                    )}
-                    <div
+                {messagesToDisplay.map((message) => {
+                    const lyricsMatch = message.text.match(/\[START_LYRICS\]([\s\S]*)\[END_LYRICS\]/);
+
+                    return (
+                        <div
+                        key={message.id}
                         className={cn(
-                            'max-w-[80%] p-3.5 rounded-xl text-sm',
-                            message.sender === 'user'
-                            ? 'bg-primary text-primary-foreground rounded-br-none'
-                            : 'bg-muted text-foreground rounded-bl-none'
+                            'flex items-start gap-3',
+                            message.sender === 'user' ? 'justify-end' : ''
                         )}
-                    >
-                        <p className="whitespace-pre-wrap">{message.text}</p>
-                    </div>
-                    {message.sender === 'user' && (
-                        <span className="flex-shrink-0 p-2 bg-accent/20 rounded-full">
-                        <User className="h-6 w-6 text-accent" />
-                        </span>
-                    )}
-                    </div>
-                ))}
+                        >
+                        {message.sender === 'ai' && (
+                            <span className="flex-shrink-0 p-2 bg-primary/10 rounded-full">
+                            <Bot className="h-6 w-6 text-primary" />
+                            </span>
+                        )}
+                        <div
+                            className={cn(
+                                'max-w-[80%] p-3.5 rounded-xl text-sm',
+                                message.sender === 'user'
+                                ? 'bg-primary text-primary-foreground rounded-br-none'
+                                : 'bg-muted text-foreground rounded-bl-none'
+                            )}
+                        >
+                            {lyricsMatch ? (
+                            <>
+                                <p className="whitespace-pre-wrap">{message.text.substring(0, lyricsMatch.index).trim()}</p>
+                                <div className="mt-4 p-4 bg-background/50 border rounded-lg relative group">
+                                    <pre className="whitespace-pre-wrap font-sans text-sm">{lyricsMatch[1].trim()}</pre>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        onClick={() => handleCopy(lyricsMatch[1].trim())}
+                                        aria-label="Copy lyrics"
+                                    >
+                                        <Copy className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </>
+                            ) : (
+                                <p className="whitespace-pre-wrap">{message.text}</p>
+                            )}
+                        </div>
+                        {message.sender === 'user' && (
+                            <span className="flex-shrink-0 p-2 bg-accent/20 rounded-full">
+                            <User className="h-6 w-6 text-accent" />
+                            </span>
+                        )}
+                        </div>
+                    );
+                })}
                 {isLoading && currentConversationId === currentConversation?.id && (
                     <div className="flex items-start gap-3">
                     <span className="flex-shrink-0 p-2 bg-primary/10 rounded-full">
